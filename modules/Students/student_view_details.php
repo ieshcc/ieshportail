@@ -375,13 +375,21 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $table->addColumn('username', __('Username'));
 
-                        $table->addColumn('age', __('Age'))
-                                ->format(function($row) {
-                                    if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
-                                        return Format::age($row['dob']);
-                                    }
-                                    return '';
-                                });
+                        // $table->addColumn('age', __('Age'))
+                        //         ->format(function($row) {
+                        //             if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
+                        //                 return Format::age($row['dob']);
+                        //             }
+                        //             return '';
+                        //         });
+
+                        $table->addColumn('DateOfBirth', __('Date of Birth'))
+                        ->format(function($row) {
+                            if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
+                                return date('d/m/Y', strtotime($row['dob']));
+                            }
+                            return '';
+                        });
 
                         $table->addColumn('headOfYear', __('Head of Year'))
                                 ->format(function($row) use ($container, $guid, $connection2) {
