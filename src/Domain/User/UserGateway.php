@@ -142,6 +142,22 @@ class UserGateway extends QueryableGateway implements ScrubbableGateway
     }
 
     /**
+     * Returns user home address
+     *
+     * @param string $gibbonPersonID
+     * @return array
+     */
+    public function getUserHomeAddress($gibbonPersonID)
+    {
+        $data = ['gibbonPersonID' => $gibbonPersonID];
+        $sql = "SELECT gibbonPerson.gibbonPersonID, address1, address1Country
+                FROM gibbonPerson
+                WHERE gibbonPerson.gibbonPersonID=:gibbonPersonID";
+
+        return $this->db()->selectOne($sql, $data);
+    }
+
+    /**
      * Selects the family info for a subset of users. Primarily used to join family data to the queryAllUsers results.
      *
      * @param string|array $gibbonPersonIDList

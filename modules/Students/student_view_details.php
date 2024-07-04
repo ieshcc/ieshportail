@@ -253,7 +253,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                     }
 
                     if ($subpage == '' and $hook == '') {
-                        $subpage = 'Overview';
+                        $subpage = 'Glimpse';
                     }
 
                     if ($search != '' or $allStudents != '') {
@@ -375,14 +375,6 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $table->addColumn('username', __('Username'));
 
-                        // $table->addColumn('age', __('Age'))
-                        //         ->format(function($row) {
-                        //             if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
-                        //                 return Format::age($row['dob']);
-                        //             }
-                        //             return '';
-                        //         });
-
                         $table->addColumn('dateOfBirth', __('Date of Birth'))
                         ->format(function($row) {
                             if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
@@ -475,6 +467,323 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                     return __('Agreements Signed:').' '.$row['studentAgreements'];
                                 });
                         }
+
+                        echo $table->render([$row]);
+
+                        //Get and display a list of student's teachers
+                        $studentGateway = $container->get(StudentGateway::class);
+                        $staff = $studentGateway->selectAllRelatedUsersByStudent($session->get('gibbonSchoolYearID'), $row['gibbonYearGroupID'], $row['gibbonFormGroupID'], $gibbonPersonID)->fetchAll();
+                        $canViewStaff = isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php');
+                        $criteria = $studentGateway->newQueryCriteria();
+
+                        if ($staff) {
+                            echo '<h4>';
+                            echo __('Teachers Of {student}', ['student' => $row['preferredName']]);
+                            echo '</h4>';
+                            echo '<p>';
+                            echo __('Includes Teachers, Tutors, Educational Assistants and Head of Year.');
+                            echo '</p>';
+
+                            $table = DataTable::createPaginated('staffView', $criteria);
+                            $table->addMetaData('listOptions', [
+                                'list' => __('List'),
+                                'grid' => __('Grid'),
+                            ]);
+
+                            $view = $_GET['view'] ?? 'grid';
+                            if ($view == 'grid') {
+                                /** @var GridView */
+                                $gridView = $container->get(GridView::class);
+                                $table->setRenderer($gridView->setCriteria($criteria));
+
+                                $table->addMetaData('gridClass', 'rounded-sm bg-gray-100 border');
+                                $table->addMetaData('gridItemClass', 'w-1/2 sm:w-1/4 md:w-1/5 my-4 text-center text-xs');
+
+                                $table->addColumn('image_240', __('Photo'))
+                                    ->context('primary')
+                                    ->format(function ($person) use ($canViewStaff) {
+                                        $photo = Format::userPhoto($person['image_240'], 'sm');
+                                        $url = './index.php?q=/modules/Staff/staff_view_details.php&gibbonPersonID='.$person['gibbonPersonID'];
+                                        return $canViewStaff
+                                            ? Format::link($url, $photo)
+                                            : $photo;
+                                    });
+
+                                $table->addColumn('fullName', __('Name'))
+                                    ->context('primary')
+                                    ->sortable(['surname', 'preferredName'])
+                                    ->width('20%')
+                                    ->format(function ($person) use ($canViewStaff) {
+                                        $text = Format::name('', $person['preferredName'], $person['surname'], 'Staff', false, true);
+                                        $url = './index.php?q=/modules/Staff/staff_view_details.php&gibbonPersonID='.$person['gibbonPersonID'];
+                                        return $canViewStaff
+                                            ? Format::link($url, $text, ['class' => 'font-bold underline leading-normal'])
+                                            : $text;
+                                    });
+                            } else {
+                                $table->addColumn('fullName', __('Name'))
+                                    ->notSortable()
+                                    ->format(function ($person) {
+                                        return Format::name('', $person['preferredName'], $person['surname'], 'Staff', false, true);
+                                    });
+                                $table->addColumn('email', __('Email'))
+                                    ->notSortable()
+                                    ->format(function ($person) {
+                                        return htmlPrep('<'.$person['email'].'>');
+                                    });
+                            }
+
+                            $table->addColumn('context', __('Context'))
+                                ->notSortable()
+                                ->format(function ($person) use ($view) {
+                                    $class = $view == 'grid'? 'unselectable text-xxs italic text-gray-800' : 'unselectable';
+                                    if (!empty($person['classID'])) {
+                                        return Format::link('./index.php?q=/modules/Departments/department_course_class.php&gibbonCourseClassID='.$person['classID'], __($person['type']), ['class' => $class.' underline']);
+                                    } else {
+                                        return '<span class="'.$class.'">'.__($person['type']).'</span>';
+                                    }
+                                });
+
+                            echo $table->render(new DataSet($staff));
+                        }
+
+
+                        //Show timetable
+                        echo "<a name='timetable'></a>";
+                        //Display timetable if available, otherwise just list classes
+                        if (isActionAccessible($guid, $connection2, '/modules/Timetable/tt_view.php') == true) {
+                            echo '<h4>';
+                            echo __('Timetable');
+                            echo '</h4>';
+
+                            // Timetable Links
+                            $table = DataTable::createDetails('timetable');
+
+                            if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnrolment_manage_byPerson_edit.php') == true) {
+                                $role = $roleGateway->getRoleCategory($row['gibbonRoleIDPrimary']);
+                                if ($role == 'Student' or $role == 'Staff') {
+                                    $table->addHeaderAction('edit', __('Edit'))
+                                    ->setURL('/modules/Timetable Admin/courseEnrolment_manage_byPerson_edit.php')
+                                    ->addParam('gibbonPersonID', $gibbonPersonID)
+                                    ->addParam('gibbonSchoolYearID', $session->get('gibbonSchoolYearID'))
+                                    ->addParam('type', $role)
+                                    ->addParam('allUsers', $allStudents)
+                                    ->displayLabel()
+                                    ->append(' | ');
+                                }
+                            }
+
+                            $table->addHeaderAction('print', __('Print'))
+                                ->setURL('/report.php')
+                                ->addParam('q', '/modules/Timetable/tt_view.php')
+                                ->addParam('gibbonPersonID', $gibbonPersonID)
+                                ->addParam('gibbonTTID', $_GET['gibbonTTID'] ?? '')
+                                ->addParam('ttDate', $_REQUEST['ttDate'] ?? '')
+                                ->setIcon('print')
+                                ->setTarget('_blank')
+                                ->directLink()
+                                ->displayLabel();
+
+                            if ($gibbonPersonID == $session->get('gibbonPersonID')) {
+                                $table->addHeaderAction('export', __('Export'))
+                                    ->modalWindow()
+                                    ->setURL('/modules/Timetable/tt_manage_subscription.php')
+                                    ->addParam('gibbonPersonID', $gibbonPersonID)
+                                    ->setIcon('download')
+                                    ->displayLabel()
+                                    ->prepend(' | ');
+                            }
+
+                            echo $table->render([['' => '']]);
+
+                            include './modules/Timetable/moduleFunctions.php';
+                            $ttDate = null;
+                            if (!empty($_REQUEST['ttDate'])) {
+                                $ttDate = Format::timestamp(Format::dateConvert($_REQUEST['ttDate']));
+                            }
+                            $tt = renderTT($guid, $connection2, $gibbonPersonID, $_GET['gibbonTTID'] ?? '', false, $ttDate, '/modules/Students/student_view_details.php', "&gibbonPersonID=$gibbonPersonID&search=$search&allStudents=$allStudents#timetable");
+                            if ($tt != false) {
+                                $page->addData('preventOverflow', false);
+                                echo $tt;
+                            } else {
+                                echo $page->getBlankSlate();
+                            }
+                        } else {
+                            echo '<h4>';
+                            echo __('Class List');
+                            echo '</h4>';
+
+                                $dataDetail = array('gibbonPersonID' => $gibbonPersonID);
+                                $sqlDetail = "SELECT DISTINCT gibbonCourse.name AS courseFull, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class
+                                    FROM gibbonCourseClassPerson
+                                        JOIN gibbonCourseClass ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID)
+                                        JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID)
+                                    WHERE gibbonCourseClassPerson.role='Student' AND gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID AND gibbonCourse.gibbonSchoolYearID=(SELECT gibbonSchoolYearID FROM gibbonSchoolYear WHERE status='Current') ORDER BY course, class";
+                                $resultDetail = $connection2->prepare($sqlDetail);
+                                $resultDetail->execute($dataDetail);
+                            if ($resultDetail->rowCount() < 1) {
+                                echo $page->getBlankSlate();
+                            } else {
+                                echo '<ul>';
+                                while ($rowDetail = $resultDetail->fetch()) {
+                                    echo '<li>';
+                                        echo htmlPrep($rowDetail['courseFull'].' ('.$rowDetail['course'].'.'.$rowDetail['class'].')');
+                                    echo '</li>';
+                                }
+                                echo '</ul>';
+                            }
+                        }
+                    
+                    } elseif ($subpage == 'Glimpse') {
+                        /** @var MedicalGateway */
+                        $medicalGateway = $container->get(MedicalGateway::class);
+                        //Medical alert!
+                        $alert = $medicalGateway->getHighestMedicalRisk($gibbonPersonID);
+                        if (!empty($alert)) {
+                            echo "<div class='error' style='background-color: #".$alert['colorBG'].'; border: 1px solid #'.$alert['color'].'; color: #'.$alert['color']."'>";
+                            echo '<b>'.sprintf(__('This student has one or more %1$s risk medical conditions.'), strToLower(__($alert['name']))).'</b>';
+                            echo '</div>';
+                        }
+
+                        $table = DataTable::createDetails('generalInfo');
+
+                        $table->setTitle(__('General Information'));
+
+                        if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage.php') == true) {
+                            $table->addHeaderAction('view', __('View Status Log'))
+                                    ->displayLabel()
+                                    ->addParam('gibbonPersonID', $gibbonPersonID)
+                                    ->setURL('/modules/User Admin/user_manage_view_status_log.php')
+                                    ->modalWindow();
+
+                            $table->addHeaderAction('edit', __('Edit'))
+                                    ->displayLabel()
+                                    ->addParam('gibbonPersonID', $gibbonPersonID)
+                                    ->setURL('/modules/User Admin/user_manage_edit.php');
+                        }
+
+                        $table->addColumn('name', __('Name'))
+                                ->format(Format::using('name', ['', 'preferredName', 'surname', 'Student']));
+
+                        $table->addColumn('studentID', __('Student ID'));
+
+                        $table->addColumn('yearGroup', __('Year Group'))
+                                ->format(function($row) use ($container, $settingGateway) {
+                                    if (isset($row['gibbonYearGroupID'])) {
+                                        $yearGroupGateway = $container->get(YearGroupGateway::class);
+                                        $yearGroup = $yearGroupGateway->getByID($row['gibbonYearGroupID']);
+                                        $output = '';
+                                        if (!empty($yearGroup)) {
+                                            $output .= __($yearGroup['name']);
+                                            $dayTypeOptions = $settingGateway->getSettingByScope('User Admin', 'dayTypeOptions');
+                                            if (!empty($dayTypeOptions) && !empty($row['dayType'])) {
+                                                $output .= ' ('.$row['dayType'].')';
+                                            }
+                                            $output .= '</i><br/>';
+                                        }
+                                        return $output;
+                                    }
+                                });
+
+                        $table->addColumn('formGroup', __('Form Group'))
+                                ->format(function($row) use ($container, $guid, $connection2, $session) {
+                                    if (isset($row['gibbonFormGroupID'])) {
+                                        $formGroupGateway = $container->get(FormGroupGateway::class);
+                                        $formGroup = $formGroupGateway->getByID($row['gibbonFormGroupID']);
+                                        $output = '';
+                                        if (!empty($formGroup)) {
+                                            if (isActionAccessible($guid, $connection2, '/modules/Form Groups/formGroups_details.php')) {
+                                                $output .= Format::link('./index.php?q=/modules/Form Groups/formGroups_details.php&gibbonFormGroupID='.$formGroup['gibbonFormGroupID'], $formGroup['name']);
+                                            } else {
+                                                $output .= $formGroup['name'];
+                                            }
+                                        }
+                                        return $output;
+                                    }
+                                });
+
+                        $table->addColumn('username', __('Username'));
+
+                        $table->addColumn('dateOfBirth', __('Date of Birth'))
+                        ->format(function($row) {
+                            if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
+                                return date('d/m/Y', strtotime($row['dob']));
+                            }
+                            return '';
+                        });
+
+                        $table->addColumn('email', __('Email'))
+                                ->format(Format::using('link', ['email']));
+
+                        $studentGateway = $container->get(StudentGateway::class);
+                        $table->addColumn('schoolHistory', __('School History'))
+                        ->format(function($row) use ($connection2, $studentGateway ) {
+                            if ($row['dateStart'] != '') {
+                                echo '<u>'.__('Start Date').'</u>: '.Format::date($row['dateStart']).'</br>';
+                            }
+
+                            $resultSelect = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
+                            
+                            while ($rowSelect = $resultSelect->fetch()) {
+                                echo '<u>'.$rowSelect['schoolYear'].'</u>: '.$rowSelect['formGroup'].' ('.$rowSelect['studyYear'].')'.'<br/>';
+                            }
+
+                            if ($row['dateEnd'] != '') {
+                                echo '<u>'.__('End Date').'</u>: '.Format::date($row['dateEnd']).'</br>';
+                            }
+                        });
+
+                        
+                        
+                        $table->addColumn('homeAddress', __('Home Address'))
+                            ->format(function($row) use ($container, $guid, $connection2) {
+                                $userGateway = $container->get(UserGateway::class);
+                                $homeAddress = $userGateway->getUserHomeAddress($row['gibbonPersonID']);
+                                if (!empty($homeAddress)) {
+                                    if (isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php')) {
+                                        return $homeAddress['address1']. "," . $homeAddress['address1Country'];
+                                    } else {
+                                        return "Access denied";
+                                    }
+                                }
+
+                                return '';
+                            });
+
+                        $table->addColumn('roomNumber', __('Room Number'))
+                            ->format(function(){
+                                return 'B103';
+                            });
+
+                        $privacySetting = $settingGateway->getSettingByScope('User Admin', 'privacy');
+                        if ($privacySetting == 'Y') {
+                            $table->addColumn('privacy', __('Privacy'))
+                                ->format(function($row) {
+                                    $output = '';
+
+                                    if ($row['privacy'] != '') {
+                                        $output .= "<span style='color: #cc0000; background-color: #F6CECB'>";
+                                        $output .= __('Privacy required:').' '.$row['privacy'];
+                                        $output .= '</span>';
+                                    } else {
+                                        $output .= "<span style='color: #390; background-color: #D4F6DC;'>";
+                                        $output .= __('Privacy not required or not set.');
+                                        $output .= '</span>';
+                                    }
+
+                                    return $output;
+                                });
+                        }
+
+                        $studentAgreementOptions = $settingGateway->getSettingByScope('School Admin', 'studentAgreementOptions');
+                        if ($studentAgreementOptions != '') {
+                            $table->addColumn('studentAgreements', __('Student Agreements'))
+                                ->format(function($row) {
+                                    return __('Agreements Signed:').' '.$row['studentAgreements'];
+                                });
+                        }
+
+                        $container->get(CustomFieldHandler::class)->addCustomFieldsToTable($table, 'User', ['student' => 1], $row['fields']);
 
                         echo $table->render([$row]);
 
@@ -2493,6 +2802,14 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                      $sidebarExtra .= '<div class="column-no-break">';
                      $sidebarExtra .= '<h4>'.__('Personal').'</h4>';
                      $sidebarExtra .= "<ul class='moduleMenu'>";
+                    
+                     // Student Glimpse Page 
+                     $style = '';
+                    if ($subpage == 'Glimpse') {
+                        $style = "style='font-weight: bold'";
+                    }
+                     $sidebarExtra .= "<li><a $style href='".$session->get('absoluteURL').'/index.php?q='.$_GET['q']."&gibbonPersonID=$gibbonPersonID&search=".$search."&search=$search&allStudents=$allStudents&subpage=Glimpse'>".__('Glimpse').'</a></li>';
+                     
                     $style = '';
                     if ($subpage == 'Overview') {
                         $style = "style='font-weight: bold'";
