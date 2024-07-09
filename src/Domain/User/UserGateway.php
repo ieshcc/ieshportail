@@ -146,6 +146,7 @@ class UserGateway extends QueryableGateway implements ScrubbableGateway
      *
      * @param string $gibbonPersonID
      * @return array
+     * @author ODI - IESH
      */
     public function getUserHomeAddress($gibbonPersonID)
     {

@@ -253,7 +253,9 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                     }
 
                     if ($subpage == '' and $hook == '') {
+                        /* --- IESH EDIT START --- */
                         $subpage = 'Glimpse';
+                        /* --- IESH EDIT END --- */
                     }
 
                     if ($search != '' or $allStudents != '') {
@@ -375,6 +377,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $table->addColumn('username', __('Username'));
 
+                        /* --- IESH EDIT START --- */
                         $table->addColumn('dateOfBirth', __('Date of Birth'))
                         ->format(function($row) {
                             if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
@@ -382,6 +385,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             }
                             return '';
                         });
+                        /* --- IESH EDIT END --- */
 
                         $table->addColumn('headOfYear', __('Head of Year'))
                                 ->format(function($row) use ($container, $guid, $connection2) {
@@ -634,7 +638,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             }
                         }
                     
-                    } elseif ($subpage == 'Glimpse') {
+                    } /*--- IESH EDIT START----*/ elseif ($subpage == 'Glimpse') {
                         /** @var MedicalGateway */
                         $medicalGateway = $container->get(MedicalGateway::class);
                         //Medical alert!
@@ -950,7 +954,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 echo '</ul>';
                             }
                         }
-                    } elseif ($subpage == 'Personal') {
+                    } /*--- IESH EDIT END ----*/ elseif ($subpage == 'Personal') {
                         $schoolYearGateway = $container->get(SchoolYearGateway::class);
                         $yearGroupGateway = $container->get(YearGroupGateway::class);
                         $formGroupGateway = $container->get(FormGroupGateway::class);
@@ -2803,12 +2807,14 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                      $sidebarExtra .= '<h4>'.__('Personal').'</h4>';
                      $sidebarExtra .= "<ul class='moduleMenu'>";
                     
+                     /* --- IESH EDIT START --- */
                      // Student Glimpse Page 
                      $style = '';
                     if ($subpage == 'Glimpse') {
                         $style = "style='font-weight: bold'";
                     }
                      $sidebarExtra .= "<li><a $style href='".$session->get('absoluteURL').'/index.php?q='.$_GET['q']."&gibbonPersonID=$gibbonPersonID&search=".$search."&search=$search&allStudents=$allStudents&subpage=Glimpse'>".__('Glimpse').'</a></li>';
+                     /* --- IESH EDIT END --- */
                      
                     $style = '';
                     if ($subpage == 'Overview') {
