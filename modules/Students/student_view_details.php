@@ -44,6 +44,7 @@ use Gibbon\Domain\Students\StudentNoteGateway;
 use Gibbon\Domain\School\SchoolYearTermGateway;
 use Gibbon\Domain\Library\LibraryReportGateway;
 use Gibbon\Domain\User\PersonalDocumentGateway;
+use Gibbon\Domain\Timetable\CourseEnrolmentGateway;
 use Gibbon\Module\Planner\Tables\HomeworkTable;
 use Gibbon\Module\Attendance\StudentHistoryData;
 use Gibbon\Module\Attendance\StudentHistoryView;
@@ -752,6 +753,33 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 }
 
                                 return '';
+                            });
+
+                        $table->addColumn('doubleCourses', __('Double Courses'))
+                            ->format(function($row) use ($container, $guid, $connection2, $session) {
+                                $courseEnrolmentGateway = $container->get(CourseEnrolmentGateway::class);
+                                
+                                // QUERY
+                                $criteria = $courseEnrolmentGateway->newQueryCriteria(true)
+                                ->sortBy('roleSortOrder')
+                                ->sortBy(['course'])
+                                ->fromPOST();
+
+                                $enrolment = $courseEnrolmentGateway->queryCourseEnrolmentByPerson($criteria, $session->get('gibbonSchoolYearID'), $row['gibbonPersonID']);
+                                if (!empty($enrolment)) {
+                                    if (isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php')) {
+                                        if(count($enrolment) > 1){
+                                            foreach ($enrolment as $rowSelect) {
+                                                echo '<u>'.$rowSelect['class'].'</u>: '.$rowSelect['courseName'].' ('.$rowSelect['course'].')'.'<br/>';
+                                            }
+                                        }
+                                        else{
+                                            echo '<p>Non</p>';
+                                        }
+                                    } else {
+                                        echo '<p>Access denied</p>';
+                                    }
+                                }
                             });
 
                         $table->addColumn('roomNumber', __('Room Number'))
