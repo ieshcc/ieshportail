@@ -25,6 +25,7 @@ use Gibbon\Domain\DataSet;
 use Gibbon\Services\Format;
 use Gibbon\Tables\DataTable;
 use Gibbon\Tables\View\GridView;
+use Gibbon\Cards\Card;
 use Gibbon\Domain\User\UserGateway;
 use Gibbon\Domain\User\RoleGateway;
 use Gibbon\Forms\CustomFieldHandler;
@@ -650,6 +651,34 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             echo '</div>';
                         }
 
+                        $card = Card::createPanelsCard('generalInfo');
+
+                        $card->setTitle(__('General Information'));
+
+                        $card->addPanel('leftPanel', 'John Doe', __('Student Identity Details'))
+                            ->addSection('identity', __('Identity'))
+                            ->addSection('homeInfo', __('Home Info'));
+                        
+                        $card->getPanel("leftPanel")
+                            ->getSection('identity')
+                            ->addItems('dob', __('Date of Birth'), '01/01/2000');
+                        
+                        $card->getPanel("leftPanel")
+                            ->getSection('homeInfo')                           
+                            ->addItems('CP', __('Zip Code'), '12345');
+                        
+                        $card->addPanel('rightPanel', __('School Info'), __('School Info Details'))
+                            ->addSection('class', __('Class Info'))
+                            ->addSection('roomInfo', __('RoomInfo'));
+                        
+                        $card->getPanel("rightPanel")
+                            ->getSection('class')
+                            ->addItems('classNumber', __('Class Number'), 'A389');
+                        
+                        $card->getPanel("rightPanel")
+                            ->getSection('roomInfo')
+                            ->addItems('roomNumber', __('Room Number'), 'B12');
+
                         $table = DataTable::createDetails('generalInfo');
 
                         $table->setTitle(__('General Information'));
@@ -818,6 +847,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $container->get(CustomFieldHandler::class)->addCustomFieldsToTable($table, 'User', ['student' => 1], $row['fields']);
 
                         echo $table->render([$row]);
+                        
+                        echo $card->render([$row]);
 
                         //Get and display a list of student's teachers
                         $studentGateway = $container->get(StudentGateway::class);

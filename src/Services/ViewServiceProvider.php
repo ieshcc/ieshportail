@@ -29,6 +29,7 @@ use Gibbon\Forms\View\FormRendererInterface;
 use Gibbon\Tables\DataTable;
 use Gibbon\Tables\View\DataTableView;
 use Gibbon\Tables\View\PaginatedView;
+use Gibbon\Cards\View\PanelsCardView;
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use Gibbon\Tables\View\DetailsView;
 use Twig\Environment;
@@ -101,6 +102,10 @@ class ViewServiceProvider extends AbstractServiceProvider
 
         $container->add(DetailsView::class, function () use ($container) {
             return new DetailsView($container->get('twig'));
+        });
+
+        $container->add(PanelsCardView::class, function () use ($container) {
+            return new PanelsCardView($container->get('twig'));
         });
 
         $container->share(Environment::class, function () {
