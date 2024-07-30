@@ -47,5 +47,15 @@ class Section {
         return $this->items;
     }
 
-    // Add your properties and methods here
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    public function setTitle($title)
+    {
+        $this->title = $title;
+        return $this;
+    }
+
 }

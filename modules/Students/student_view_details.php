@@ -653,27 +653,43 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $card = Card::createPanelsCard('generalInfo');
 
-                        $card->setTitle(__('General Information'));
+                        $studentDisplayName = 'Madame De Angeli Johana';
 
-                        $card->addPanel('leftPanel', 'John Doe', __('Student Identity Details'))
+                        $card->setTitle(__('General Information'));
+                        $card->setDescription($studentDisplayName);
+
+                        $card->addPanel('leftPanel', __('Student Identity'), __('Student Identity Details'))
                             ->addSection('identity', __('Identity'))
                             ->addSection('homeInfo', __('Home Info'));
                         
                         $card->getPanel("leftPanel")
                             ->getSection('identity')
-                            ->addItems('dob', __('Date of Birth'), '01/01/2000');
+                            ->addItems('phoneNumber', __('Phone Number'), '06 06 06 06 06')
+                            ->addItems('mail', __('Mail'), 'deangeli@example.com')
+                            ->addItems('dob', __('Date of Birth'), '01/01/2000')
+                            ->addItems('age', __('Age'), '24')
+                            ->addItems('birthPlace', __('Birth Place'), __('Paris'))
+                            ->addItems('nationality', __('Nationality'), __('Spanish'));
                         
                         $card->getPanel("leftPanel")
                             ->getSection('homeInfo')                           
-                            ->addItems('CP', __('Zip Code'), '12345');
+                            ->addItems('homeAddress', __('Home Address'), 'Rue des Champs 75000 Paris, France');
                         
-                        $card->addPanel('rightPanel', __('School Info'), __('School Info Details'))
+                        $card->addPanel('rightPanel', __('School Info'), __('School Info Details for 2023/2024'))
+                            ->addSection('registrationInfo', __('Registration Info'))
                             ->addSection('class', __('Class Info'))
                             ->addSection('roomInfo', __('RoomInfo'));
+
+                        $card->getPanel("rightPanel")
+                            ->getSection('registrationInfo')
+                            ->addItems('studentID', __('Student ID'), '7569')
+                            ->addItems('status', __('Status'), __('Full'))
+                            ->addItems('schoolHistory', __('School History'), '2023-2024: Classe1 (Year 1)');
                         
                         $card->getPanel("rightPanel")
                             ->getSection('class')
-                            ->addItems('classNumber', __('Class Number'), 'A389');
+                            ->addItems('classType', __('Class Type'), __('Full'))
+                            ->addItems('className', __('Class className'), 'DESI101 (Year 2)');
                         
                         $card->getPanel("rightPanel")
                             ->getSection('roomInfo')
@@ -846,9 +862,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $container->get(CustomFieldHandler::class)->addCustomFieldsToTable($table, 'User', ['student' => 1], $row['fields']);
 
-                        echo $table->render([$row]);
-                        
                         echo $card->render([$row]);
+                        echo $table->render([$row]);
 
                         //Get and display a list of student's teachers
                         $studentGateway = $container->get(StudentGateway::class);
