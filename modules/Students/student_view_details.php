@@ -657,11 +657,24 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $card->setTitle(__('General Information'));
                         $card->setDescription($studentDisplayName);
+                        $card->addMetaData("classes", [
+                            "cardHeader" => "mb-2",
+                            "cardTitle" => "text-xl font-bold mb-0",
+                            "cardDescription" => "text-4xl font-bold text-blue-600 mt-0"
+                        ]);
 
-                        $card->addPanel('leftPanel', __('Student Identity'), __('Student Identity Details'))
+                        $card->addPanel('leftPanel', __('Student Info'), __('Retrieve all the student identity details here.'))
                             ->addSection('identity', __('Identity'))
-                            ->addSection('homeInfo', __('Home Info'));
-                        
+                            ->addSection('homeInfo', __('Home'))
+                            ->addMetaData("classes", [
+                                "panelHeader" => "panel bg-blue-200 rounded-md md:flex-1 borde border-black last:border-r-0 m-1 p-2",
+                                "panelTitle" => "text-lg font-semibold mt-0 mb-0 text-black tracking-widest",
+                                "panelDescription" => "text-xs font-medium m-0 text-black"
+                            ])
+                            ->addMetaData("styles", [
+                                "panelDescription" => "text-transform: none;",
+                            ]);
+                                                
                         $card->getPanel("leftPanel")
                             ->getSection('identity')
                             ->addItems('phoneNumber', __('Phone Number'), '06 06 06 06 06')
@@ -678,7 +691,12 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $card->addPanel('rightPanel', __('School Info'), __('School Info Details for 2023/2024'))
                             ->addSection('registrationInfo', __('Registration Info'))
                             ->addSection('class', __('Class Info'))
-                            ->addSection('roomInfo', __('RoomInfo'));
+                            ->addSection('roomInfo', __('RoomInfo'))
+                            ->addMetaData("classes", [
+                                "panelHeader" => "panel bg-green-100 rounded-md md:flex-1 border-r border-gray-300 last:border-r-0 m-1 p-2",
+                                "panelTitle" => "text-lg font-semibold mt-0 mb-0 text-white",
+                                "panelDescription" => "text-sm font-medium text-gray-500 m-0"
+                            ]);
 
                         $card->getPanel("rightPanel")
                             ->getSection('registrationInfo')

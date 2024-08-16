@@ -125,16 +125,39 @@ class Card implements OutputableInterface {
      */
     public function addMetaData($name, $value)
     {
-        $this->meta[$name] = isset($this->meta[$name]) && is_array($this->meta[$name]) && is_array($value)
-            ? array_replace($this->meta[$name], $value)
-            : $value;
-
+        if (isset($this->meta[$name]) && is_array($this->meta[$name]) && is_array($value)) {
+            $this->meta[$name] = array_replace_recursive($this->meta[$name], $value);
+        } else {
+            $this->meta[$name] = $value;
+        }
+    
         return $this;
     }
 
     public function getMetaData($name, $defaultValue = null)
     {
         return isset($this->meta[$name]) ? $this->meta[$name] : $defaultValue;
+    }
+
+    public function getMetaDatas()
+    {
+        if (!isset($this->meta['classes'])) {
+            $this->meta['classes'] = [
+                'cardHeader' => '',
+                'cardTitle' => '',
+                'cardDescription' => '' 
+            ];
+        }
+
+        if (!isset($this->meta['styles'])) {
+            $this->meta['styles'] = [
+                'cardHeader' => '',
+                'cardTitle' => '',
+                'cardDescription' => '' 
+            ];
+        }
+
+        return $this->meta;
     }
 
     /**

@@ -18,16 +18,16 @@
             View Status Log <i class="fas fa-share"></i>
         </a>
     </div>
-    <div class="bg-white rounded-xl shadow-lg plr-6 relative hover:bg-blue-50">
-        <div id="cardHeader" class="mb-2">
-            <h3 class="text-l font-bold mb-0">{{ card.title }}</h3>
-            <h2 class="text-xl font-bold text-blue-600 mt-0">{{ card.description }}</h2>
+    <div class="bg-white rounded-xl shadow-lg px-6 py-4 relative">
+        <div id="cardHeader" class="{{ card.meta.classes.cardHeader }}" style="{{ card.meta.styles.cardHeader }}">
+            <h3 class="{{ card.meta.classes.cardTitle }}" style="{{ card.meta.styles.cardTitle }}">{{ card.title }}</h3>
+            <h2 class="{{ card.meta.classes.cardDescription }}" style="{{ card.meta.styles.cardDescription }}">{{ card.description }}</h2>
         </div>
         <div class="flex flex-col md:flex-row">
             {% for panel in panels %}
-            <div id="panel-{{ loop.index }}" class="panel bg-blue-100 rounded-md md:flex-1 border-r border-gray-300 last:border-r-0 m-1 p-2">
-                <h3 class="text-lg font-semibold mt-0 mb-0">{{ panel.getTitle|raw }}</h3>
-                <h4 class="text-sm font-medium text-gray-500 m-0">{{ panel.description }}</h4>
+            <div id="panel-{{ loop.index }}" class="{{ panel.getMetaDatas.classes.panelHeader }}" style="{{ panel.getMetaDatas.styles.panelHeader }}">
+                <h3 class="{{ panel.getMetaDatas.classes.panelTitle }}" style="{{ panel.getMetaDatas.styles.panelTitle }}">{{ panel.getTitle|raw }}</h3>
+                <h4 class="{{ panel.getMetaDatas.classes.panelDescription }}" style="{{ panel.getMetaDatas.styles.panelDescription }}">{{ panel.description }}</h4>
                 {% for section in panel.getSections %}
                 <div id="section-{{ loop.index }}" class="section bg-gray-100 p-3 m-3 rounded-md shadow-sm">
                     <h4 class="text-md font-bold mt-0 mb-1">{{ section.getTitle }}</h4>
