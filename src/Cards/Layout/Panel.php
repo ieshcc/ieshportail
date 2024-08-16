@@ -4,6 +4,8 @@ namespace Gibbon\Cards\Layout;
 
 use Gibbon\Forms\Traits\BasicAttributesTrait;
 use Gibbon\Cards\Layout\Section;
+use Gibbon\Cards\Traits\ComponentMetadataTrait;
+
 
 /**
 * Panel
@@ -14,7 +16,9 @@ use Gibbon\Cards\Layout\Section;
 
 class Panel
 {
-    use BasicAttributesTrait; 
+    use BasicAttributesTrait;
+    use ComponentMetadataTrait;
+     
 
     protected $id;
     protected $title;
@@ -76,6 +80,27 @@ class Panel
     public function setDescription($description)
     {
         $this->description = $description;
+    }
+
+    public function getMetaDatas()
+    {
+        if (!isset($this->meta['classes'])) {
+            $this->meta['classes'] = [
+                'panelHeader' => '',
+                'panelTitle' => '',
+                'panelDescription' => '' 
+            ];
+        }
+
+        if (!isset($this->meta['styles'])) {
+            $this->meta['styles'] = [
+                'panelHeader' => '',
+                'panelTitle' => '',
+                'panelDescription' => '' 
+            ];
+        }
+
+        return $this->meta;
     }
 
 

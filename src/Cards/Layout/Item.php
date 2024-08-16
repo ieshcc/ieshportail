@@ -3,6 +3,8 @@
 namespace Gibbon\Cards\Layout;
 
 use Gibbon\Forms\Traits\BasicAttributesTrait;
+use Gibbon\Cards\Traits\ComponentMetadataTrait;
+
 
 /**
 * Item
@@ -14,6 +16,7 @@ use Gibbon\Forms\Traits\BasicAttributesTrait;
 class Item {
 
     use BasicAttributesTrait;
+    use ComponentMetadataTrait;
 
     protected $id;
     protected $label;
@@ -25,6 +28,28 @@ class Item {
         $this->label = $label;
         $this->value = $value;
     }
+
+    public function getMetaDatas()
+    {
+        if (!isset($this->meta['classes'])) {
+            $this->meta['classes'] = [
+                'itemHeader' => '',
+                'itemTitle' => '',
+                'itemDescription' => '' 
+            ];
+        }
+
+        if (!isset($this->meta['styles'])) {
+            $this->meta['styles'] = [
+                'itemHeader' => '',
+                'itemTitle' => '',
+                'itemDescription' => '' 
+            ];
+        }
+
+        return $this->meta;
+    }
+
 
     public function getLabel()
     {

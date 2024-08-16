@@ -10,6 +10,7 @@ use Gibbon\Cards\Renderer\RendererInterface;
 use Gibbon\Cards\View\PanelsCardView;
 use Gibbon\Cards\Layout\Panel;
 use Gibbon\View\View;
+use Gibbon\Cards\Traits\ComponentMetadataTrait;
 
 /**
  * Card
@@ -18,6 +19,8 @@ use Gibbon\View\View;
  * @since v1
  */
 class Card implements OutputableInterface {
+
+    use ComponentMetadataTrait;
     
     protected $id;
     protected $title;
@@ -26,7 +29,7 @@ class Card implements OutputableInterface {
     protected $renderer;
 
     protected $panels = array();
-    protected $meta = array(); 
+    // protected $meta = array(); 
 
     /**
      * 
@@ -114,29 +117,6 @@ class Card implements OutputableInterface {
         }
 
         return $this;
-    }
-
-    /**
-     * Add a piece of meta data to the table. Can be used for renderer-specific details.
-     *
-     * @param string $name
-     * @param mixed $value
-     * @return self
-     */
-    public function addMetaData($name, $value)
-    {
-        if (isset($this->meta[$name]) && is_array($this->meta[$name]) && is_array($value)) {
-            $this->meta[$name] = array_replace_recursive($this->meta[$name], $value);
-        } else {
-            $this->meta[$name] = $value;
-        }
-    
-        return $this;
-    }
-
-    public function getMetaData($name, $defaultValue = null)
-    {
-        return isset($this->meta[$name]) ? $this->meta[$name] : $defaultValue;
     }
 
     public function getMetaDatas()

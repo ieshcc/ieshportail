@@ -667,8 +667,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addSection('identity', __('Identity'))
                             ->addSection('homeInfo', __('Home'))
                             ->addMetaData("classes", [
-                                "panelHeader" => "panel bg-blue-200 rounded-md md:flex-1 borde border-black last:border-r-0 m-1 p-2",
-                                "panelTitle" => "text-lg font-semibold mt-0 mb-0 text-black tracking-widest",
+                                "panelHeader" => "panel bg-blue-200 rounded-md md:flex-1 borde border-black last:border-r-0 m-1 p-6",
+                                "panelTitle" => "text-2xl font-semibold mt-0 mb-0 text-black tracking-widest",
                                 "panelDescription" => "text-xs font-medium m-0 text-black"
                             ])
                             ->addMetaData("styles", [
@@ -682,11 +682,19 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItems('dob', __('Date of Birth'), '01/01/2000')
                             ->addItems('age', __('Age'), '24')
                             ->addItems('birthPlace', __('Birth Place'), __('Paris'))
-                            ->addItems('nationality', __('Nationality'), __('Spanish'));
+                            ->addItems('nationality', __('Nationality'), __('Spanish'))
+                            ->addMetaData("classes", [
+                                "sectionHeader" => "section bg-customBlue p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
+                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
+                            ]);
                         
                         $card->getPanel("leftPanel")
                             ->getSection('homeInfo')                           
-                            ->addItems('homeAddress', __('Home Address'), 'Rue des Champs 75000 Paris, France');
+                            ->addItems('homeAddress', __('Home Address'), 'Rue des Champs 75000 Paris, France')
+                            ->addMetaData("classes", [
+                                "sectionHeader" => "section bg-white p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-black",
+                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
+                            ]);
                         
                         $card->addPanel('rightPanel', __('School Info'), __('School Info Details for 2023/2024'))
                             ->addSection('registrationInfo', __('Registration Info'))
@@ -702,16 +710,28 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->getSection('registrationInfo')
                             ->addItems('studentID', __('Student ID'), '7569')
                             ->addItems('status', __('Status'), __('Full'))
-                            ->addItems('schoolHistory', __('School History'), '2023-2024: Classe1 (Year 1)');
+                            ->addItems('schoolHistory', __('School History'), '2023-2024: Classe1 (Year 1)')
+                            ->addMetaData("classes", [
+                                "sectionHeader" => "section bg-white p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-black",
+                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
+                            ]);
                         
                         $card->getPanel("rightPanel")
                             ->getSection('class')
                             ->addItems('classType', __('Class Type'), __('Full'))
-                            ->addItems('className', __('Class className'), 'DESI101 (Year 2)');
+                            ->addItems('className', __('Class className'), 'DESI101 (Year 2)')
+                            ->addMetaData("classes", [
+                                "sectionHeader" => "section bg-white p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-black",
+                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
+                            ]);
                         
                         $card->getPanel("rightPanel")
                             ->getSection('roomInfo')
-                            ->addItems('roomNumber', __('Room Number'), 'B12');
+                            ->addItems('roomNumber', __('Room Number'), 'B12')
+                            ->addMetaData("classes", [
+                                "sectionHeader" => "section bg-white p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-black",
+                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
+                            ]);
 
                         $table = DataTable::createDetails('generalInfo');
 

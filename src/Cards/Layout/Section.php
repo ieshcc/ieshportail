@@ -4,6 +4,8 @@ namespace Gibbon\Cards\Layout;
 
 use Gibbon\Forms\Traits\BasicAttributesTrait;
 use Gibbon\Cards\Layout\Item;
+use Gibbon\Cards\Traits\ComponentMetadataTrait;
+
 
 /**
 * Section
@@ -15,6 +17,7 @@ use Gibbon\Cards\Layout\Item;
 class Section {
 
     use BasicAttributesTrait;
+    use ComponentMetadataTrait;
 
     protected $id;
     protected $title;
@@ -26,6 +29,26 @@ class Section {
         $this->setID($id);
         $this->title = $title;
     }
+
+    public function getMetaDatas()
+    {
+        if (!isset($this->meta['classes'])) {
+            $this->meta['classes'] = [
+                'sectionHeader' => '',
+                'sectionTitle' => ''
+            ];
+        }
+
+        if (!isset($this->meta['styles'])) {
+            $this->meta['styles'] = [
+                'sectionHeader' => '',
+                'sectionTitle' => ''
+            ];
+        }
+
+        return $this->meta;
+    }
+
 
     public function getSections(){
         return $this->sections;

@@ -29,8 +29,8 @@
                 <h3 class="{{ panel.getMetaDatas.classes.panelTitle }}" style="{{ panel.getMetaDatas.styles.panelTitle }}">{{ panel.getTitle|raw }}</h3>
                 <h4 class="{{ panel.getMetaDatas.classes.panelDescription }}" style="{{ panel.getMetaDatas.styles.panelDescription }}">{{ panel.description }}</h4>
                 {% for section in panel.getSections %}
-                <div id="section-{{ loop.index }}" class="section bg-gray-100 p-3 m-3 rounded-md shadow-sm">
-                    <h4 class="text-md font-bold mt-0 mb-1">{{ section.getTitle }}</h4>
+                <div id="section-{{ loop.index }}" class="{{ section.getMetaDatas.classes.sectionHeader }}" style="{{ section.getMetaDatas.styles.sectionHeader }}">
+                    <h4 class="{{ section.getMetaDatas.classes.sectionTitle }}" style="{{ section.getMetaDatas.styles.sectionTitle }}">{{ section.getTitle }}</h4>
                     {% for item in section.getItems %}
                     <p class="text-gray-700 mb-1"><strong>{{ item.getLabel }}:</strong> {{ item.getValue }}</p>
                     {% endfor %}
