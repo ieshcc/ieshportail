@@ -11,13 +11,14 @@ use Gibbon\Cards\Layout\Panel;
 class PanelsCardView extends View implements RendererInterface{
     public function renderCard(Card $card, DataSet $dataSet) {
         $dataSet->htmlEncode($card->getMetaData('allowHTML', []));
-
         $this->addData('card', $card);
+
+        $data = $dataSet->toArray()[0];
         
         if($dataSet->count() > 0) {
-            $data = $dataSet->toArray();
             $this->addData([
-                'panels'       => $card->getPanels(),
+                'panels'  => $card->getPanels(),
+                'itemsData'   => $data,
                 'blankSlate' => __('There are no data to display.'),
             ]);
         }

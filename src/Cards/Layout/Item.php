@@ -21,6 +21,9 @@ class Item {
     protected $id;
     protected $label;
     protected $value;
+    protected $formatter;
+    protected $detailsFormatter;
+    protected $translatable = false;
 
     public function __construct($id, $label ='', $value = '')
     {
@@ -48,6 +51,88 @@ class Item {
         }
 
         return $this->meta;
+    }
+
+    /**
+     * Renders the card item by either passing the item $data to a formatter, 
+     * or grabbing the item data by key based on the item label.
+     *
+     * @param array $data
+     * @return string
+     */
+    public function getOutput(&$data = [], $joinDetails = true)
+    {
+        $details = $joinDetails && $this->hasDetailsFormatter() ? '<br/>'.$this->getDetailsOutput($data) : '';
+        
+        if ($this->hasFormatter()) {
+            return call_user_func($this->formatter, $data).$details;
+        } else {
+            $content = isset($data[$this->getID()])? $data[$this->getID()] : '';
+            $content = is_array($content) ? implode(',', array_keys($content)) : $content;
+            $content .= $details;
+            
+            return $this->getTranslatable() ? __($content) : $content;
+        }
+    }
+
+    /**
+     * Does the item have a valid formatter?
+     *
+     * @return bool
+     */
+    public function hasFormatter() 
+    {
+        return !empty($this->formatter) && is_callable($this->formatter);
+    }
+
+    /**
+     * Does the item have a valid formatter?
+     *
+     * @return bool
+     */
+    public function hasDetailsFormatter() 
+    {
+        return !empty($this->detailsFormatter) && is_callable($this->detailsFormatter);
+    }
+
+    public function getDetailsOutput(&$data = [])
+    {
+        return $this->hasDetailsFormatter() ? call_user_func($this->detailsFormatter, $data) : '';
+    }
+
+    /**
+     * Sets that this column of table must be translated
+     *
+     * @return self
+     */
+    public function translatable() 
+    {
+        $this->translatable = true;
+        
+        return $this;
+    }
+
+    /**
+     * Gets if the item must be translated or not
+     *
+     * @return bool
+     */
+    public function getTranslatable()
+    {
+        return $this->translatable;
+    } 
+    
+    /**
+     * Sets the formatter as a callable, which should accept a $data param of item data.
+     *
+     * @param callable $formatter
+     * @return self
+     */
+    public function format(callable $formatter) 
+    {
+        $this->formatter = $formatter;
+
+        return $this;
     }
 
 

@@ -213,11 +213,40 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                     } elseif ($highestAction == 'View Student Profile_fullEditAllNotes' || $highestAction == 'View Student Profile_full' || $highestAction == 'View Student Profile_fullNoNotes') {
                         if ($allStudents != 'on') {
                             $data = array('gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'), 'gibbonPersonID' => $gibbonPersonID, 'today' => date('Y-m-d'));
-                            $sql = "SELECT gibbonPerson.*, gibbonStudentEnrolment.gibbonSchoolYearID, gibbonStudentEnrolment.gibbonYearGroupID, gibbonStudentEnrolment.gibbonFormGroupID, gibbonStudentEnrolment.rollOrder FROM gibbonPerson
-                                JOIN gibbonStudentEnrolment ON (gibbonPerson.gibbonPersonID=gibbonStudentEnrolment.gibbonPersonID)
-                                WHERE gibbonSchoolYearID=:gibbonSchoolYearID
-                                AND gibbonPerson.gibbonPersonID=:gibbonPersonID AND status='Full'
-                                AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today) ";
+                            // $sql = "SELECT gibbonPerson.*, gibbonStudentEnrolment.gibbonSchoolYearID, gibbonStudentEnrolment.gibbonYearGroupID, gibbonStudentEnrolment.gibbonFormGroupID, gibbonStudentEnrolment.rollOrder FROM gibbonPerson
+                            //     JOIN gibbonStudentEnrolment ON (gibbonPerson.gibbonPersonID=gibbonStudentEnrolment.gibbonPersonID)
+                            //     WHERE gibbonSchoolYearID=:gibbonSchoolYearID
+                            //     AND gibbonPerson.gibbonPersonID=:gibbonPersonID AND status='Full'
+                            //     AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today) ";
+                            $sql = "SELECT 
+                                gibbonPerson.*, 
+                                gibbonStudentEnrolment.gibbonSchoolYearID, 
+                                gibbonStudentEnrolment.gibbonYearGroupID, 
+                                gibbonStudentEnrolment.gibbonFormGroupID, 
+                                gibbonStudentEnrolment.rollOrder,
+                                iesh_studentRegistrationDetails.isStudentModular,
+                                iesh_RegistrationStatuses.registrationStatusName,
+                                iesh_AttendanceTypes.attendanceTypeName,
+                                gibbonspace.name
+                            FROM 
+                                gibbonPerson
+                            JOIN 
+                                gibbonStudentEnrolment ON (gibbonPerson.gibbonPersonID=gibbonStudentEnrolment.gibbonPersonID)
+                            JOIN
+                                iesh_studentRegistrationDetails ON (gibbonStudentEnrolment.studentRegistrationDetailsID = iesh_studentRegistrationDetails.studentRegistrationDetailsID)
+                            JOIN
+                                iesh_RegistrationStatuses ON (iesh_studentRegistrationDetails.registrationStatusID = iesh_RegistrationStatuses.registrationStatusID)
+                            JOIN
+                                iesh_AttendanceTypes ON (iesh_studentRegistrationDetails.attendanceTypeID = iesh_AttendanceTypes.attendanceTypeID)
+                            JOIN
+                                iesh_DormitoryRooms ON (iesh_studentRegistrationDetails.dormitoryRoomID = iesh_DormitoryRooms.dormitoryRoomID)
+                            JOIN 
+                                gibbonspace ON (iesh_DormitoryRooms.gibbonSpaceID = gibbonspace.gibbonSpaceID)
+                            WHERE gibbonSchoolYearID=:gibbonSchoolYearID
+                                AND gibbonPerson.gibbonPersonID=:gibbonPersonID 
+                                AND status='Full'
+                                AND (dateStart IS NULL OR dateStart<=:today) 
+                                AND (dateEnd IS NULL  OR dateEnd>=:today) ";
                         } else {
                             $data = array('gibbonPersonID' => $gibbonPersonID, 'gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'));
                             $sql = "SELECT gibbonPerson.*, gibbonStudentEnrolment.gibbonSchoolYearID, gibbonStudentEnrolment.gibbonYearGroupID, gibbonStudentEnrolment.gibbonFormGroupID, gibbonStudentEnrolment.rollOrder FROM gibbonPerson
@@ -240,6 +269,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                     return;
                 } else {
                     $row = $result->fetch();
+                    
                     $studentImage=$row['image_240'] ;
 
                     $page->breadcrumbs
@@ -651,8 +681,12 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             echo '</div>';
                         }
 
+                        $schoolYearGateway = $container->get(SchoolYearGateway::class);
+                        $studentGateway = $container->get(StudentGateway::class);
+                        $currentSchoolYearDisplayedName = $schoolYearGateway->getSchoolYearByID($session->get('gibbonSchoolYearID'))["name"];
                         $card = Card::createPanelsCard('generalInfo');
 
+                        /** Card Header **/
                         $studentDisplayName = 'Madame De Angeli Johana';
 
                         $card->setTitle(__('General Information'));
@@ -663,75 +697,132 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             "cardDescription" => "text-4xl font-bold text-blue-600 mt-0"
                         ]);
 
-                        $card->addPanel('leftPanel', __('Student Info'), __('Retrieve all the student identity details here.'))
+                        /** Card Panels **/
+                        // Left Panel and Sections
+                        $card->addPanel('leftPanel', __('Student Profile'), __('You will find here all the student profile details.'))
                             ->addSection('identity', __('Identity'))
-                            ->addSection('homeInfo', __('Home'))
+                            ->addSection('homeInfo', __('Home Details'))
                             ->addMetaData("classes", [
-                                "panelHeader" => "panel bg-blue-200 rounded-md md:flex-1 borde border-black last:border-r-0 m-1 p-6",
-                                "panelTitle" => "text-2xl font-semibold mt-0 mb-0 text-black tracking-widest",
+                                "panelHeader" => "panel bg-blue-100 shadow-lg rounded-md md:flex-1 border-black last:border-r-0 m-1 p-6",
+                                "panelTitle" => "text-2xl font-semibold mt-0 mb-0 text-black tracking-tight",
                                 "panelDescription" => "text-xs font-medium m-0 text-black"
                             ])
                             ->addMetaData("styles", [
                                 "panelDescription" => "text-transform: none;",
                             ]);
-                                                
+                        
+                        // Right Panel and Sections
+                        $card->addPanel('rightPanel', __('School Information')." ".$currentSchoolYearDisplayedName, __('You will find here all the student\'s academic information.'))
+                        ->addSection('registrationInfo', __('Registration'))
+                        ->addSection('educational', __('Educational Details'))
+                        ->addSection('accomodation', __('Accomodation'))
+                        ->addMetaData("classes", [
+                            "panelHeader" => "panel bg-white rounded-md md:flex-1 border-black last:border-r-0 m-1 p-6",
+                            "panelTitle" => "text-2xl font-semibold mt-0 mb-0 text-black tracking-tight",
+                            "panelDescription" => "text-xs font-medium m-0 text-black"
+                        ])
+                        ->addMetaData("styles", [
+                            "panelDescription" => "text-transform: none;",
+                        ]);
+                        
+                        // Left Panel Identity Section Items
+                        $leftPanelSectionHeaderClasses = [
+                            "sectionHeader" => "section bg-white px-6 py-6 m-3 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
+                            "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1 border-b border-1 border-black"
+                        ];
+
                         $card->getPanel("leftPanel")
                             ->getSection('identity')
-                            ->addItems('phoneNumber', __('Phone Number'), '06 06 06 06 06')
-                            ->addItems('mail', __('Mail'), 'deangeli@example.com')
-                            ->addItems('dob', __('Date of Birth'), '01/01/2000')
-                            ->addItems('age', __('Age'), '24')
-                            ->addItems('birthPlace', __('Birth Place'), __('Paris'))
-                            ->addItems('nationality', __('Nationality'), __('Spanish'))
-                            ->addMetaData("classes", [
-                                "sectionHeader" => "section bg-customBlue p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
-                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
-                            ]);
-                        
+                            ->addItem('email', __('E-Mail'))
+                            ->addItem('phone1', __('Phone Number'))
+                            ->addItem('dob', __('Date of Birth'))
+                            ->addItem('age', __('Age'))
+                            ->addItem('countryOfBirth', __('Birthplace'))
+                            ->addItem('nationality', __('Nationality'))
+                            ->addMetaData("classes", $leftPanelSectionHeaderClasses);
+
+                        $card->getPanel("leftPanel")
+                            ->getSection('identity')
+                            ->getItem('dob')
+                            ->format(Format::using('date','dob'));
+
+                        $card->getPanel("leftPanel")
+                            ->getSection('identity')
+                            ->getItem('age')
+                            ->format(Format::using('age', $row['dob']));
+
+                        $card->getPanel("leftPanel")
+                            ->getSection('identity')
+                            ->getItem('nationality')
+                            ->format(function() { return __('Prochainement Disponible');});
+
+                        // Left Panel Home Section Items
                         $card->getPanel("leftPanel")
                             ->getSection('homeInfo')                           
-                            ->addItems('homeAddress', __('Home Address'), 'Rue des Champs 75000 Paris, France')
-                            ->addMetaData("classes", [
-                                "sectionHeader" => "section bg-white p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-black",
-                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
-                            ]);
+                            ->addItem('address1', __('Main Home Address'))
+                            ->addItem('address1District', __('ZIP & Town'))
+                            ->addItem('address1Country', __('Country'), 'France')
+                            ->addMetaData("classes", $leftPanelSectionHeaderClasses);
                         
-                        $card->addPanel('rightPanel', __('School Info'), __('School Info Details for 2023/2024'))
-                            ->addSection('registrationInfo', __('Registration Info'))
-                            ->addSection('class', __('Class Info'))
-                            ->addSection('roomInfo', __('RoomInfo'))
-                            ->addMetaData("classes", [
-                                "panelHeader" => "panel bg-green-100 rounded-md md:flex-1 border-r border-gray-300 last:border-r-0 m-1 p-2",
-                                "panelTitle" => "text-lg font-semibold mt-0 mb-0 text-white",
-                                "panelDescription" => "text-sm font-medium text-gray-500 m-0"
-                            ]);
+                        $rightPanelSectionHeaderClasses = [
+                            "sectionHeader" => "section bg-green-200 px-6 py-6 m-3 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
+                            "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1 border-b border-1 border-black"
+                        ];
+                        
+                        // Right Panel Registration Info Section Items
+                        $card->getPanel("rightPanel")
+                            ->getSection('registrationInfo')
+                            ->addItem('studentID', __('Student ID'))
+                            ->addItem('username', __('Username'))
+                            ->addItem('seniority', __('New Student ?'))
+                            ->addItem('registrationStatusName', __('Registration Status'))
+                            ->addItem('doubleRegistration', __('Double Registration on current year ?'))
+                            ->addItem('attendanceTypeName', __('Main registration type this year'))
+                            ->addMetaData("classes", $rightPanelSectionHeaderClasses);
 
                         $card->getPanel("rightPanel")
                             ->getSection('registrationInfo')
-                            ->addItems('studentID', __('Student ID'), '7569')
-                            ->addItems('status', __('Status'), __('Full'))
-                            ->addItems('schoolHistory', __('School History'), '2023-2024: Classe1 (Year 1)')
-                            ->addMetaData("classes", [
-                                "sectionHeader" => "section bg-white p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-black",
-                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
-                            ]);
+                            ->getItem('seniority')
+                            ->format(function($row) use ($connection2, $studentGateway){ 
+                                // Fetch the student's enrollment history
+                                $resultSelect = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
+                                return $resultSelect->rowCount() > 0 ? "No" : "Yes";
+
+                        });
+                        
+                        // Right Panel Class Info Section Items
+                        $card->getPanel("rightPanel")
+                            ->getSection('educational')
+                            ->addItem('className', __('Class Name'))
+                            ->addItem('isStudentModular', __('Modulaire ?'))
+                            ->addMetaData("classes", $rightPanelSectionHeaderClasses);
                         
                         $card->getPanel("rightPanel")
-                            ->getSection('class')
-                            ->addItems('classType', __('Class Type'), __('Full'))
-                            ->addItems('className', __('Class className'), 'DESI101 (Year 2)')
-                            ->addMetaData("classes", [
-                                "sectionHeader" => "section bg-white p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-black",
-                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
-                            ]);
-                        
+                            ->getSection('educational')
+                            ->getItem('className')
+                            ->format(function($row) use ($container, $settingGateway) {
+                                if (isset($row['gibbonYearGroupID'])) {
+                                    $yearGroupGateway = $container->get(YearGroupGateway::class);
+                                    $yearGroup = $yearGroupGateway->getByID($row['gibbonYearGroupID']);
+                                    $output = '';
+                                    if (!empty($yearGroup)) {
+                                        $output .= __($yearGroup['name']);
+                                        $dayTypeOptions = $settingGateway->getSettingByScope('User Admin', 'dayTypeOptions');
+                                        if (!empty($dayTypeOptions) && !empty($row['dayType'])) {
+                                            $output .= ' ('.$row['dayType'].')';
+                                        }
+                                    }
+                                    return $output;
+                                }
+                            });
+
+                        // Right Panel Room Info Section Items
                         $card->getPanel("rightPanel")
-                            ->getSection('roomInfo')
-                            ->addItems('roomNumber', __('Room Number'), 'B12')
-                            ->addMetaData("classes", [
-                                "sectionHeader" => "section bg-white p-3 m-3 rounded-md shadow-sm md:flex-1 border-b border-black",
-                                "sectionTitle" => "text-md font-bold mt-0 mb-1"
-                            ]);
+                            ->getSection('accomodation')
+                            ->addItem('name', __('Room Number'), 'B12')
+                            ->addMetaData("classes", $rightPanelSectionHeaderClasses);
+
+                        /* Student Card End Here */
 
                         $table = DataTable::createDetails('generalInfo');
 
@@ -803,7 +894,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $table->addColumn('email', __('Email'))
                                 ->format(Format::using('link', ['email']));
 
-                        $studentGateway = $container->get(StudentGateway::class);
+                        
                         $table->addColumn('schoolHistory', __('School History'))
                         ->format(function($row) use ($connection2, $studentGateway ) {
                             if ($row['dateStart'] != '') {
@@ -820,8 +911,6 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 echo '<u>'.__('End Date').'</u>: '.Format::date($row['dateEnd']).'</br>';
                             }
                         });
-
-                        
                         
                         $table->addColumn('homeAddress', __('Home Address'))
                             ->format(function($row) use ($container, $guid, $connection2) {
@@ -863,11 +952,6 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                         echo '<p>Access denied</p>';
                                     }
                                 }
-                            });
-
-                        $table->addColumn('roomNumber', __('Room Number'))
-                            ->format(function(){
-                                return 'B103';
                             });
 
                         $privacySetting = $settingGateway->getSettingByScope('User Admin', 'privacy');

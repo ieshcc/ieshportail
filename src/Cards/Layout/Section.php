@@ -54,12 +54,12 @@ class Section {
         return $this->sections;
     }
 
-    public function getItem()
+    public function getItem($id)
     {
-        return $this->item;
+        return $this->items[$id];
     }
 
-    public function addItems($id, $label = '', $value = '')
+    public function addItem($id, $label = '', $value = '')
     {
         $this->items[$id] = new Item($id, $label, $value);
         return $this;
