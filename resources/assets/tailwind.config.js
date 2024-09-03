@@ -1,3 +1,5 @@
+const colors = require('tailwindcss/colors')
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     './resources/**/*.blade.php',
@@ -7,12 +9,8 @@ module.exports = {
   purge: [],
   darkMode: false, // or 'media' or 'class'
   theme: {
-    extend: {
-      colors: {
-        customBlue: '#OC71C3',
-      },
+
     },
-  },
   variants: {
     extend: {},
   },

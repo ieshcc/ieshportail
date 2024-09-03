@@ -737,8 +737,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('phone1', __('Phone Number'))
                             ->addItem('dob', __('Date of Birth'))
                             ->addItem('age', __('Age'))
-                            ->addItem('countryOfBirth', __('Birthplace'))
-                            ->addItem('nationality', __('Nationality'))
+                            ->addItem('birthplace', __('Birthplace'))
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
 
                         $card->getPanel("leftPanel")
@@ -753,14 +752,18 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $card->getPanel("leftPanel")
                             ->getSection('identity')
-                            ->getItem('nationality')
-                            ->format(function() { return __('Prochainement Disponible');});
+                            ->getItem('birthplace')
+                            ->format(function($row) use ($connection2, $studentGateway) {
+                                 return $row['cityOfBirth'].', '.$row['countryOfBirth'];
+                                });
 
                         // Left Panel Home Section Items
                         $card->getPanel("leftPanel")
                             ->getSection('homeInfo')                           
                             ->addItem('address1', __('Main Home Address'))
-                            ->addItem('address1District', __('ZIP & Town'))
+                            ->addItem('address1Complement', __('Adress Complement'))
+                            ->addItem('address1ZipCode', __('ZIP'))
+                            ->addItem('address1City', __('City'))
                             ->addItem('address1Country', __('Country'), 'France')
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
                         
@@ -794,7 +797,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $card->getPanel("rightPanel")
                             ->getSection('educational')
                             ->addItem('className', __('Class Name'))
-                            ->addItem('isStudentModular', __('Modulaire ?'))
+                            ->addItem('registrationFormula', __('Formule d\'inscription'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
                         
                         $card->getPanel("rightPanel")
