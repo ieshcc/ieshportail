@@ -1,0 +1,53 @@
+{#<!--
+    Gibbon: the flexible, open school platform
+    Founded by Ross Parker at ICHK Secondary. Built by Ross Parker, Sandra Kuipers and the Gibbon community (https://gibbonedu.org/about/)
+    Copyright © 2010, Gibbon Foundation
+    Gibbon™, Gibbon Education Ltd. (Hong Kong)
+    
+    This is a Gibbon template file, written in HTML and Twig syntax.
+    For info about editing, see: https://twig.symfony.com/doc/2.x/
+-->#}
+
+<div class="container mx-auto p-1">
+    <!-- Action Icons -->
+    <div class="space-x-2">
+        <a href="#" class="text-gray-500 hover:text-gray-900">
+            Edit <i class="fas fa-edit"></i>
+        </a>
+        <a href="#" class="text-gray-500 hover:text-gray-900">
+            View Status Log <i class="fas fa-share"></i>
+        </a>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg px-6 py-4 relative">
+        <div id="cardHeader" class="{{ card.meta.classes.cardHeader }}" style="{{ card.meta.styles.cardHeader }}">
+            <h3 class="{{ card.meta.classes.cardTitle }}" style="{{ card.meta.styles.cardTitle }}">{{ card.title }}</h3>
+            <h2 class="{{ card.meta.classes.cardDescription }}" style="{{ card.meta.styles.cardDescription }}">{{ card.description }}</h2>
+        </div>
+        <div class="flex flex-col md:flex-row">
+            {% for panel in panels %}
+            <div id="panel-{{ loop.index }}" class="{{ panel.getMetaDatas.classes.panelHeader }}" style="{{ panel.getMetaDatas.styles.panelHeader }}">
+                <h3 class="{{ panel.getMetaDatas.classes.panelTitle }}" style="{{ panel.getMetaDatas.styles.panelTitle }}">{{ panel.getTitle|raw }}</h3>
+                <h4 class="{{ panel.getMetaDatas.classes.panelDescription }}" style="{{ panel.getMetaDatas.styles.panelDescription }}">{{ panel.description }}</h4>
+                {% for section in panel.getSections %}
+                <div id="section-{{ loop.index }}" class="{{ section.getMetaDatas.classes.sectionHeader }}" style="{{ section.getMetaDatas.styles.sectionHeader }}">
+                    <h4 class="{{ section.getMetaDatas.classes.sectionTitle }}" style="{{ section.getMetaDatas.styles.sectionTitle }}">{{ section.getTitle }}</h4>
+                    <div id="items" class="p-4">
+                        {% for item in section.getItems %}
+                        <div class="grid grid-cols-2 items-center border-b border-1 border-gray-300">
+                            <p id="item-{{ loop.index }}" class="text-gray-800 font-semibold text-base mb-1"> <!-- Label Styling -->
+                            {{ item.getLabel }}:
+                            </p>
+                            <p class="text-gray-700 text-base mb-0"> <!-- Value Styling -->
+                            {{ item.getOutput(itemsData) }}
+                            </p>
+                        </div>
+                        <!-- <p class="text-gray-700 text-base leading-normal mb-1" style=""><strong>{{ item.getLabel }}:</strong> {{ item.getOutput(itemsData) }}</p> -->
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
