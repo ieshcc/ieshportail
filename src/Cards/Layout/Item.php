@@ -4,6 +4,7 @@ namespace Gibbon\Cards\Layout;
 
 use Gibbon\Forms\Traits\BasicAttributesTrait;
 use Gibbon\Cards\Traits\ComponentMetadataTrait;
+use Gibbon\Tables\Action;
 
 
 /**
@@ -24,6 +25,7 @@ class Item {
     protected $formatter;
     protected $detailsFormatter;
     protected $translatable = false;
+    protected $itemActions = array();
 
     public function __construct($id, $label ='', $value = '')
     {
@@ -98,6 +100,42 @@ class Item {
     public function getDetailsOutput(&$data = [])
     {
         return $this->hasDetailsFormatter() ? call_user_func($this->detailsFormatter, $data) : '';
+    }
+
+    /**
+     * Add an action to the item, generally displayed at the right-side of the item.
+     *
+     * @param string $name
+     * @param string $label
+     * @return Action
+     */
+    public function addItemAction($name, $label = '')
+    {
+        $this->itemActions[$name] = new Action($name, $label);
+
+        return $this->itemActions[$name];
+    }
+
+    /**
+     * Get all item actions.
+     *
+     * @return array
+     */
+    public function getItemActions()
+    {
+        return $this->itemActions;
+    }
+
+    public function getItemAction($name)
+    {
+        return $this->itemActions[$name];
+    }
+
+    public function setItemActions($itemActions)
+    {
+        $this->itemActions = $itemActions;
+
+        return $this;
     }
 
     /**

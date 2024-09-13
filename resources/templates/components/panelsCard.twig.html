@@ -33,13 +33,14 @@
                     <h4 class="{{ section.getMetaDatas.classes.sectionTitle }}" style="{{ section.getMetaDatas.styles.sectionTitle }}">{{ section.getTitle }}</h4>
                     <div id="items" class="p-4">
                         {% for item in section.getItems %}
-                        <div class="grid grid-cols-2 items-center border-b border-1 border-gray-300">
+                        <div class="grid grid-cols-3 items-center border-b border-1 border-gray-300">
                             <p id="item-{{ loop.index }}" class="text-gray-800 font-semibold text-base mb-1"> <!-- Label Styling -->
                             {{ item.getLabel }}:
                             </p>
                             <p class="text-gray-700 text-base mb-0"> <!-- Value Styling -->
                             {{ item.getOutput(itemsData) }}
                             </p>
+                            <a href="#">{{ item.getItemAction(item.getID).getLabel }}</a>
                         </div>
                         <!-- <p class="text-gray-700 text-base leading-normal mb-1" style=""><strong>{{ item.getLabel }}:</strong> {{ item.getOutput(itemsData) }}</p> -->
                         {% endfor %}

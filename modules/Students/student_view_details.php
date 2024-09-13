@@ -224,7 +224,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 gibbonStudentEnrolment.gibbonYearGroupID, 
                                 gibbonStudentEnrolment.gibbonFormGroupID, 
                                 gibbonStudentEnrolment.rollOrder,
-                                iesh_studentRegistrationDetails.isStudentModular,
+                                iesh_studentRegistrationDetails.comments,
+                                iesh_RegistrationFormulas.registrationFormulaName,
                                 iesh_RegistrationStatuses.registrationStatusName,
                                 iesh_AttendanceTypes.attendanceTypeName,
                                 gibbonspace.name
@@ -232,15 +233,17 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 gibbonPerson
                             JOIN 
                                 gibbonStudentEnrolment ON (gibbonPerson.gibbonPersonID=gibbonStudentEnrolment.gibbonPersonID)
-                            JOIN
+                            LEFT JOIN
                                 iesh_studentRegistrationDetails ON (gibbonStudentEnrolment.studentRegistrationDetailsID = iesh_studentRegistrationDetails.studentRegistrationDetailsID)
-                            JOIN
+                            LEFT JOIN
                                 iesh_RegistrationStatuses ON (iesh_studentRegistrationDetails.registrationStatusID = iesh_RegistrationStatuses.registrationStatusID)
-                            JOIN
+                            LEFT JOIN
+                                iesh_RegistrationFormulas ON iesh_studentRegistrationDetails.registrationFormulaID = iesh_RegistrationFormulas.registrationFormulaID
+                            LEFT JOIN
                                 iesh_AttendanceTypes ON (iesh_studentRegistrationDetails.attendanceTypeID = iesh_AttendanceTypes.attendanceTypeID)
-                            JOIN
+                            LEFT JOIN
                                 iesh_DormitoryRooms ON (iesh_studentRegistrationDetails.dormitoryRoomID = iesh_DormitoryRooms.dormitoryRoomID)
-                            JOIN 
+                            LEFT JOIN 
                                 gibbonspace ON (iesh_DormitoryRooms.gibbonSpaceID = gibbonspace.gibbonSpaceID)
                             WHERE gibbonSchoolYearID=:gibbonSchoolYearID
                                 AND gibbonPerson.gibbonPersonID=:gibbonPersonID 
@@ -715,7 +718,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $card->addPanel('rightPanel', __('School Information')." ".$currentSchoolYearDisplayedName, __('You will find here all the student\'s academic information.'))
                         ->addSection('registrationInfo', __('Registration'))
                         ->addSection('educational', __('Educational Details'))
-                        ->addSection('accomodation', __('Accomodation'))
+                        ->addSection('miscellaneous', __('Miscellaneous'))
                         ->addMetaData("classes", [
                             "panelHeader" => "panel bg-white rounded-md md:flex-1 border-black last:border-r-0 m-1 p-6",
                             "panelTitle" => "text-2xl font-semibold mt-0 mb-0 text-black tracking-tight",
@@ -739,6 +742,14 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('age', __('Age'))
                             ->addItem('birthplace', __('Birthplace'))
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
+
+                        $card->getPanel("leftPanel")
+                            ->getSection('identity')
+                            ->getItem('email')
+                            ->addItemAction('email', __('Edit'))
+                            ->displayLabel()
+                            ->addParam('gibbonPersonID', $gibbonPersonID)
+                            ->setURL('/modules/User Admin/user_manage_edit.php');
 
                         $card->getPanel("leftPanel")
                             ->getSection('identity')
@@ -821,8 +832,9 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         // Right Panel Room Info Section Items
                         $card->getPanel("rightPanel")
-                            ->getSection('accomodation')
-                            ->addItem('name', __('Room Number'), 'B12')
+                            ->getSection('miscellaneous')
+                            ->addItem('name', __('Room Number'))
+                            ->addItem('comments', __('Registration details'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
 
                         /* Student Card End Here */
