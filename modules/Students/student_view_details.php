@@ -29,6 +29,7 @@ use Gibbon\Cards\Card;
 use Gibbon\Domain\User\UserGateway;
 use Gibbon\Domain\User\RoleGateway;
 use Gibbon\Forms\CustomFieldHandler;
+use Gibbon\Domain\Finance\InvoiceGateway;
 use Gibbon\Domain\System\HookGateway;
 use Gibbon\Domain\User\FamilyGateway;
 use Gibbon\Domain\School\HouseGateway;
@@ -837,170 +838,213 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('comments', __('Registration details'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
 
+                        echo $card->render([$row]);
+
                         /* Student Card End Here */
 
-                        $table = DataTable::createDetails('generalInfo');
+                        // $table = DataTable::createDetails('generalInfo');
 
-                        $table->setTitle(__('General Information'));
+                        // $table->setTitle(__('General Information'));
 
-                        if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage.php') == true) {
-                            $table->addHeaderAction('view', __('View Status Log'))
-                                    ->displayLabel()
-                                    ->addParam('gibbonPersonID', $gibbonPersonID)
-                                    ->setURL('/modules/User Admin/user_manage_view_status_log.php')
-                                    ->modalWindow();
+                        // if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage.php') == true) {
+                        //     $table->addHeaderAction('view', __('View Status Log'))
+                        //             ->displayLabel()
+                        //             ->addParam('gibbonPersonID', $gibbonPersonID)
+                        //             ->setURL('/modules/User Admin/user_manage_view_status_log.php')
+                        //             ->modalWindow();
 
+                        //     $table->addHeaderAction('edit', __('Edit'))
+                        //             ->displayLabel()
+                        //             ->addParam('gibbonPersonID', $gibbonPersonID)
+                        //             ->setURL('/modules/User Admin/user_manage_edit.php');
+                        // }
+
+                        // $table->addColumn('name', __('Name'))
+                        //         ->format(Format::using('name', ['', 'preferredName', 'surname', 'Student']));
+
+                        // $table->addColumn('studentID', __('Student ID'));
+
+                        // $table->addColumn('yearGroup', __('Year Group'))
+                        //         ->format(function($row) use ($container, $settingGateway) {
+                        //             if (isset($row['gibbonYearGroupID'])) {
+                        //                 $yearGroupGateway = $container->get(YearGroupGateway::class);
+                        //                 $yearGroup = $yearGroupGateway->getByID($row['gibbonYearGroupID']);
+                        //                 $output = '';
+                        //                 if (!empty($yearGroup)) {
+                        //                     $output .= __($yearGroup['name']);
+                        //                     $dayTypeOptions = $settingGateway->getSettingByScope('User Admin', 'dayTypeOptions');
+                        //                     if (!empty($dayTypeOptions) && !empty($row['dayType'])) {
+                        //                         $output .= ' ('.$row['dayType'].')';
+                        //                     }
+                        //                     $output .= '</i><br/>';
+                        //                 }
+                        //                 return $output;
+                        //             }
+                        //         });
+
+                        // $table->addColumn('formGroup', __('Form Group'))
+                        //         ->format(function($row) use ($container, $guid, $connection2, $session) {
+                        //             if (isset($row['gibbonFormGroupID'])) {
+                        //                 $formGroupGateway = $container->get(FormGroupGateway::class);
+                        //                 $formGroup = $formGroupGateway->getByID($row['gibbonFormGroupID']);
+                        //                 $output = '';
+                        //                 if (!empty($formGroup)) {
+                        //                     if (isActionAccessible($guid, $connection2, '/modules/Form Groups/formGroups_details.php')) {
+                        //                         $output .= Format::link('./index.php?q=/modules/Form Groups/formGroups_details.php&gibbonFormGroupID='.$formGroup['gibbonFormGroupID'], $formGroup['name']);
+                        //                     } else {
+                        //                         $output .= $formGroup['name'];
+                        //                     }
+                        //                 }
+                        //                 return $output;
+                        //             }
+                        //         });
+
+                        // $table->addColumn('username', __('Username'));
+
+                        // $table->addColumn('dateOfBirth', __('Date of Birth'))
+                        // ->format(function($row) {
+                        //     if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
+                        //         return date('d/m/Y', strtotime($row['dob']));
+                        //     }
+                        //     return '';
+                        // });
+
+                        // $table->addColumn('email', __('Email'))
+                        //         ->format(Format::using('link', ['email']));
+
+                        
+                        // $table->addColumn('schoolHistory', __('School History'))
+                        // ->format(function($row) use ($connection2, $studentGateway ) {
+                        //     if ($row['dateStart'] != '') {
+                        //         echo '<u>'.__('Start Date').'</u>: '.Format::date($row['dateStart']).'</br>';
+                        //     }
+
+                        //     $resultSelect = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
+                            
+                        //     while ($rowSelect = $resultSelect->fetch()) {
+                        //         echo '<u>'.$rowSelect['schoolYear'].'</u>: '.$rowSelect['formGroup'].' ('.$rowSelect['studyYear'].')'.'<br/>';
+                        //     }
+
+                        //     if ($row['dateEnd'] != '') {
+                        //         echo '<u>'.__('End Date').'</u>: '.Format::date($row['dateEnd']).'</br>';
+                        //     }
+                        // });
+                        
+                        // $table->addColumn('homeAddress', __('Home Address'))
+                        //     ->format(function($row) use ($container, $guid, $connection2) {
+                        //         $userGateway = $container->get(UserGateway::class);
+                        //         $homeAddress = $userGateway->getUserHomeAddress($row['gibbonPersonID']);
+                        //         if (!empty($homeAddress)) {
+                        //             if (isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php')) {
+                        //                 return $homeAddress['address1']. "," . $homeAddress['address1Country'];
+                        //             } else {
+                        //                 return "Access denied";
+                        //             }
+                        //         }
+
+                        //         return '';
+                        //     });
+
+                        // $table->addColumn('doubleCourses', __('Double Courses'))
+                        //     ->format(function($row) use ($container, $guid, $connection2, $session) {
+                        //         $courseEnrolmentGateway = $container->get(CourseEnrolmentGateway::class);
+                                
+                        //         // QUERY
+                        //         $criteria = $courseEnrolmentGateway->newQueryCriteria(true)
+                        //         ->sortBy('roleSortOrder')
+                        //         ->sortBy(['course'])
+                        //         ->fromPOST();
+
+                        //         $enrolment = $courseEnrolmentGateway->queryCourseEnrolmentByPerson($criteria, $session->get('gibbonSchoolYearID'), $row['gibbonPersonID']);
+                        //         if (!empty($enrolment)) {
+                        //             if (isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php')) {
+                        //                 if(count($enrolment) > 1){
+                        //                     foreach ($enrolment as $rowSelect) {
+                        //                         echo '<u>'.$rowSelect['class'].'</u>: '.$rowSelect['courseName'].' ('.$rowSelect['course'].')'.'<br/>';
+                        //                     }
+                        //                 }
+                        //                 else{
+                        //                     echo '<p>Non</p>';
+                        //                 }
+                        //             } else {
+                        //                 echo '<p>Access denied</p>';
+                        //             }
+                        //         }
+                        //     });
+
+                        // $privacySetting = $settingGateway->getSettingByScope('User Admin', 'privacy');
+                        // if ($privacySetting == 'Y') {
+                        //     $table->addColumn('privacy', __('Privacy'))
+                        //         ->format(function($row) {
+                        //             $output = '';
+
+                        //             if ($row['privacy'] != '') {
+                        //                 $output .= "<span style='color: #cc0000; background-color: #F6CECB'>";
+                        //                 $output .= __('Privacy required:').' '.$row['privacy'];
+                        //                 $output .= '</span>';
+                        //             } else {
+                        //                 $output .= "<span style='color: #390; background-color: #D4F6DC;'>";
+                        //                 $output .= __('Privacy not required or not set.');
+                        //                 $output .= '</span>';
+                        //             }
+
+                        //             return $output;
+                        //         });
+                        // }
+
+                        // $studentAgreementOptions = $settingGateway->getSettingByScope('School Admin', 'studentAgreementOptions');
+                        // if ($studentAgreementOptions != '') {
+                        //     $table->addColumn('studentAgreements', __('Student Agreements'))
+                        //         ->format(function($row) {
+                        //             return __('Agreements Signed:').' '.$row['studentAgreements'];
+                        //         });
+                        // }
+
+                        // $container->get(CustomFieldHandler::class)->addCustomFieldsToTable($table, 'User', ['student' => 1], $row['fields']);
+                       
+                        //echo $table->render([$row]);
+
+                        //Get and display Student related invoices if any
+
+                        if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage.php') == false) {
+                            // Access denied
+                            $page->addError(__('You do not have access to this action.'));
+                        } else {
+                            echo "<h2>Invoices</h2>";
+                            $invoiceGateway = $container->get(InvoiceGateway::class);
+                            var_dump($invoiceGateway);
+                            $criteria = $invoiceGateway->newQueryCriteria(true)
+                                ->sortBy(['defaultSortOrder', 'invoiceIssueDate', 'surname', 'preferredName'])
+                                ->filterBy('invoicee', $row['gibbonPersonID'])
+                                ->fromPost();
+
+                            $invoices = $invoiceGateway->queryInvoicesByYear($criteria, $session->get('gibbonSchoolYearID'));
+
+                            var_dump($invoices);
+
+                            $table = DataTable::create('invoices')
+                                ->withData($invoices);
+
+                            $table->setTitle(__('General Information'));
+                            
                             $table->addHeaderAction('edit', __('Edit'))
                                     ->displayLabel()
                                     ->addParam('gibbonPersonID', $gibbonPersonID)
-                                    ->setURL('/modules/User Admin/user_manage_edit.php');
-                        }
+                                    ->setURL('/modules/Finance/invoices_manage_edit.php');
 
-                        $table->addColumn('name', __('Name'))
-                                ->format(Format::using('name', ['', 'preferredName', 'surname', 'Student']));
+                            $table->addExpandableColumn('notes');
+                            $table->addColumn('student', __('Student'))
+                            ->description(__('Invoice To'))
+                            ->sortable(['surname', 'preferredName'])
+                            ->format(function($invoice) {
+                                $output = '<b>'.Format::name('', $invoice['preferredName'], $invoice['surname'], 'Student', true).'</b>';
+                                $output .= '<br/><span class="small emphasis">'.__($invoice['invoiceTo']).'</span>';
+                                return $output;
+                            });
 
-                        $table->addColumn('studentID', __('Student ID'));
-
-                        $table->addColumn('yearGroup', __('Year Group'))
-                                ->format(function($row) use ($container, $settingGateway) {
-                                    if (isset($row['gibbonYearGroupID'])) {
-                                        $yearGroupGateway = $container->get(YearGroupGateway::class);
-                                        $yearGroup = $yearGroupGateway->getByID($row['gibbonYearGroupID']);
-                                        $output = '';
-                                        if (!empty($yearGroup)) {
-                                            $output .= __($yearGroup['name']);
-                                            $dayTypeOptions = $settingGateway->getSettingByScope('User Admin', 'dayTypeOptions');
-                                            if (!empty($dayTypeOptions) && !empty($row['dayType'])) {
-                                                $output .= ' ('.$row['dayType'].')';
-                                            }
-                                            $output .= '</i><br/>';
-                                        }
-                                        return $output;
-                                    }
-                                });
-
-                        $table->addColumn('formGroup', __('Form Group'))
-                                ->format(function($row) use ($container, $guid, $connection2, $session) {
-                                    if (isset($row['gibbonFormGroupID'])) {
-                                        $formGroupGateway = $container->get(FormGroupGateway::class);
-                                        $formGroup = $formGroupGateway->getByID($row['gibbonFormGroupID']);
-                                        $output = '';
-                                        if (!empty($formGroup)) {
-                                            if (isActionAccessible($guid, $connection2, '/modules/Form Groups/formGroups_details.php')) {
-                                                $output .= Format::link('./index.php?q=/modules/Form Groups/formGroups_details.php&gibbonFormGroupID='.$formGroup['gibbonFormGroupID'], $formGroup['name']);
-                                            } else {
-                                                $output .= $formGroup['name'];
-                                            }
-                                        }
-                                        return $output;
-                                    }
-                                });
-
-                        $table->addColumn('username', __('Username'));
-
-                        $table->addColumn('dateOfBirth', __('Date of Birth'))
-                        ->format(function($row) {
-                            if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
-                                return date('d/m/Y', strtotime($row['dob']));
-                            }
-                            return '';
-                        });
-
-                        $table->addColumn('email', __('Email'))
-                                ->format(Format::using('link', ['email']));
-
-                        
-                        $table->addColumn('schoolHistory', __('School History'))
-                        ->format(function($row) use ($connection2, $studentGateway ) {
-                            if ($row['dateStart'] != '') {
-                                echo '<u>'.__('Start Date').'</u>: '.Format::date($row['dateStart']).'</br>';
-                            }
-
-                            $resultSelect = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
                             
-                            while ($rowSelect = $resultSelect->fetch()) {
-                                echo '<u>'.$rowSelect['schoolYear'].'</u>: '.$rowSelect['formGroup'].' ('.$rowSelect['studyYear'].')'.'<br/>';
-                            }
-
-                            if ($row['dateEnd'] != '') {
-                                echo '<u>'.__('End Date').'</u>: '.Format::date($row['dateEnd']).'</br>';
-                            }
-                        });
-                        
-                        $table->addColumn('homeAddress', __('Home Address'))
-                            ->format(function($row) use ($container, $guid, $connection2) {
-                                $userGateway = $container->get(UserGateway::class);
-                                $homeAddress = $userGateway->getUserHomeAddress($row['gibbonPersonID']);
-                                if (!empty($homeAddress)) {
-                                    if (isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php')) {
-                                        return $homeAddress['address1']. "," . $homeAddress['address1Country'];
-                                    } else {
-                                        return "Access denied";
-                                    }
-                                }
-
-                                return '';
-                            });
-
-                        $table->addColumn('doubleCourses', __('Double Courses'))
-                            ->format(function($row) use ($container, $guid, $connection2, $session) {
-                                $courseEnrolmentGateway = $container->get(CourseEnrolmentGateway::class);
-                                
-                                // QUERY
-                                $criteria = $courseEnrolmentGateway->newQueryCriteria(true)
-                                ->sortBy('roleSortOrder')
-                                ->sortBy(['course'])
-                                ->fromPOST();
-
-                                $enrolment = $courseEnrolmentGateway->queryCourseEnrolmentByPerson($criteria, $session->get('gibbonSchoolYearID'), $row['gibbonPersonID']);
-                                if (!empty($enrolment)) {
-                                    if (isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php')) {
-                                        if(count($enrolment) > 1){
-                                            foreach ($enrolment as $rowSelect) {
-                                                echo '<u>'.$rowSelect['class'].'</u>: '.$rowSelect['courseName'].' ('.$rowSelect['course'].')'.'<br/>';
-                                            }
-                                        }
-                                        else{
-                                            echo '<p>Non</p>';
-                                        }
-                                    } else {
-                                        echo '<p>Access denied</p>';
-                                    }
-                                }
-                            });
-
-                        $privacySetting = $settingGateway->getSettingByScope('User Admin', 'privacy');
-                        if ($privacySetting == 'Y') {
-                            $table->addColumn('privacy', __('Privacy'))
-                                ->format(function($row) {
-                                    $output = '';
-
-                                    if ($row['privacy'] != '') {
-                                        $output .= "<span style='color: #cc0000; background-color: #F6CECB'>";
-                                        $output .= __('Privacy required:').' '.$row['privacy'];
-                                        $output .= '</span>';
-                                    } else {
-                                        $output .= "<span style='color: #390; background-color: #D4F6DC;'>";
-                                        $output .= __('Privacy not required or not set.');
-                                        $output .= '</span>';
-                                    }
-
-                                    return $output;
-                                });
+                            echo $table->render([$row]);
                         }
-
-                        $studentAgreementOptions = $settingGateway->getSettingByScope('School Admin', 'studentAgreementOptions');
-                        if ($studentAgreementOptions != '') {
-                            $table->addColumn('studentAgreements', __('Student Agreements'))
-                                ->format(function($row) {
-                                    return __('Agreements Signed:').' '.$row['studentAgreements'];
-                                });
-                        }
-
-                        $container->get(CustomFieldHandler::class)->addCustomFieldsToTable($table, 'User', ['student' => 1], $row['fields']);
-
-                        echo $card->render([$row]);
-                        echo $table->render([$row]);
 
                         //Get and display a list of student's teachers
                         $studentGateway = $container->get(StudentGateway::class);

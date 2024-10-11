@@ -9,15 +9,6 @@
 -->#}
 
 <div class="container mx-auto p-1">
-    <!-- Action Icons -->
-    <div class="space-x-2">
-        <a href="#" class="text-gray-500 hover:text-gray-900">
-            Edit <i class="fas fa-edit"></i>
-        </a>
-        <a href="#" class="text-gray-500 hover:text-gray-900">
-            View Status Log <i class="fas fa-share"></i>
-        </a>
-    </div>
     <div class="bg-white rounded-xl shadow-lg px-6 py-4 relative">
         <div id="cardHeader" class="{{ card.meta.classes.cardHeader }}" style="{{ card.meta.styles.cardHeader }}">
             <h3 class="{{ card.meta.classes.cardTitle }}" style="{{ card.meta.styles.cardTitle }}">{{ card.title }}</h3>
@@ -35,14 +26,18 @@
                         {% for item in section.getItems %}
                         <div class="grid grid-cols-3 items-center border-b border-1 border-gray-300">
                             <p id="item-{{ loop.index }}" class="text-gray-800 font-semibold text-base mb-1"> <!-- Label Styling -->
-                            {{ item.getLabel }}:
+                            {{ item.getLabel|raw }}:
                             </p>
                             <p class="text-gray-700 text-base mb-0"> <!-- Value Styling -->
-                            {{ item.getOutput(itemsData) }}
+                            {{ item.getOutput(itemsData|default({}))}}
                             </p>
-                            <a href="#">{{ item.getItemAction(item.getID).getLabel }}</a>
+                            {% if item.getID is defined %}
+                                 {% set action = item.getItemAction(item.getID) %}
+                                {% if action is not null %}
+                                    <p class="text-gray-700 text-sm mb-0">{{ action.getOutput|raw }}</p>
+                                {% endif %}
+                            {% endif %}
                         </div>
-                        <!-- <p class="text-gray-700 text-base leading-normal mb-1" style=""><strong>{{ item.getLabel }}:</strong> {{ item.getOutput(itemsData) }}</p> -->
                         {% endfor %}
                     </div>
                 </div>

@@ -128,7 +128,7 @@ class Item {
 
     public function getItemAction($name)
     {
-        return $this->itemActions[$name];
+        return isset($this->itemActions[$name]) ? $this->itemActions[$name] : null;
     }
 
     public function setItemActions($itemActions)

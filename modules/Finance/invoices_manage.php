@@ -58,7 +58,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage.ph
             'gibbonFinanceFeeCategoryID'     => isset($_GET['gibbonFinanceFeeCategoryID'])? $_GET['gibbonFinanceFeeCategoryID'] : '',
         );
 
-        if (empty($_POST) && !isset($_GET['status'])) $request['status'] = 'Pending';
+        //if (empty($_POST) && !isset($_GET['status'])) $request['status'] = 'Pending';
 
         echo '<h3>';
         echo __('Filters');
