@@ -736,12 +736,13 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         
                         // Left Panel Identity Section Items
                         $leftPanelSectionHeaderClasses = [
-                            "sectionHeader" => "section bg-white px-6 py-6 m-3 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
+                            "sectionHeader" => "section bg-white pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
                             "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1 border-b border-1 border-black"
                         ];
 
                         $card->getPanel("leftPanel")
                             ->getSection('identity')
+                            ->addItem('studentID', __('Student ID'))
                             ->addItem('email', __('E-Mail'))
                             ->addItem('phone1', __('Phone Number'))
                             ->addItem('dob', __('Date of Birth'))
@@ -762,7 +763,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $card->getPanel("leftPanel")
                             ->getSection('identity')
                             ->getItem('birthplace')
-                            ->format(function($row) use ($connection2, $studentGateway) {
+                            ->format(function($row) {
                                  return $row['cityOfBirth'].', '.$row['countryOfBirth'];
                                 });
 
@@ -777,14 +778,13 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
                         
                         $rightPanelSectionHeaderClasses = [
-                            "sectionHeader" => "section bg-green-200 px-6 py-6 m-3 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
+                            "sectionHeader" => "section bg-green-200 pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
                             "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1 border-b border-1 border-black"
                         ];
                         
                         // Right Panel Registration Info Section Items
                         $card->getPanel("rightPanel")
                             ->getSection('registrationInfo')
-                            ->addItem('studentID', __('Student ID'))
                             ->addItem('username', __('Username'))
                             ->addItem('seniority', __('New Student ?'))
                             ->addItem('registrationStatusName', __('Registration Status'))
@@ -795,7 +795,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $card->getPanel("rightPanel")
                             ->getSection('registrationInfo')
                             ->getItem('seniority')
-                            ->format(function($row) use ($connection2, $studentGateway){ 
+                            ->format(function($row) use ($studentGateway){ 
                                 // Fetch the student's enrollment history
                                 $resultSelect = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
                                 return $resultSelect->rowCount() > 0 ? "No" : "Yes";
@@ -1001,12 +1001,57 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                        
                         //echo $table->render([$row]);
 
+                        // Get Student School History
+                        $studentEnrolmentHistory = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
+                        $studentEnrolmentHistoryData = $studentEnrolmentHistory->fetch();
+                        $studentHistoryTable = DataTable::create('schoolHistory');
+                        $studentHistoryTable->setTitle(__('Student School Enrollment History'));
+
+                        if(!empty($studentEnrolmentHistoryData)){
+                            $studentHistoryTableDescription = ($row['dateStart'] != '') ? __('Start Date') . ': ' . Format::date($row['dateStart']) : __('No start date defined');
+                            
+                            $studentHistoryTableDescription .= ' - ' . (($row['dateEnd'] != '') ? __('End Date') . ': ' . Format::date($row['dateEnd']) : __('No end date defined'));
+                            
+                            $studentHistoryTable->setDescription($studentHistoryTableDescription);                 
+                            $studentHistoryTable->addColumn('schoolYear', __('School Year'));
+                            $studentHistoryTable->addColumn('formGroup', __('Form Group'));
+                            $studentHistoryTable->addColumn('studyYear', __('Study Year'));
+                            
+                        }else{
+                            $studentHistoryTable->addColumn('empty',__("No Invoices Found !"))
+                            ->format(function(){
+                                return __("No records found.");
+                            });
+                        }
+                        
+                        echo $studentHistoryTable->render([$studentEnrolmentHistoryData]);
+
                         //Get and display Student related invoices if any
 
                         if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage.php') == false) {
                             // Access denied
-                            $page->addError(__('You do not have access to this action.'));
+                            $page->addError(__('You do not have access to student payment details.'));
                         } else {
+                            $studentInvoicesTable = DataTable::create('invoices');
+                                
+                            $studentInvoicesTable->setTitle(__('Payment Tracking'));
+
+                            $studentInvoicesParams = [
+                                'gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'),
+                                'status' => '',
+                                'gibbonFinanceInvoiceeID' => $gibbonFinanceInvoiceeID,
+                                'monthOfIssue' => '',
+                                'gibbonFinanceBillingScheduleID' => '',
+                                'gibbonFinanceFeeCategoryID' => ''
+                            ];
+
+                            $studentInvoicesTable->addHeaderAction('add', __('Add a new bill'))
+                            ->setURL('/modules/Finance/invoices_manage_add.php')
+                            ->setIcon('page_new_multi')
+                            ->addParams($studentInvoicesParams)
+                            ->displayLabel()
+                            ->append('<br/>');
+
                             //First get the invoicee
                             $invoiceeGateway = new InvoiceeGateway($pdo);
                             
@@ -1029,32 +1074,11 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 //retrieve the invoices associated with the user
                                 $invoices = $invoiceGateway->queryInvoicesByYear($criteria, $session->get('gibbonSchoolYearID'));
                                 
-                                $table = DataTable::create('invoices')
-                                ->withData($invoices);
+                                $studentInvoicesTable->addExpandableColumn('notes');
                                 
-                                $table->setTitle(__('Payment Tracking'));
+                                $studentInvoicesTable->addColumn('billingSchedule', __('Period'));
 
-                                $params = [
-                                    'gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'),
-                                    'status' => '',
-                                    'gibbonFinanceInvoiceeID' => $gibbonFinanceInvoiceeID,
-                                    'monthOfIssue' => '',
-                                    'gibbonFinanceBillingScheduleID' => '',
-                                    'gibbonFinanceFeeCategoryID' => ''
-                                ];
-
-                                $table->addHeaderAction('add', __('Add a new bill'))
-                                ->setURL('/modules/Finance/invoices_manage_add.php')
-                                ->setIcon('page_new_multi')
-                                ->addParams($params)
-                                ->displayLabel()
-                                ->append('<br/>');
-                                
-                                $table->addExpandableColumn('notes');
-                                
-                                $table->addColumn('billingSchedule', __('Period'));
-
-                                $table->addColumn('status', __('Status'))
+                                $studentInvoicesTable->addColumn('status', __('Status'))
                                         ->format(function ($invoice) {
                                             if ($invoice['status'] == 'Issued' && $invoice['invoiceDueDate'] < date('Y-m-d')) {
                                                 return __('Issued - Overdue');
@@ -1065,7 +1089,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                         });
                                 
 
-                                $table->addColumn('total', __('Total').' <small><i>('.$session->get('currency').')</i></small>')
+                                $studentInvoicesTable->addColumn('total', __('Total').' <small><i>('.$session->get('currency').')</i></small>')
                                 ->description(__('Paid').' ('.$session->get('currency').')')
                                 ->notSortable()
                                 ->format(function ($invoice) use ($pdo) {
@@ -1080,9 +1104,9 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                     return $output;
                                 });
                                 
-                                $table->addActionColumn()
+                                $studentInvoicesTable->addActionColumn()
                                     ->addParam('gibbonFinanceInvoiceID')
-                                    ->addParams($params)
+                                    ->addParams($studentInvoicesParams)
                                     ->format(function ($invoice, $actions) {
                                         if ($invoice['status'] != 'Cancelled' && $invoice['status'] != 'Refunded') {
                                             $actions->addAction('edit', __('Edit'))
@@ -1107,14 +1131,17 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                                 ->setIcon('print');
                                         }
                                     });
-                                echo $table->render([$row]);
                             } else {
-                                echo 'No invoicee found.';
+                                $studentInvoicesTable->addColumn('empty',__("No Invoices Found !"))
+                                ->format(function(){
+                                    return __('No invoicee found.');
+                                });
                             }
+                            echo $studentInvoicesTable->render($invoices);
                         }
 
                         //Get and display a list of student's teachers
-                        $studentGateway = $container->get(StudentGateway::class);
+                        // $studentGateway = $container->get(StudentGateway::class);
                         $staff = $studentGateway->selectAllRelatedUsersByStudent($session->get('gibbonSchoolYearID'), $row['gibbonYearGroupID'], $row['gibbonFormGroupID'], $gibbonPersonID)->fetchAll();
                         $canViewStaff = isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php');
                         $criteria = $studentGateway->newQueryCriteria();
