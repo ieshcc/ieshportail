@@ -5,7 +5,7 @@ namespace Gibbon\Cards\Layout;
 use Gibbon\Forms\Traits\BasicAttributesTrait;
 use Gibbon\Cards\Layout\Item;
 use Gibbon\Cards\Traits\ComponentMetadataTrait;
-
+use Gibbon\Tables\Action;
 
 /**
 * Section
@@ -21,8 +21,9 @@ class Section {
 
     protected $id;
     protected $title;
-
+    
     protected $items = array();
+    protected $sectionActions = array();
 
     public function __construct($id, $title)
     {
@@ -47,11 +48,6 @@ class Section {
         }
 
         return $this->meta;
-    }
-
-
-    public function getSections(){
-        return $this->sections;
     }
 
     public function getItem($id)
@@ -80,5 +76,42 @@ class Section {
         $this->title = $title;
         return $this;
     }
+
+    /**
+     * Add an action to the section, generally displayed at the right-side of the section.
+     *
+     * @param string $name
+     * @param string $label
+     * @return Action
+     */
+    public function addSectionAction($name, $label = '')
+    {
+        $this->sectionActions[$name] = new Action($name, $label);
+
+        return $this->sectionActions[$name];
+    }
+
+    /**
+     * Get all section actions.
+     *
+     * @return array
+     */
+    public function getSectionActions()
+    {
+        return $this->sectionActions;
+    }
+
+    public function getSectionAction($name)
+    {
+        return isset($this->sectionActions[$name]) ? $this->sectionActions[$name] : null;
+    }
+
+    public function setSectionActions($sectionActions)
+    {
+        $this->sectionActions = $sectionActions;
+
+        return $this;
+    }
+
 
 }

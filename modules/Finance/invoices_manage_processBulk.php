@@ -21,6 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 use Gibbon\Domain\System\SettingGateway;
 use Gibbon\Services\Format;
+use Gibbon\Services\Finance\FinanceHelper;
 use Gibbon\Contracts\Comms\Mailer;
 use Gibbon\Domain\System\LogGateway;
 
@@ -513,7 +514,7 @@ if ($gibbonSchoolYearID == '' or $action == '') { echo 'Fatal error loading this
 
                 $partialFail = false;
                 foreach ($gibbonFinanceInvoiceIDs as $gibbonFinanceInvoiceID) {
-                    $totalFee = getInvoiceTotalFee($pdo, $gibbonFinanceInvoiceID, 'Issued');
+                    $totalFee = FinanceHelper::getInvoiceTotalFee($pdo, $gibbonFinanceInvoiceID, 'Issued');
                     $alreadyPaid = getAmountPaid($connection2, $guid, 'gibbonFinanceInvoice', $gibbonFinanceInvoiceID);
 
                     $paidAmount = $totalFee - $alreadyPaid;

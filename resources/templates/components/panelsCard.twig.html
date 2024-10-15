@@ -17,25 +17,30 @@
         <div class="flex flex-col md:flex-row">
             {% for panel in panels %}
             <div id="panel-{{ loop.index }}" class="{{ panel.getMetaDatas.classes.panelHeader }}" style="{{ panel.getMetaDatas.styles.panelHeader }}">
-                <h3 class="{{ panel.getMetaDatas.classes.panelTitle }}" style="{{ panel.getMetaDatas.styles.panelTitle }}">{{ panel.getTitle|raw }}</h3>
-                <h4 class="{{ panel.getMetaDatas.classes.panelDescription }}" style="{{ panel.getMetaDatas.styles.panelDescription }}">{{ panel.description }}</h4>
+                <div class="flex justify-between">
+                    <div>
+                        <h3 class="{{ panel.getMetaDatas.classes.panelTitle }}" style="{{ panel.getMetaDatas.styles.panelTitle }}">{{ panel.getTitle|raw }}</h3>
+                        <h4 class="{{ panel.getMetaDatas.classes.panelDescription }}" style="{{ panel.getMetaDatas.styles.panelDescription }}">{{ panel.description }}</h4>
+                    </div>
+                    {% if panel.getPanelActions is not empty %}
+                        <p class="self-start">{{ panel.getPanelAction("edit").getOutput|raw }}</p>
+                    {% endif %}
+                </div>
                 {% for section in panel.getSections %}
                 <div id="section-{{ loop.index }}" class="{{ section.getMetaDatas.classes.sectionHeader }}" style="{{ section.getMetaDatas.styles.sectionHeader }}">
                     <h4 class="{{ section.getMetaDatas.classes.sectionTitle }}" style="{{ section.getMetaDatas.styles.sectionTitle }}">{{ section.getTitle }}</h4>
                     <div id="items" class="p-4">
                         {% for item in section.getItems %}
-                        <div class="grid grid-cols-3 items-center border-b border-1 border-gray-300">
+                        <div class="grid {% if item.getItemActions is empty %}grid-cols-2{% else %}grid-cols-3{% endif %} items-center border-b border-1 border-gray-300">
                             <p id="item-{{ loop.index }}" class="text-gray-800 font-semibold text-base mb-1"> <!-- Label Styling -->
                             {{ item.getLabel|raw }}:
                             </p>
                             <p class="text-gray-700 text-base mb-0"> <!-- Value Styling -->
                             {{ item.getOutput(itemsData|default({}))}}
                             </p>
-                            {% if item.getID is defined %}
-                                 {% set action = item.getItemAction(item.getID) %}
-                                {% if action is not null %}
-                                    <p class="text-gray-700 text-sm mb-0">{{ action.getOutput|raw }}</p>
-                                {% endif %}
+                            {% set action = item.getItemAction("edit") %}
+                            {% if action is not null %}
+                                <p>{{ action.getOutput|raw}}</p>
                             {% endif %}
                         </div>
                         {% endfor %}

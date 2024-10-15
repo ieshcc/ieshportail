@@ -61,6 +61,29 @@ class InvoiceeGateway extends QueryableGateway implements ScrubbableGateway
         return $this->runQuery($query, $criteria);
     }
 
+    public function queryInvoicee(QueryCriteria $criteria)
+    {
+        $query = $this
+            ->newQuery()
+            ->from('gibbonFinanceInvoicee')
+            ->innerJoin('gibbonPerson', 'gibbonPerson.gibbonPersonID = gibbonFinanceInvoicee.gibbonPersonID')
+            ->cols([
+                'gibbonFinanceInvoicee.gibbonFinanceInvoiceeID'
+            ])
+            ->where('gibbonPerson.gibbonPersonID = :gibbonPersonID')
+            ->bindValue('gibbonPersonID', $criteria->getFilterValue('gibbonPersonID'));
+
+        // If other criteria are present (e.g., status), add them here
+        if ($criteria->hasFilter('status')) {
+            $query->where('gibbonPerson.status = :status')
+                ->bindValue('status', $criteria->getFilterValue('status'));
+        }
+
+        // Execute the query and return the result
+        return $this->runQuery($query, $criteria);
+    }
+
+
     public function selectStudentsWithNoInvoicee()
     {
         $sql = "SELECT DISTINCT gibbonPerson.gibbonPersonID, surname, preferredName, gibbonFinanceInvoiceeID 

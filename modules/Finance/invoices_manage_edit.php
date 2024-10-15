@@ -24,6 +24,7 @@ use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
 use Gibbon\Domain\System\SettingGateway;
 use Gibbon\Module\Finance\Forms\FinanceFormFactory;
+use Gibbon\Services\Finance\FinanceHelper;
 
 //Module includes
 require_once __DIR__ . '/moduleFunctions.php';
@@ -142,7 +143,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage_ed
                     $row->addLabel('paidDate', __('Date Paid'))->description(__('Date of payment, not entry to system.'));
                     $row->addDate('paidDate')->required();
 
-                $remainingFee = getInvoiceTotalFee($pdo, $gibbonFinanceInvoiceID, $values['status']);
+                $remainingFee = FinanceHelper::getInvoiceTotalFee($pdo, $gibbonFinanceInvoiceID, $values['status']);
                 if ($values['status'] == 'Paid - Partial') {
                     $alreadyPaid = getAmountPaid($connection2, $guid, 'gibbonFinanceInvoice', $gibbonFinanceInvoiceID);
                     $remainingFee -= $alreadyPaid;

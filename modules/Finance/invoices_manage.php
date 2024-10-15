@@ -21,6 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
+use Gibbon\Services\Finance\FinanceHelper;
 use Gibbon\Tables\DataTable;
 use Gibbon\Forms\Prefab\BulkActionForm;
 use Gibbon\Domain\Finance\InvoiceGateway;
@@ -214,7 +215,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage.ph
             ->description(__('Paid').' ('.$session->get('currency').')')
             ->notSortable()
             ->format(function ($invoice) use ($pdo) {
-                $totalFee = getInvoiceTotalFee($pdo, $invoice['gibbonFinanceInvoiceID'], $invoice['status']);
+                $totalFee = FinanceHelper::getInvoiceTotalFee($pdo, $invoice['gibbonFinanceInvoiceID'], $invoice['status']);
                 if (is_null($totalFee)) return '';
 
                 $output = Format::currency($totalFee);

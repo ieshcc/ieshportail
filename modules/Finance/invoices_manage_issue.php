@@ -22,6 +22,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 use Gibbon\Http\Url;
 use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
+use Gibbon\Services\Finance\FinanceHelper;
 use Gibbon\Domain\System\SettingGateway;
 use Gibbon\Module\Finance\Forms\FinanceFormFactory;
 
@@ -126,7 +127,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage_is
 
 			$form->addRow()->addHeading('Fees', __('Fees'));
 
-			$totalFee = getInvoiceTotalFee($pdo, $gibbonFinanceInvoiceID, $values['status']);
+			$totalFee = FinanceHelper::getInvoiceTotalFee($pdo, $gibbonFinanceInvoiceID, $values['status']);
 			$row = $form->addRow();
 				$row->addLabel('totalFee', __('Total'))->description('<small><i>('.$session->get('currency').')</i></small>');
 				$row->addTextField('totalFee')->required()->readonly()->setValue(number_format($totalFee, 2));

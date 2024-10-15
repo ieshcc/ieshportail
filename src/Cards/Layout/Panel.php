@@ -5,7 +5,7 @@ namespace Gibbon\Cards\Layout;
 use Gibbon\Forms\Traits\BasicAttributesTrait;
 use Gibbon\Cards\Layout\Section;
 use Gibbon\Cards\Traits\ComponentMetadataTrait;
-
+use Gibbon\Tables\Action;
 
 /**
 * Panel
@@ -26,6 +26,7 @@ class Panel
     
     protected $panels = array();
     protected $sections = array();
+    protected $panelActions = array();
 
     public function __construct($id, $title = '', $description = '')
     {
@@ -103,39 +104,41 @@ class Panel
         return $this->meta;
     }
 
-
-     /**
-     * Renders the panel by either passing the section $data to a formatter, 
-     * or grabbing the section data by key based on the panel name.
+    /**
+     * Add an action to the panel, generally displayed at the right-side of the panel.
      *
-     * @param array $data
-     * @return string
+     * @param string $name
+     * @param string $label
+     * @return Action
      */
-    // public function getOutput(&$data = [], $joinDetails = true)
-    // {
-    //     $details = $joinDetails && $this->hasDetailsFormatter() ? '<br/>'.$this->getDetailsOutput($data) : '';
-        
-    //     if ($this->hasFormatter()) {
-    //         return call_user_func($this->formatter, $data).$details;
-    //     } else {
-    //         $content = isset($data[$this->getID()])? $data[$this->getID()] : '';
-    //         $content = is_array($content) ? implode(',', array_keys($content)) : $content;
-    //         $content .= $details;
-            
-    //         return $this->getTranslatable() ? __($content) : $content;
-    //     }
-    // }
+    public function addPanelAction($name, $label = '')
+    {
+        $this->panelActions[$name] = new Action($name, $label);
 
-    // public function addSection(Section $section)
-    // {
-    //     $this->sections[] = $section;
+        return $this->panelActions[$name];
+    }
 
-    //     return $this;
-    // }
+    /**
+     * Get all panel actions.
+     *
+     * @return array
+     */
+    public function getPanelActions()
+    {
+        return $this->panelActions;
+    }
 
-    // public function getSections()
-    // {
-    //     return $this->sections;
-    // }
+    public function getPanelAction($name)
+    {
+        return isset($this->panelActions[$name]) ? $this->panelActions[$name] : null;
+    }
+
+    public function setPanelActions($panelActions)
+    {
+        $this->panelActions = $panelActions;
+
+        return $this;
+    }
+
 
 }

@@ -30,6 +30,7 @@ use Gibbon\Domain\User\UserGateway;
 use Gibbon\Domain\User\RoleGateway;
 use Gibbon\Forms\CustomFieldHandler;
 use Gibbon\Domain\Finance\InvoiceGateway;
+use Gibbon\Domain\Finance\InvoiceeGateway;
 use Gibbon\Domain\System\HookGateway;
 use Gibbon\Domain\User\FamilyGateway;
 use Gibbon\Domain\School\HouseGateway;
@@ -51,6 +52,7 @@ use Gibbon\Module\Planner\Tables\HomeworkTable;
 use Gibbon\Module\Attendance\StudentHistoryData;
 use Gibbon\Module\Attendance\StudentHistoryView;
 use Gibbon\Module\Reports\Domain\ReportArchiveEntryGateway;
+use Gibbon\Services\Finance\FinanceHelper;
 
 //Module includes for User Admin (for custom fields)
 include './modules/User Admin/moduleFunctions.php';
@@ -713,7 +715,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ])
                             ->addMetaData("styles", [
                                 "panelDescription" => "text-transform: none;",
-                            ]);
+                            ])
+                            ->addPanelAction('edit', __('Edit'))
+                            ->addParam('gibbonPersonID', $gibbonPersonID)
+                            ->setURL('/modules/User Admin/user_manage_edit.php');;
                         
                         // Right Panel and Sections
                         $card->addPanel('rightPanel', __('School Information')." ".$currentSchoolYearDisplayedName, __('You will find here all the student\'s academic information.'))
@@ -743,14 +748,6 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('age', __('Age'))
                             ->addItem('birthplace', __('Birthplace'))
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
-
-                        $card->getPanel("leftPanel")
-                            ->getSection('identity')
-                            ->getItem('email')
-                            ->addItemAction('email', __('Edit'))
-                            ->displayLabel()
-                            ->addParam('gibbonPersonID', $gibbonPersonID)
-                            ->setURL('/modules/User Admin/user_manage_edit.php');
 
                         $card->getPanel("leftPanel")
                             ->getSection('identity')
@@ -1010,40 +1007,110 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             // Access denied
                             $page->addError(__('You do not have access to this action.'));
                         } else {
-                            echo "<h2>Invoices</h2>";
-                            $invoiceGateway = $container->get(InvoiceGateway::class);
-                            var_dump($invoiceGateway);
-                            $criteria = $invoiceGateway->newQueryCriteria(true)
+                            //First get the invoicee
+                            $invoiceeGateway = new InvoiceeGateway($pdo);
+                            
+                            $criteria = $invoiceeGateway->newQueryCriteria(true)
+                                        ->filterBy('gibbonPersonID', $row['gibbonPersonID']);
+
+                            $invoicee = $invoiceeGateway->queryInvoicee($criteria);
+
+                            $invoiceedata = $invoicee->toArray();
+
+                            // Check if there's data returned
+                            if (!empty($invoiceedata)) {
+                                $gibbonFinanceInvoiceeID = $invoiceedata[0]['gibbonFinanceInvoiceeID'];
+                                $invoiceGateway = $container->get(InvoiceGateway::class);
+                                $criteria = $invoiceGateway->newQueryCriteria(true)
                                 ->sortBy(['defaultSortOrder', 'invoiceIssueDate', 'surname', 'preferredName'])
-                                ->filterBy('invoicee', $row['gibbonPersonID'])
+                                ->filterBy('invoicee', $gibbonFinanceInvoiceeID)
                                 ->fromPost();
-
-                            $invoices = $invoiceGateway->queryInvoicesByYear($criteria, $session->get('gibbonSchoolYearID'));
-
-                            var_dump($invoices);
-
-                            $table = DataTable::create('invoices')
+                                
+                                //retrieve the invoices associated with the user
+                                $invoices = $invoiceGateway->queryInvoicesByYear($criteria, $session->get('gibbonSchoolYearID'));
+                                
+                                $table = DataTable::create('invoices')
                                 ->withData($invoices);
+                                
+                                $table->setTitle(__('Payment Tracking'));
 
-                            $table->setTitle(__('General Information'));
-                            
-                            $table->addHeaderAction('edit', __('Edit'))
-                                    ->displayLabel()
-                                    ->addParam('gibbonPersonID', $gibbonPersonID)
-                                    ->setURL('/modules/Finance/invoices_manage_edit.php');
+                                $params = [
+                                    'gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'),
+                                    'status' => '',
+                                    'gibbonFinanceInvoiceeID' => $gibbonFinanceInvoiceeID,
+                                    'monthOfIssue' => '',
+                                    'gibbonFinanceBillingScheduleID' => '',
+                                    'gibbonFinanceFeeCategoryID' => ''
+                                ];
 
-                            $table->addExpandableColumn('notes');
-                            $table->addColumn('student', __('Student'))
-                            ->description(__('Invoice To'))
-                            ->sortable(['surname', 'preferredName'])
-                            ->format(function($invoice) {
-                                $output = '<b>'.Format::name('', $invoice['preferredName'], $invoice['surname'], 'Student', true).'</b>';
-                                $output .= '<br/><span class="small emphasis">'.__($invoice['invoiceTo']).'</span>';
-                                return $output;
-                            });
+                                $table->addHeaderAction('add', __('Add a new bill'))
+                                ->setURL('/modules/Finance/invoices_manage_add.php')
+                                ->setIcon('page_new_multi')
+                                ->addParams($params)
+                                ->displayLabel()
+                                ->append('<br/>');
+                                
+                                $table->addExpandableColumn('notes');
+                                
+                                $table->addColumn('billingSchedule', __('Period'));
 
-                            
-                            echo $table->render([$row]);
+                                $table->addColumn('status', __('Status'))
+                                        ->format(function ($invoice) {
+                                            if ($invoice['status'] == 'Issued' && $invoice['invoiceDueDate'] < date('Y-m-d')) {
+                                                return __('Issued - Overdue');
+                                            } else if ($invoice['status'] == 'Paid' && $invoice['invoiceDueDate'] < $invoice['paidDate']) {
+                                                return __('Paid - Late');
+                                            }
+                                            return __($invoice['status']);
+                                        });
+                                
+
+                                $table->addColumn('total', __('Total').' <small><i>('.$session->get('currency').')</i></small>')
+                                ->description(__('Paid').' ('.$session->get('currency').')')
+                                ->notSortable()
+                                ->format(function ($invoice) use ($pdo) {
+                                    $totalFee = FinanceHelper::getInvoiceTotalFee($pdo, $invoice['gibbonFinanceInvoiceID'], $invoice['status']);
+                                    if (is_null($totalFee)) return '';
+
+                                    $output = Format::currency($totalFee);
+                                    if (!empty($invoice['paidAmount'])) {
+                                        $class = Format::number($invoice['paidAmount']) != Format::number($totalFee)? 'textOverBudget' : '';
+                                        $output .= '<br/><span class="small emphasis '.$class.'">'.Format::currency($invoice['paidAmount']).'</span>';
+                                    }
+                                    return $output;
+                                });
+                                
+                                $table->addActionColumn()
+                                    ->addParam('gibbonFinanceInvoiceID')
+                                    ->addParams($params)
+                                    ->format(function ($invoice, $actions) {
+                                        if ($invoice['status'] != 'Cancelled' && $invoice['status'] != 'Refunded') {
+                                            $actions->addAction('edit', __('Edit'))
+                                                ->setURL('/modules/Finance/invoices_manage_edit.php');
+                                        }
+                                        if ($invoice['status'] == 'Pending') {
+                                            $actions->addAction('issue', __('Issue'))
+                                                ->setURL('/modules/Finance/invoices_manage_issue.php')
+                                                ->setIcon('page_right');
+                        
+                                            $actions->addAction('delete', __('Delete'))
+                                                ->setURL('/modules/Finance/invoices_manage_delete.php');
+                        
+                                            $actions->addAction('preview', __('Preview Invoice'))
+                                                ->setURL('/modules/Finance/invoices_manage_print_print.php')
+                                                ->addParam('type', 'invoice')
+                                                ->addParam('preview', 'true')
+                                                ->setIcon('print');
+                                        } else {
+                                            $actions->addAction('print', __('Print Invoices, Receipts & Reminders'))
+                                                ->setURL('/modules/Finance/invoices_manage_print.php')
+                                                ->setIcon('print');
+                                        }
+                                    });
+                                echo $table->render([$row]);
+                            } else {
+                                echo 'No invoicee found.';
+                            }
                         }
 
                         //Get and display a list of student's teachers
