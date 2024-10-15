@@ -31,16 +31,24 @@
                     <h4 class="{{ section.getMetaDatas.classes.sectionTitle }}" style="{{ section.getMetaDatas.styles.sectionTitle }}">{{ section.getTitle }}</h4>
                     <div id="items" class="p-4">
                         {% for item in section.getItems %}
-                        <div class="grid {% if item.getItemActions is empty %}grid-cols-2{% else %}grid-cols-3{% endif %} items-center border-b border-1 border-gray-300">
-                            <p id="item-{{ loop.index }}" class="text-gray-800 font-semibold text-base mb-1"> <!-- Label Styling -->
+                        <div class="grid {% if item.getItemActions is empty %}grid-cols-2{% else %}grid-cols-3{% endif %} items-start border-b border-1 border-gray-300 gap-y-2">
+                            <p id="item-{{ loop.index }}" class="text-gray-800 font-semibold text-base">
+                            <!-- Label -->
                             {{ item.getLabel|raw }}:
                             </p>
-                            <p class="text-gray-700 text-base mb-0"> <!-- Value Styling -->
-                            {{ item.getOutput(itemsData|default({}))}}
+                            <!-- Value -->
+                            <p class="text-gray-700 text-base">
+                            {{ item.getOutput(itemsData|default({}))|raw}}
                             </p>
-                            {% set action = item.getItemAction("edit") %}
-                            {% if action is not null %}
-                                <p>{{ action.getOutput|raw}}</p>
+                            <!-- Actions -->
+                            {% if item.getItemActions is not empty %}
+                                <div class="flex space-x-2">
+                                    {% for action in item.getItemActions %}
+                                        {% if action is not null %}
+                                            <p>{{ action.getOutput|raw}}</p>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
                             {% endif %}
                         </div>
                         {% endfor %}

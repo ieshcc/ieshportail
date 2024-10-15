@@ -708,6 +708,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $card->addPanel('leftPanel', __('Student Profile'), __('You will find here all the student profile details.'))
                             ->addSection('identity', __('Identity'))
                             ->addSection('homeInfo', __('Home Details'))
+                            ->addSection('comments', __('Comments'))
                             ->addMetaData("classes", [
                                 "panelHeader" => "panel bg-blue-100 shadow-lg rounded-md md:flex-1 border-black last:border-r-0 m-1 p-6",
                                 "panelTitle" => "text-2xl font-semibold mt-0 mb-0 text-black tracking-tight",
@@ -776,6 +777,11 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('address1City', __('City'))
                             ->addItem('address1Country', __('Country'), 'France')
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
+
+                        $card->getPanel("leftPanel")
+                            ->getSection('comments')
+                            ->addItem('comments', __('Comments'))
+                            ->addMetaData("classes", $leftPanelSectionHeaderClasses);
                         
                         $rightPanelSectionHeaderClasses = [
                             "sectionHeader" => "section bg-green-200 pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
@@ -787,9 +793,18 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->getSection('registrationInfo')
                             ->addItem('username', __('Username'))
                             ->addItem('seniority', __('New Student ?'))
-                            ->addItem('registrationStatusName', __('Registration Status'))
-                            ->addItem('doubleRegistration', __('Double Registration on current year ?'))
-                            ->addItem('attendanceTypeName', __('Main registration type this year'))
+                            ->addItem('registrationStatusName', __('Registration Status'));
+
+                        if($row["registrationStatusName"] === "Cancelled"){
+                            $card->getPanel("rightPanel")
+                            ->getSection("registrationInfo")
+                            ->addItem('departureReason', __('Departure Reason'));
+                        }
+
+                        $card->getPanel("rightPanel")
+                            ->getSection('registrationInfo')
+                            ->addItem('courses', __('Courses'))
+                            ->addItem('attendanceTypeName', __('Main Registration'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
 
                         $card->getPanel("rightPanel")
@@ -798,15 +813,42 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->format(function($row) use ($studentGateway){ 
                                 // Fetch the student's enrollment history
                                 $resultSelect = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
-                                return $resultSelect->rowCount() > 0 ? "No" : "Yes";
+                                return $resultSelect->rowCount() > 0 ? __('No') : __('Yes');
+                        });
 
+                        $card->getPanel("rightPanel")
+                            ->getSection('registrationInfo')
+                            ->getItem('courses')
+                            ->format(function($row) use ($pdo, $session) { 
+                                // Fetch the student's courses
+                                $courseEnrolmentGateway = new CourseEnrolmentGateway($pdo);
+                                $criteria = $courseEnrolmentGateway->newQueryCriteria(true)
+                                ->sortBy('roleSortOrder')
+                                ->sortBy(['course']);
+                                $enrolmentCourses = $courseEnrolmentGateway->queryCourseEnrolmentByPerson($criteria, $session->get('gibbonSchoolYearID'), $row['gibbonPersonID']);
+
+                                if (empty($enrolmentCourses)) {
+                                    return __('No courses found.');
+                                }else{
+                                    $displayEnrolment = "";
+                                    if(count($enrolmentCourses) > 1){;
+                                        foreach ($enrolmentCourses as $enrolmentCourse) {
+                                            $displayEnrolment .= $enrolmentCourse['course'].' ('.$enrolmentCourse['courseName'].')'.'<br/>';
+                                        }
+                                    } else{
+                                        foreach ($enrolmentCourses as $enrolmentCourse) {
+                                            $displayEnrolment .= $enrolmentCourse['course'].' ('.$enrolmentCourse['courseName'].')'.'<br/>';
+                                        }
+                                    }
+                                    return $displayEnrolment;
+                                }
                         });
                         
                         // Right Panel Class Info Section Items
                         $card->getPanel("rightPanel")
                             ->getSection('educational')
                             ->addItem('className', __('Class Name'))
-                            ->addItem('registrationFormula', __('Formule d\'inscription'))
+                            ->addItem('registrationFormula', __('Registration Formula'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
                         
                         $card->getPanel("rightPanel")
@@ -828,11 +870,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 }
                             });
 
-                        // Right Panel Room Info Section Items
+                        // Right Panel Miscellaneous Section Items
                         $card->getPanel("rightPanel")
                             ->getSection('miscellaneous')
                             ->addItem('name', __('Room Number'))
-                            ->addItem('comments', __('Registration details'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
 
                         echo $card->render([$row]);
@@ -1033,9 +1074,16 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             $page->addError(__('You do not have access to student payment details.'));
                         } else {
                             $studentInvoicesTable = DataTable::create('invoices');
-                                
                             $studentInvoicesTable->setTitle(__('Payment Tracking'));
 
+                            //First get the invoicee
+                            $invoiceeGateway = new InvoiceeGateway($pdo);
+                            $criteria = $invoiceeGateway->newQueryCriteria(true)
+                                        ->filterBy('gibbonPersonID', $row['gibbonPersonID']);
+                            $invoicee = $invoiceeGateway->queryInvoicee($criteria);
+                            $invoiceedata = $invoicee->toArray();
+                            
+                            $gibbonFinanceInvoiceeID = $invoiceedata[0]['gibbonFinanceInvoiceeID'];
                             $studentInvoicesParams = [
                                 'gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'),
                                 'status' => '',
@@ -1052,19 +1100,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->displayLabel()
                             ->append('<br/>');
 
-                            //First get the invoicee
-                            $invoiceeGateway = new InvoiceeGateway($pdo);
-                            
-                            $criteria = $invoiceeGateway->newQueryCriteria(true)
-                                        ->filterBy('gibbonPersonID', $row['gibbonPersonID']);
-
-                            $invoicee = $invoiceeGateway->queryInvoicee($criteria);
-
-                            $invoiceedata = $invoicee->toArray();
-
                             // Check if there's data returned
                             if (!empty($invoiceedata)) {
-                                $gibbonFinanceInvoiceeID = $invoiceedata[0]['gibbonFinanceInvoiceeID'];
                                 $invoiceGateway = $container->get(InvoiceGateway::class);
                                 $criteria = $invoiceGateway->newQueryCriteria(true)
                                 ->sortBy(['defaultSortOrder', 'invoiceIssueDate', 'surname', 'preferredName'])
@@ -1152,6 +1189,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             echo '</h4>';
                             echo '<p>';
                             echo __('Includes Teachers, Tutors, Educational Assistants and Head of Year.');
+                            echo '<br/>'.__('Current school year only.');
                             echo '</p>';
 
                             $table = DataTable::createPaginated('staffView', $criteria);
