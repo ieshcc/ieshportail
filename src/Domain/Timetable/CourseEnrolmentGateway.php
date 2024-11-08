@@ -109,6 +109,32 @@ class CourseEnrolmentGateway extends QueryableGateway
         return $this->runQuery($query, $criteria);
     }
 
+    // IESH Add
+    public function queryCourseEnrolmentByPersonGroupedByCourse(QueryCriteria $criteria, $gibbonSchoolYearID, $gibbonPersonID, $left = false)
+    {
+        $query = $this
+            ->newQuery()
+            ->from($this->getTableName())
+            ->cols([
+                'gibbonCourseClass.gibbonCourseClassID', 'gibbonCourse.name AS courseName', 'gibbonCourse.nameShort AS course', 'gibbonCourseClass.nameShort AS class', 'gibbonCourseClassPerson.reportable', 'gibbonCourseClassPerson.role', "(CASE WHEN gibbonCourseClassPerson.role NOT LIKE 'Student%' THEN 0 ELSE 1 END) as roleSortOrder"
+            ])
+            ->innerJoin('gibbonCourseClass', 'gibbonCourseClass.gibbonCourseClassID=gibbonCourseClassPerson.gibbonCourseClassID')
+            ->innerJoin('gibbonCourse', 'gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID')
+            ->innerJoin('gibbonPerson', 'gibbonPerson.gibbonPersonID=gibbonCourseClassPerson.gibbonPersonID')
+            ->where('gibbonCourse.gibbonSchoolYearID = :gibbonSchoolYearID')
+            ->bindValue('gibbonSchoolYearID', $gibbonSchoolYearID)
+            ->where('gibbonCourseClassPerson.gibbonPersonID = :gibbonPersonID')
+            ->bindValue('gibbonPersonID', $gibbonPersonID)
+            ->groupBy(['gibbonCourse.nameShort']);
+        if ($left) {
+            $query->where("gibbonCourseClassPerson.role LIKE '%Left'");
+        } else {
+            $query->where("gibbonCourseClassPerson.role NOT LIKE '%Left'");
+        }
+
+        return $this->runQuery($query, $criteria);
+    }
+
     public function selectEnrolableClassesByYearGroup($gibbonSchoolYearID, $gibbonYearGroupID)
     {
         $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID, 'gibbonYearGroupID' => $gibbonYearGroupID, 'today' => date('Y-m-d'));

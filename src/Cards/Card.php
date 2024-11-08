@@ -92,16 +92,18 @@ class Card implements OutputableInterface {
     /**
      * Add a panel to the card, by name and optional title and description. Returns the created panel.
      *
-     * @param string $name
-     * @param string $title
-     * @param string $description
-     * @return Panel
+     * @param Panel panel
+     * @return self
      */
-    public function addPanel($id, $title = '', $description = '')
+    public function addPanel($panel)
     {
-        $this->panels[$id] = new Panel($id, $title, $description);
-
-        return $this->panels[$id];
+        if ($panel instanceof Panel) {
+            $this->panels[$panel->getId()] = $panel;
+        }
+        else {
+            throw new \InvalidArgumentException('panel must be instance of Panel.');
+        }
+        return $this;
     }
 
     /**

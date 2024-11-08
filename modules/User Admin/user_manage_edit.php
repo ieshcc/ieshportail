@@ -79,7 +79,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             if (!empty($search)) {
                 $page->navigator->addSearchResultsAction(Url::fromModuleRoute('User Admin', 'user_manage.php')->withQueryParam('search', $search));
             }
-
+            
             $page->navigator->addHeaderAction('view', __('View Status Log'))
                 ->displayLabel()
                 ->addParam('gibbonPersonID', $gibbonPersonID)
@@ -90,9 +90,9 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             if (!empty($scrubbed)) {
                 echo Format::alert(__("This user's personal data was cleared on {date} as part of a data retention action. The following database tables were cleared: {tables}", ['date' => Format::date($scrubbed['timestamp']), 'tables' => Format::list(json_decode($scrubbed['tables']), 'ul', 'text-xs mb-0')] ), 'warning');
             }
-
+            
             echo Format::alert(__('Note that certain fields are hidden or revealed depending on the role categories (Staff, Student, Parent) that a user is assigned to. For example, parents do not get Emergency Contact fields, and students/staff do not get Employment fields.'), 'message');
-
+            
             $form = Form::create('addUser', $session->get('absoluteURL').'/modules/'.$session->get('module').'/user_manage_editProcess.php?gibbonPersonID='.$gibbonPersonID.'&search='.$search);
             $form->setFactory(DatabaseFormFactory::create($pdo));
 
@@ -101,60 +101,178 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             // BASIC INFORMATION
             $form->addRow()->addHeading('Basic Information', __('Basic Information'));
 
+            // -1.01
             $row = $form->addRow();
-                $row->addLabel('title', __('Title'));
-                $row->addSelectTitle('title');
+                $row->addLabel('username', __('Username'))->description(__('System login name.'));
+                $row->addUsername('username')
+                ->required()
+                ->setValue($values['username'])
+                ->readOnly();
 
-            $row = $form->addRow();
-                $row->addLabel('surname', __('Surname'))->description(__('Family name as shown in ID documents.'));
-                $row->addTextField('surname')->required()->maxLength(60);
-
-            $row = $form->addRow();
-                $row->addLabel('firstName', __('First Name'))->description(__('First name as shown in ID documents.'));
-                $row->addTextField('firstName')->required()->maxLength(60);
-            
+            // -1.02
             if ($student) {
                 $row = $form->addRow();
                     $row->addLabel('studentID', __('Student ID'));
                     $row->addTextField('studentID')
                         ->maxLength(15)
-                        ->uniqueField('./modules/User Admin/user_manage_studentIDAjax.php', ['gibbonPersonID' => $gibbonPersonID]);
+                        ->uniqueField('./modules/User Admin/user_manage_studentIDAjax.php', ['gibbonPersonID' => $gibbonPersonID])
+                        ->readOnly();
             }
-
+            
+            // -1.03
             $row = $form->addRow();
-                $row->addLabel('username', __('Username'))->description(__('System login name.'));
-                $row->addUsername('username')
-                    ->required()
-                    ->setValue($values['username']);
-
-            // $row = $form->addRow();
-            //     $row->addLabel('preferredName', __('Preferred Name'))->description(__('Most common name, alias, nickname, etc.'));
-            //     $row->addTextField('preferredName')->required()->maxLength(60);
-
-            // $row = $form->addRow();
-            //     $row->addLabel('officialName', __('Official Name'))->description(__('Full name as shown in ID documents.'));
-            //     $row->addTextField('officialName')->required()->maxLength(150)->setTitle(__('Please enter full name as shown in ID documents'));
-
+                $row->addLabel('title', __('Title'));
+                $row->addSelectTitle('title');
+            
+            // -1.04    
+            $row = $form->addRow();
+                $row->addLabel('surname', __('Surname'))->description(__('Family name as shown in ID documents.'));
+                $row->addTextField('surname')->required()->maxLength(60);
+    
+            // -1.05
+            $row = $form->addRow();
+                $row->addLabel('firstName', __('First Name'))->description(__('First name as shown in ID documents.'));
+                $row->addTextField('firstName')->required()->maxLength(60);
+            
+            // -1.06
+            $row = $form->addRow();
+                $row->addLabel('officialName', __('Full Name'))->description(__('Full name as shown in ID documents.'));
+                $row->addTextField('officialName')->required()->maxLength(150)->readOnly();
+            
+            // -1.07
+            $row = $form->addRow();
+                $row->addLabel('preferredName', __('Displayed Name'))->description(__('Named that will be displayed in the system.'));
+                $row->addTextField('preferredName')->required()->maxLength(60)->readOnly();
+            
+            // -1.08
             $row = $form->addRow();
                 $row->addLabel('nameInCharacters', __('Name In Characters'))->description(__('Arabic or other character-based name.'));
                 $row->addTextField('nameInCharacters')->maxLength(60);
 
+            // -1.09
             $row = $form->addRow();
-                $row->addLabel('gender', __('Gender'));
-                $row->addSelectGender('gender')->required();
+                $emailLabel = $row->addLabel('email', __('Email'));
+                $email = $row->addEmail('email');
 
-            $row = $form->addRow();
-                $row->addLabel('dob', __('Date of Birth'));
-                $row->addDate('dob');
+            $settingGateway = $container->get(SettingGateway::class);
 
+            $uniqueEmailAddress = $settingGateway->getSettingByScope('User Admin', 'uniqueEmailAddress');
+            if ($uniqueEmailAddress == 'Y') {
+                $email->uniqueField('./modules/User Admin/user_manage_emailAjax.php', array('gibbonPersonID' => $gibbonPersonID));
+            }
+
+            // -1.10
             $row = $form->addRow();
-                $row->addLabel('cityOfBirth', __('City of Birth'));
-                $row->addTextField('cityOfBirth')->maxLength(60);
+                $row->addLabel('emailAlternate', __('Alternate Email'));
+                $row->addEmail('emailAlternate');
+        
+            // -1.11
+            $row = $form->addRow();
+                $row->addLabel('phone1', __('Phone 1'))->description(__('Type, country code, number.'));
+                $row->addPhoneNumber('phone1');
+
+            $phone2Set = ($values['phone2'] != '')? 'Yes' : '';
             
+            // -1.12
             $row = $form->addRow();
-                $row->addLabel('countryOfBirth', __('Country of Birth'));
-                $row->addSelectCountry('countryOfBirth');
+                $row->addLabel('showSecondPhone', __('Enter Second Phone Number ?'));
+                $row->addCheckbox('showSecondPhone')->setValue('Yes')->checked($phone2Set);
+            
+            $form->toggleVisibilityByClass('phone2')->onCheckbox('showSecondPhone')->when('Yes');
 
+            // -1.13
+            $row = $form->addRow()->addClass('phone2');
+                $row->addLabel('phone2', __('Phone 2'))->description(__('Type, country code, number.'));
+                $row->addPhoneNumber('phone2');
+            
+            $addressSet = ($values['address1'] != '' or $values['address1District'] != '' or $values['address1Country'] != '')? 'Yes' : '';
+
+            // -1.14
+            // $row = $form->addRow();
+            //     $row->addLabel('showAddresses', __('Enter Personal Address?'));
+            //     $row->addCheckbox('showAddresses')->setValue('Yes')->checked($addressSet);
+
+            // $form->toggleVisibilityByClass('address')->onCheckbox('showAddresses')->when('Yes');
+    
+            $row = $form->addRow()->addClass('address');
+                $row->addLabel('address1', __('Address 1'))->description(__('Unit, Building, Street'));
+                $row->addTextArea('address1')->maxLength(255)->setRows(2);
+                
+            $row = $form->addRow()->addClass('address');
+                $row->addLabel('address1Complement', __('Address 1 Complement'))->description(__('If needed'));
+                $row->addTextArea('address1Complement')->maxLength(255)->setRows(2);
+
+            $row = $form->addRow()->addClass('address');
+                $row->addLabel('address1City', __('Address 1 City'));
+                $row->addTextFieldDistrict('address1City');
+                    
+            $row = $form->addRow()->addClass('address');
+                $row->addLabel('address1ZipCode', __('Address 1 Zip Code'));
+                $row->addTextFieldDistrict('address1ZipCode');
+
+            $row = $form->addRow()->addClass('address');
+                $row->addLabel('address1Country', __('Address 1 Country'));
+                $row->addSelectCountry('address1Country');
+    
+            if ($values['address1'] != '') {
+
+                    $dataAddress = array('gibbonPersonID' => $values['gibbonPersonID'], 'addressMatch' => '%'.strtolower(preg_replace('/ /', '%', preg_replace('/,/', '%', $values['address1']))).'%');
+                    $sqlAddress = "SELECT gibbonPersonID, title, preferredName, surname, category FROM gibbonPerson JOIN gibbonRole ON (gibbonPerson.gibbonRoleIDPrimary=gibbonRole.gibbonRoleID) WHERE status='Full' AND address1 LIKE :addressMatch AND NOT gibbonPersonID=:gibbonPersonID ORDER BY surname, preferredName";
+                    $resultAddress = $connection2->prepare($sqlAddress);
+                    $resultAddress->execute($dataAddress);
+
+                if ($resultAddress->rowCount() > 0) {
+                    $addressCount = 0;
+
+                    $row = $form->addRow()->addClass('address  matchHighlight');
+                    $row->addLabel('matchAddress', __('Matching Address 1'))->description(__('These users have similar Address 1. Do you want to change them too?'));
+                    $table = $row->addTable()->setClass('standardWidth');
+
+                    while ($rowAddress = $resultAddress->fetch()) {
+                        $adressee = Format::name($rowAddress['title'], $rowAddress['preferredName'], $rowAddress['surname'], $rowAddress['category']).' ('.$rowAddress['category'].')';
+
+                        $row = $table->addRow()->addClass('address');
+                        $row->addTextField($addressCount.'-matchAddressLabel')->readOnly()->setValue($adressee)->setClass('fullWidth');
+                        $row->addCheckbox($addressCount.'-matchAddress')->setValue($rowAddress['gibbonPersonID']);
+
+                        $addressCount++;
+                    }
+
+                    $form->addHiddenValue('matchAddressCount', $addressCount);
+                }
+            }
+    
+            $address2Set = ($values['address2'] != '' or $values['address2District'] != '' or $values['address2Country'] != '')? 'Yes' : '';
+    
+            $row = $form->addRow();
+                $row->addLabel('addSecondAddress', __('Enter Second Address ?'));
+                $row->addCheckbox('addSecondAddress')->setValue('Yes')->checked($address2Set);
+
+            $form->toggleVisibilityByClass('address2')->onCheckbox('addSecondAddress')->when('Yes');
+            
+            $row = $form->addRow()->addClass('address2');
+                $row->addLabel('address2', __('Address 2'))->description(__('Unit, Building, Street'));
+                $row->addTextArea('address2')->maxLength(255)->setRows(2);
+        
+            $row = $form->addRow()->addClass('address2');
+                $row->addLabel('address2Complement', __('Address 2 Complement'))->description(__('If needed'));
+                $row->addTextArea('address2Complement')->maxLength(255)->setRows(2);
+
+            $row = $form->addRow()->addClass('address2');
+                $row->addLabel('address2City', __('Address 2 City'));
+                $row->addTextFieldDistrict('address2City');
+                
+            $row = $form->addRow()->addClass('address2');
+                $row->addLabel('address2ZipCode', __('Address 2 Zip Code'));
+                $row->addTextFieldDistrict('address2ZipCode');
+
+            $row = $form->addRow()->addClass('address2');
+                $row->addLabel('address2Country', __('Address 2 Country'));
+                $row->addSelectCountry('address2Country');
+
+            // PROFILE INFORMATION
+            $form->addRow()->addHeading('Profile Information', __('Profile Information'));
+            
             $row = $form->addRow();
                 $row->addLabel('file1', __('User Photo'))
                     ->description(__('Displayed at 240px by 320px.'))
@@ -164,6 +282,110 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                     ->accepts('.jpg,.jpeg,.gif,.png')
                     ->setAttachment('attachment1', $session->get('absoluteURL'), $values['image_240'])
                     ->setMaxUpload(false);
+            
+           
+
+            // EMPLOYMENT
+            if ($parent) {
+                $form->addRow()->addHeading('Employment', __('Employment'));
+
+                $row = $form->addRow();
+                    $row->addLabel('profession', __('Profession'));
+                    $row->addTextField('profession')->maxLength(90);
+
+                $row = $form->addRow();
+                    $row->addLabel('employer', __('Employer'));
+                    $row->addTextField('employer')->maxLength(90);
+
+                $row = $form->addRow();
+                    $row->addLabel('jobTitle', __('Job Title'));
+                    $row->addTextField('jobTitle')->maxLength(90);
+            }
+
+            // -4.02
+            $row = $form->addRow();
+                $row->addLabel('gender', __('Gender'));
+                $row->addSelectGender('gender')->required();
+
+            // -4.03
+            $row = $form->addRow();
+                $row->addLabel('dob', __('Date of Birth'));
+                $row->addDate('dob');
+            
+            // -4.04
+            $row = $form->addRow();
+                $row->addLabel('cityOfBirth', __('City of Birth'));
+                $row->addTextField('cityOfBirth')->maxLength(60);
+            
+            // -4.05
+            $row = $form->addRow();
+                $row->addLabel('countryOfBirth', __('Country of Birth'));
+                $row->addSelectCountry('countryOfBirth');
+
+            // -4.06
+            $row = $form->addRow();
+                $row->addLabel('languageFirst', __('First Language'));
+                $row->addSelectLanguage('languageFirst');
+
+            // -4.07
+            $row = $form->addRow();
+                $row->addLabel('languageSecond', __('Second Language'));
+                $row->addSelectLanguage('languageSecond');
+            
+            $row = $form->addRow();
+                $row->addLabel('languageThird', __('Third Language'));
+                $row->addSelectLanguage('languageThird');
+            
+            // PERSONAL DOCUMENTS
+            $params = compact('student', 'staff', 'parent', 'other');
+            $documents = $container->get(PersonalDocumentGateway::class)->selectPersonalDocuments('gibbonPerson', $gibbonPersonID, $params)->fetchAll();
+            if (!empty($documents)) {
+                $col = $form->addRow()->addColumn();
+                    $col->addLabel('document', __('Personal Documents'));
+                    $col->addPersonalDocuments('document', $documents, $container->get(View::class), $container->get(SettingGateway::class));
+            }
+
+            if ($student || $staff) {
+                $sql = "SELECT DISTINCT lastSchool FROM gibbonPerson ORDER BY lastSchool";
+                $result = $pdo->executeQuery(array(), $sql);
+                $schools = ($result && $result->rowCount() > 0)? $result->fetchAll(\PDO::FETCH_COLUMN) : array();
+
+                $row = $form->addRow();
+                $row->addLabel('lastSchool', __('Last School'));
+                $row->addTextField('lastSchool')->autocomplete($schools);
+            }
+
+            $row = $form->addRow();
+                $row->addLabel('dateStart', __('First Day'))->description(__("Users's first day at school."));
+                $row->addDate('dateStart');
+
+            $row = $form->addRow();
+                $row->addLabel('dateEnd', __('Last Day'))->description(__("Users's last day at school."));
+                $row->addDate('dateEnd');
+
+            if ($student) {
+                $row = $form->addRow();
+                    $row->addLabel('gibbonSchoolYearIDClassOf', __('Class Of'))->description(__('When is the student expected to graduate?'));
+                    $row->addSelectSchoolYear('gibbonSchoolYearIDClassOf');
+            }
+
+            if ($student || $staff) {
+                $schools = $pdo->select("SELECT DISTINCT nextSchool FROM gibbonPerson ORDER BY lastSchool")->fetchAll(\PDO::FETCH_COLUMN);
+
+                $row = $form->addRow();
+                $row->addLabel('nextSchool', __('Next School'));
+                $row->addTextField('nextSchool')->maxLength(100)->autocomplete($schools);
+
+                $departureReasonsList = $settingGateway->getSettingByScope('User Admin', 'departureReasons');
+
+                $row = $form->addRow();
+                $row->addLabel('departureReason', __('Departure Reason'));
+                if (!empty($departureReasonsList)) {
+                    $row->addSelect('departureReason')->fromString($departureReasonsList)->placeholder();
+                } else {
+                    $row->addTextField('departureReason')->maxLength(100);
+                }
+            }
 
             // SYSTEM ACCESS
             $form->addRow()->addHeading('System Access', __('System Access'));
@@ -251,259 +473,6 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                 $row->addLabel('passwordForceReset', __('Force Reset Password?'))->description(__('User will be prompted on next login.'));
                 $row->addYesNo('passwordForceReset')->required();
 
-            // CONTACT INFORMATION
-            $form->addRow()->addHeading('Contact Information', __('Contact Information'));
-
-            $row = $form->addRow();
-                $emailLabel = $row->addLabel('email', __('Email'));
-                $email = $row->addEmail('email');
-
-            $settingGateway = $container->get(SettingGateway::class);
-
-            $uniqueEmailAddress = $settingGateway->getSettingByScope('User Admin', 'uniqueEmailAddress');
-            if ($uniqueEmailAddress == 'Y') {
-                $email->uniqueField('./modules/User Admin/user_manage_emailAjax.php', array('gibbonPersonID' => $gibbonPersonID));
-            }
-
-            $row = $form->addRow();
-                $row->addLabel('emailAlternate', __('Alternate Email'));
-                $row->addEmail('emailAlternate');
-
-            $row = $form->addRow();
-            $row->addAlert(__('Address information for an individual only needs to be set under the following conditions:'), 'warning')
-                ->append('<ol>')
-                ->append('<li>'.__('If the user is not in a family.').'</li>')
-                ->append('<li>'.__('If the user\'s family does not have a home address set.').'</li>')
-                ->append('<li>'.__('If the user needs an address in addition to their family\'s home address.').'</li>')
-                ->append('</ol>');
-            
-            // $addressSet = ($values['address1'] != '' or $values['address1District'] != '' or $values['address1Country'] != '' or $values['address2'] != '' or $values['address2District'] != '' or $values['address2Country'] != '')? 'Yes' : '';
-
-            $addressSet = ($values['address1'] != '' or $values['address1District'] != '' or $values['address1Country'] != '')? 'Yes' : '';
-
-            $row = $form->addRow();
-                $row->addLabel('showAddresses', __('Enter Personal Address?'));
-                $row->addCheckbox('showAddresses')->setValue('Yes')->checked($addressSet);
-
-            $form->toggleVisibilityByClass('address')->onCheckbox('showAddresses')->when('Yes');
-
-            $row = $form->addRow()->addClass('address');
-                $row->addLabel('address1', __('Address 1'))->description(__('Unit, Building, Street'));
-                $row->addTextArea('address1')->maxLength(255)->setRows(2);
-            
-            $row = $form->addRow()->addClass('address');
-                $row->addLabel('address1Complement', __('Address 1 Complement'))->description(__('If needed'));
-                $row->addTextArea('address1Complement')->maxLength(255)->setRows(2);
-
-            $row = $form->addRow()->addClass('address');
-                $row->addLabel('address1City', __('Address 1 City'));
-                $row->addTextFieldDistrict('address1City');
-                
-            $row = $form->addRow()->addClass('address');
-                $row->addLabel('address1ZipCode', __('Address 1 Zip Code'));
-                $row->addTextFieldDistrict('address1ZipCode');
-
-            // $row = $form->addRow()->addClass('address');
-            //     $row->addLabel('address1District', __('Address 1 District'))->description(__('County, State, District'));
-            //     $row->addTextFieldDistrict('address1District');
-
-            $row = $form->addRow()->addClass('address');
-                $row->addLabel('address1Country', __('Address 1 Country'));
-                $row->addSelectCountry('address1Country');
-
-            if ($values['address1'] != '') {
-
-                    $dataAddress = array('gibbonPersonID' => $values['gibbonPersonID'], 'addressMatch' => '%'.strtolower(preg_replace('/ /', '%', preg_replace('/,/', '%', $values['address1']))).'%');
-                    $sqlAddress = "SELECT gibbonPersonID, title, preferredName, surname, category FROM gibbonPerson JOIN gibbonRole ON (gibbonPerson.gibbonRoleIDPrimary=gibbonRole.gibbonRoleID) WHERE status='Full' AND address1 LIKE :addressMatch AND NOT gibbonPersonID=:gibbonPersonID ORDER BY surname, preferredName";
-                    $resultAddress = $connection2->prepare($sqlAddress);
-                    $resultAddress->execute($dataAddress);
-
-                if ($resultAddress->rowCount() > 0) {
-                    $addressCount = 0;
-
-                    $row = $form->addRow()->addClass('address  matchHighlight');
-                    $row->addLabel('matchAddress', __('Matching Address 1'))->description(__('These users have similar Address 1. Do you want to change them too?'));
-                    $table = $row->addTable()->setClass('standardWidth');
-
-                    while ($rowAddress = $resultAddress->fetch()) {
-                        $adressee = Format::name($rowAddress['title'], $rowAddress['preferredName'], $rowAddress['surname'], $rowAddress['category']).' ('.$rowAddress['category'].')';
-
-                        $row = $table->addRow()->addClass('address');
-                        $row->addTextField($addressCount.'-matchAddressLabel')->readOnly()->setValue($adressee)->setClass('fullWidth');
-                        $row->addCheckbox($addressCount.'-matchAddress')->setValue($rowAddress['gibbonPersonID']);
-
-                        $addressCount++;
-                    }
-
-                    $form->addHiddenValue('matchAddressCount', $addressCount);
-                }
-            }
-
-            $address2Set = ($values['address2'] != '' or $values['address2District'] != '' or $values['address2Country'] != '')? 'Yes' : '';
-
-            $row = $form->addRow();
-                $row->addLabel('addSecondAddress', __('Enter Second Address?'));
-                $row->addCheckbox('addSecondAddress')->setValue('Yes')->checked($address2Set);
-
-            $form->toggleVisibilityByClass('address2')->onCheckbox('addSecondAddress')->when('Yes');
-            
-            $row = $form->addRow()->addClass('address2');
-                $row->addLabel('address2', __('Address 2'))->description(__('Unit, Building, Street'));
-                $row->addTextArea('address2')->maxLength(255)->setRows(2);
-        
-            $row = $form->addRow()->addClass('address2');
-                $row->addLabel('address2Complement', __('Address 2 Complement'))->description(__('If needed'));
-                $row->addTextArea('address2Complement')->maxLength(255)->setRows(2);
-
-            $row = $form->addRow()->addClass('address2');
-                $row->addLabel('address2City', __('Address 2 City'));
-                $row->addTextFieldDistrict('address2City');
-                
-            $row = $form->addRow()->addClass('address2');
-                $row->addLabel('address2ZipCode', __('Address 2 Zip Code'));
-                $row->addTextFieldDistrict('address2ZipCode');
-
-            // $row = $form->addRow()->addClass('address2');
-            //     $row->addLabel('address2District', __('Address 2 District'))->description(__('County, State, District'));
-            //     $row->addTextFieldDistrict('address2District');
-
-            $row = $form->addRow()->addClass('address2');
-                $row->addLabel('address2Country', __('Address 2 Country'));
-                $row->addSelectCountry('address2Country');
-
-            // for ($i = 1; $i < 5; ++$i) {
-            //     $row = $form->addRow();
-            //     $row->addLabel('phone'.$i, __('Phone').' '.$i)->description(__('Type, country code, number.'));
-            //     $row->addPhoneNumber('phone'.$i);
-            // }
-
-            $row = $form->addRow();
-                $row->addLabel('phone1', __('Phone 1'))->description(__('Type, country code, number.'));
-                $row->addPhoneNumber('phone1');
-
-            $phone2Set = ($values['phone2'] != '')? 'Yes' : '';
-                
-            $row = $form->addRow();
-                $row->addLabel('showSecondPhone', __('Enter Second Phone Number ?'));
-                $row->addCheckbox('showSecondPhone')->setValue('Yes')->checked($phone2Set);
-            
-            $form->toggleVisibilityByClass('phone2')->onCheckbox('showSecondPhone')->when('Yes');
-
-            $row = $form->addRow()->addClass('phone2');
-                $row->addLabel('phone2', __('Phone 2'))->description(__('Type, country code, number.'));
-                $row->addPhoneNumber('phone2');
-
-            // $row = $form->addRow();
-            //     $row->addLabel('website', __('Website'))->description(__('Include http://'));
-            //     $row->addURL('website');
-
-            // SCHOOL INFORMATION
-            //$form->addRow()->addHeading('School Information', __('School Information'));
-
-            // if ($student) {
-            //     $dayTypeOptions = $settingGateway->getSettingByScope('User Admin', 'dayTypeOptions');
-            //     if (!empty($dayTypeOptions)) {
-            //         $dayTypeText = $settingGateway->getSettingByScope('User Admin', 'dayTypeText');
-            //         $row = $form->addRow();
-            //         $row->addLabel('dayType', __('Day Type'))->description($dayTypeText);
-            //         $row->addSelect('dayType')->fromString($dayTypeOptions)->placeholder();
-            //     }
-            // }
-
-            // if ($student || $staff) {
-            //     $sql = "SELECT DISTINCT lastSchool FROM gibbonPerson ORDER BY lastSchool";
-            //     $result = $pdo->executeQuery(array(), $sql);
-            //     $schools = ($result && $result->rowCount() > 0)? $result->fetchAll(\PDO::FETCH_COLUMN) : array();
-
-            //     $row = $form->addRow();
-            //     $row->addLabel('lastSchool', __('Last School'));
-            //     $row->addTextField('lastSchool')->autocomplete($schools);
-            // }
-
-            // $row = $form->addRow();
-            //     $row->addLabel('dateStart', __('Start Date'))->description(__("Users's first day at school."));
-            //     $row->addDate('dateStart');
-
-            // $row = $form->addRow();
-            //     $row->addLabel('dateEnd', __('End Date'))->description(__("Users's last day at school."));
-            //     $row->addDate('dateEnd');
-
-            // if ($student) {
-            //     $row = $form->addRow();
-            //         $row->addLabel('gibbonSchoolYearIDClassOf', __('Class Of'))->description(__('When is the student expected to graduate?'));
-            //         $row->addSelectSchoolYear('gibbonSchoolYearIDClassOf');
-            // }
-
-            if ($student || $staff) {
-                $schools = $pdo->select("SELECT DISTINCT nextSchool FROM gibbonPerson ORDER BY lastSchool")->fetchAll(\PDO::FETCH_COLUMN);
-
-                $row = $form->addRow();
-                $row->addLabel('nextSchool', __('Next School'));
-                $row->addTextField('nextSchool')->maxLength(100)->autocomplete($schools);
-
-                $departureReasonsList = $settingGateway->getSettingByScope('User Admin', 'departureReasons');
-
-                $row = $form->addRow();
-                $row->addLabel('departureReason', __('Departure Reason'));
-                if (!empty($departureReasonsList)) {
-                    $row->addSelect('departureReason')->fromString($departureReasonsList)->placeholder();
-                } else {
-                    $row->addTextField('departureReason')->maxLength(100);
-                }
-            }
-
-            // BACKGROUND INFORMATION
-            $form->addRow()->addHeading('Profile Information', __('Profile Information'));
-
-            $row = $form->addRow();
-                $row->addLabel('languageFirst', __('First Language'));
-                $row->addSelectLanguage('languageFirst');
-
-            $row = $form->addRow();
-                $row->addLabel('languageSecond', __('Second Language'));
-                $row->addSelectLanguage('languageSecond');
-
-            // $row = $form->addRow();
-            //     $row->addLabel('countryOfBirth', __('Country of Birth'));
-            //     $row->addSelectCountry('countryOfBirth');
-
-            
-            // $ethnicities = $settingGateway->getSettingByScope('User Admin', 'ethnicity');
-            // $row = $form->addRow();
-            //     $row->addLabel('ethnicity', __('Ethnicity'));
-            //     if (!empty($ethnicities)) {
-            //         $row->addSelect('ethnicity')->fromString($ethnicities)->placeholder();
-            //     } else {
-            //         $row->addTextField('ethnicity')->maxLength(255);
-            //     }
-
-            // $religions = $settingGateway->getSettingByScope('User Admin', 'religions');
-            // $row = $form->addRow();
-            //     $row->addLabel('religion', __('Religion'));
-            //     if (!empty($religions)) {
-            //         $row->addSelect('religion')->fromString($religions)->placeholder();
-            //     } else {
-            //         $row->addTextField('religion')->maxLength(30);
-            //     }
-
-
-            // EMPLOYMENT
-            if ($parent) {
-                $form->addRow()->addHeading('Employment', __('Employment'));
-
-                $row = $form->addRow();
-                    $row->addLabel('profession', __('Profession'));
-                    $row->addTextField('profession')->maxLength(90);
-
-                $row = $form->addRow();
-                    $row->addLabel('employer', __('Employer'));
-                    $row->addTextField('employer')->maxLength(90);
-
-                $row = $form->addRow();
-                    $row->addLabel('jobTitle', __('Job Title'));
-                    $row->addTextField('jobTitle')->maxLength(90);
-            }
-
             // EMERGENCY CONTACTS
             if ($student || $staff) {
                 $form->addRow()->addHeading('Emergency Contacts', __('Emergency Contacts'));
@@ -543,60 +512,24 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                     $row->addTextField('emergency2Number2')->maxLength(30);
             }
 
+            // CONTACT INFORMATION
+            // $form->addRow()->addHeading('Contact Information', __('Contact Information'));
+
+            // $row = $form->addRow();
+            // $row->addAlert(__('Address information for an individual only needs to be set under the following conditions:'), 'warning')
+            //     ->append('<ol>')
+            //     ->append('<li>'.__('If the user is not in a family.').'</li>')
+            //     ->append('<li>'.__('If the user\'s family does not have a home address set.').'</li>')
+            //     ->append('<li>'.__('If the user needs an address in addition to their family\'s home address.').'</li>')
+            //     ->append('</ol>');
+            
+            // $addressSet = ($values['address1'] != '' or $values['address1District'] != '' or $values['address1Country'] != '' or $values['address2'] != '' or $values['address2District'] != '' or $values['address2Country'] != '')? 'Yes' : '';
+
             // MISCELLANEOUS
             $form->addRow()->addHeading('Miscellaneous', __('Miscellaneous'));
 
-             // PERSONAL DOCUMENTS
-             $params = compact('student', 'staff', 'parent', 'other');
-             $documents = $container->get(PersonalDocumentGateway::class)->selectPersonalDocuments('gibbonPerson', $gibbonPersonID, $params)->fetchAll();
-             if (!empty($documents)) {
-                 $col = $form->addRow()->addColumn();
-                     $col->addLabel('document', __('Personal Documents'));
-                     $col->addPersonalDocuments('document', $documents, $container->get(View::class), $container->get(SettingGateway::class));
-             }
- 
-             $nationalityList = $settingGateway->getSettingByScope('User Admin', 'nationality');
-             $residencyStatusList = $settingGateway->getSettingByScope('User Admin', 'residencyStatus');
-
-            // $sql = "SELECT gibbonHouseID as value, name FROM gibbonHouse ORDER BY name";
-            // $row = $form->addRow();
-            //     $row->addLabel('gibbonHouseID', __('House'));
-            //     $row->addSelect('gibbonHouseID')->fromQuery($pdo, $sql)->placeholder();
-
-            // if ($student) {
-            //     $row = $form->addRow();
-            //         $row->addLabel('studentID', __('Student ID'));
-            //         $row->addTextField('studentID')
-            //             ->maxLength(15)
-            //             ->uniqueField('./modules/User Admin/user_manage_studentIDAjax.php', ['gibbonPersonID' => $gibbonPersonID]);
-            // }
-
-            // if ($student || $staff) {
-            //     $sql = "SELECT DISTINCT transport FROM gibbonPerson
-            //             JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID)
-            //             WHERE gibbonStudentEnrolment.gibbonSchoolYearID=(SELECT gibbonSchoolYearID FROM gibbonSchoolYear WHERE status='Current')
-            //             ORDER BY transport";
-            //     $result = $pdo->executeQuery(array(), $sql);
-            //     $transport = ($result && $result->rowCount() > 0)? $result->fetchAll(\PDO::FETCH_COLUMN) : array();
-
-            //     $row = $form->addRow();
-            //         $row->addLabel('transport', __('Transport'));
-            //         $row->addTextField('transport')->maxLength(255)->autocomplete($transport);
-
-            //     $row = $form->addRow();
-            //         $row->addLabel('transportNotes', __('Transport Notes'));
-            //         $row->addTextArea('transportNotes')->setRows(4);
-            // }
-
-            // if ($student || $staff) {
-            //     $row = $form->addRow();
-            //         $row->addLabel('lockerNumber', __('Locker Number'));
-            //         $row->addTextField('lockerNumber')->maxLength(20);
-            // }
-
-            // $row = $form->addRow();
-            //     $row->addLabel('vehicleRegistration', __('Vehicle Registration'));
-            //     $row->addTextField('vehicleRegistration')->maxLength(20);
+            // $nationalityList = $settingGateway->getSettingByScope('User Admin', 'nationality');
+            // $residencyStatusList = $settingGateway->getSettingByScope('User Admin', 'residencyStatus');
 
             if ($student) {
                 $privacySetting = $settingGateway->getSettingByScope('User Admin', 'privacy');
@@ -625,6 +558,75 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             // CUSTOM FIELDS
             $params = compact('student', 'staff', 'parent', 'other');
             $container->get(CustomFieldHandler::class)->addCustomFieldsToForm($form, 'User', $params, $values['fields']);
+            
+            
+            // NON Needed information
+            // $sql = "SELECT gibbonHouseID as value, name FROM gibbonHouse ORDER BY name";
+            // $row = $form->addRow();
+            //     $row->addLabel('gibbonHouseID', __('House'));
+            //     $row->addSelect('gibbonHouseID')->fromQuery($pdo, $sql)->placeholder();
+
+            if ($student || $staff) {
+                $sql = "SELECT DISTINCT transport FROM gibbonPerson
+                        JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID)
+                        WHERE gibbonStudentEnrolment.gibbonSchoolYearID=(SELECT gibbonSchoolYearID FROM gibbonSchoolYear WHERE status='Current')
+                        ORDER BY transport";
+                $result = $pdo->executeQuery(array(), $sql);
+                $transport = ($result && $result->rowCount() > 0)? $result->fetchAll(\PDO::FETCH_COLUMN) : array();
+
+                $row = $form->addRow();
+                    $row->addLabel('transport', __('Transport'));
+                    $row->addTextField('transport')->maxLength(255)->autocomplete($transport);
+
+                $row = $form->addRow();
+                    $row->addLabel('transportNotes', __('Transport Notes'));
+                    $row->addTextArea('transportNotes')->setRows(4);
+            }
+
+            if ($student || $staff) {
+                $row = $form->addRow();
+                    $row->addLabel('lockerNumber', __('Locker Number'));
+                    $row->addTextField('lockerNumber')->maxLength(20);
+            }
+
+            // $row = $form->addRow();
+            //     $row->addLabel('vehicleRegistration', __('Vehicle Registration'));
+            //     $row->addTextField('vehicleRegistration')->maxLength(20);
+     
+            // $row = $form->addRow();
+            //     $row->addLabel('website', __('Website'))->description(__('Include http://'));
+            //     $row->addURL('website');
+
+            // SCHOOL INFORMATION
+            // $form->addRow()->addHeading('School Information', __('School Information'));
+
+            if ($student) {
+                $dayTypeOptions = $settingGateway->getSettingByScope('User Admin', 'dayTypeOptions');
+                if (!empty($dayTypeOptions)) {
+                    $dayTypeText = $settingGateway->getSettingByScope('User Admin', 'dayTypeText');
+                    $row = $form->addRow();
+                    $row->addLabel('dayType', __('Day Type'))->description($dayTypeText);
+                    $row->addSelect('dayType')->fromString($dayTypeOptions)->placeholder();
+                }
+            }
+            
+            // $ethnicities = $settingGateway->getSettingByScope('User Admin', 'ethnicity');
+            // $row = $form->addRow();
+            //     $row->addLabel('ethnicity', __('Ethnicity'));
+            //     if (!empty($ethnicities)) {
+            //         $row->addSelect('ethnicity')->fromString($ethnicities)->placeholder();
+            //     } else {
+            //         $row->addTextField('ethnicity')->maxLength(255);
+            //     }
+
+            // $religions = $settingGateway->getSettingByScope('User Admin', 'religions');
+            // $row = $form->addRow();
+            // $row->addLabel('religion', __('Religion'));
+            // if (!empty($religions)) {
+            //     $row->addSelect('religion')->fromString($religions)->placeholder();
+            // } else {
+            //     $row->addTextField('religion')->maxLength(30);
+            // }
 
             $row = $form->addRow();
                 $row->addFooter()->append('<small>'.getMaxUpload(true).'</small>');

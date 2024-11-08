@@ -49,9 +49,19 @@ class Panel
         return $this->panels[$id];
     }
 
-    public function addSection($id, $title = ''){
-        $this->sections[$id] = new Section($id, $title);
-
+     /**
+     * Add a section to the card. Returns the created section.
+     *
+     * @param Section section
+     * @return self
+     */
+    public function addSection($section){
+        if ($section instanceof Section) {
+            $this->sections[$section->getId()] = $section;
+        }
+        else {
+            throw new \InvalidArgumentException('section must be instance of Section.');
+        }
         return $this;
     }
 

@@ -26,6 +26,9 @@ use Gibbon\Services\Format;
 use Gibbon\Tables\DataTable;
 use Gibbon\Tables\View\GridView;
 use Gibbon\Cards\Card;
+use Gibbon\Cards\Layout\Panel;
+use Gibbon\Cards\Layout\Section;
+use Gibbon\Cards\Layout\Item;
 use Gibbon\Domain\User\UserGateway;
 use Gibbon\Domain\User\RoleGateway;
 use Gibbon\Forms\CustomFieldHandler;
@@ -690,170 +693,129 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $schoolYearGateway = $container->get(SchoolYearGateway::class);
                         $studentGateway = $container->get(StudentGateway::class);
                         $currentSchoolYearDisplayedName = $schoolYearGateway->getSchoolYearByID($session->get('gibbonSchoolYearID'))["name"];
-                        $card = Card::createPanelsCard('generalInfo');
+                        
+                        // Fetch the student's courses
+                        $courseEnrolmentGateway = new CourseEnrolmentGateway($pdo);
+                        $criteria = $courseEnrolmentGateway->newQueryCriteria(true)
+                        ->sortBy('roleSortOrder')
+                        ->sortBy(['course']);
+                        $enrolmentCourses = $courseEnrolmentGateway->queryCourseEnrolmentByPersonGroupedByCourse($criteria, $session->get('gibbonSchoolYearID'), $row['gibbonPersonID']);
 
+
+                        // Get student civility and full Name
+                        $studentDisplayName = $row['gender'] == "M" ? "Monsieur" : "Madame";
+                        $studentDisplayName.= " ". $row['surname'] . " " . $row['firstName'];
+                        
                         /** Card Header **/
-                        $studentDisplayName = 'Madame De Angeli Johana';
-
-                        $card->setTitle(__('General Information'));
-                        $card->setDescription($studentDisplayName);
-                        $card->addMetaData("classes", [
+                        $card = Card::createPanelsCard('generalInfo');
+                        $card->setTitle(__('General Information'))
+                        ->setDescription($studentDisplayName)
+                        ->addMetaData("classes", [
                             "cardHeader" => "mb-2",
                             "cardTitle" => "text-xl font-bold mb-0",
                             "cardDescription" => "text-4xl font-bold text-blue-600 mt-0"
                         ]);
 
                         /** Card Panels **/
-                        // Left Panel and Sections
-                        $card->addPanel('leftPanel', __('Student Profile'), __('You will find here all the student profile details.'))
-                            ->addSection('identity', __('Identity'))
-                            ->addSection('homeInfo', __('Home Details'))
-                            ->addSection('comments', __('Comments'))
-                            ->addMetaData("classes", [
-                                "panelHeader" => "panel bg-blue-100 shadow-lg rounded-md md:flex-1 border-black last:border-r-0 m-1 p-6",
-                                "panelTitle" => "text-2xl font-semibold mt-0 mb-0 text-black tracking-tight",
-                                "panelDescription" => "text-xs font-medium m-0 text-black"
+                        $leftPanel = new Panel('leftPanel', __('Student Profile'), __('You will find here all the student profile details.'));
+                        $rightPanel = new Panel('rightPanel', __('School Information')." ".$currentSchoolYearDisplayedName, __('You will find here all the student\'s academic information.'));
+
+                        
+                        $leftPanel->addMetaData("classes", [
+                            "panelHeader" => "panel bg-blue-100 shadow-lg rounded-md md:flex-1 border-black last:border-r-0 m-1 p-6",
+                            "panelTitle" => "text-2xl font-semibold mt-0 mb-0 text-black tracking-tight",
+                            "panelDescription" => "text-xs font-medium m-0 text-black"
                             ])
                             ->addMetaData("styles", [
                                 "panelDescription" => "text-transform: none;",
                             ])
                             ->addPanelAction('edit', __('Edit'))
                             ->addParam('gibbonPersonID', $gibbonPersonID)
-                            ->setURL('/modules/User Admin/user_manage_edit.php');;
-                        
-                        // Right Panel and Sections
-                        $card->addPanel('rightPanel', __('School Information')." ".$currentSchoolYearDisplayedName, __('You will find here all the student\'s academic information.'))
-                        ->addSection('registrationInfo', __('Registration'))
-                        ->addSection('educational', __('Educational Details'))
-                        ->addSection('miscellaneous', __('Miscellaneous'))
-                        ->addMetaData("classes", [
-                            "panelHeader" => "panel bg-white rounded-md md:flex-1 border-black last:border-r-0 m-1 p-6",
+                            ->setURL('/modules/User Admin/user_manage_edit.php');
+                            
+                            $rightPanel->addMetaData("classes", [
+                                "panelHeader" => "panel bg-white rounded-md md:flex-1 border-black last:border-r-0 m-1 p-6",
                             "panelTitle" => "text-2xl font-semibold mt-0 mb-0 text-black tracking-tight",
                             "panelDescription" => "text-xs font-medium m-0 text-black"
-                        ])
-                        ->addMetaData("styles", [
-                            "panelDescription" => "text-transform: none;",
-                        ]);
-                        
-                        // Left Panel Identity Section Items
+                            ])
+                            ->addMetaData("styles", [
+                                "panelDescription" => "text-transform: none;",
+                            ]);
+                            
+                        // Panel Sections
                         $leftPanelSectionHeaderClasses = [
                             "sectionHeader" => "section bg-white pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
                             "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1 border-b border-1 border-black"
                         ];
+                        $rightPanelSectionHeaderClasses = [
+                            "sectionHeader" => "section bg-blue-100 pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
+                            "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1 border-b border-1 border-black"
+                        ];
 
-                        $card->getPanel("leftPanel")
-                            ->getSection('identity')
+                        $sectionIdentity = new Section('identity', __('Identity'));
+                        $sectionIdentity
                             ->addItem('studentID', __('Student ID'))
+                            ->addItem('username', __('Username'))
                             ->addItem('email', __('E-Mail'))
                             ->addItem('phone1', __('Phone Number'))
                             ->addItem('dob', __('Date of Birth'))
                             ->addItem('age', __('Age'))
                             ->addItem('birthplace', __('Birthplace'))
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
-
-                        $card->getPanel("leftPanel")
-                            ->getSection('identity')
-                            ->getItem('dob')
+                        $sectionIdentity->getItem('dob')
                             ->format(Format::using('date','dob'));
-
-                        $card->getPanel("leftPanel")
-                            ->getSection('identity')
-                            ->getItem('age')
+                        $sectionIdentity->getItem('age')
                             ->format(Format::using('age', $row['dob']));
-
-                        $card->getPanel("leftPanel")
-                            ->getSection('identity')
-                            ->getItem('birthplace')
+                        $sectionIdentity->getItem('birthplace')
                             ->format(function($row) {
                                  return $row['cityOfBirth'].', '.$row['countryOfBirth'];
-                                });
+                            });
 
-                        // Left Panel Home Section Items
-                        $card->getPanel("leftPanel")
-                            ->getSection('homeInfo')                           
+                        $sectionHomeInfo = new Section('homeInfo', __('Home Details'));
+                        $sectionHomeInfo
                             ->addItem('address1', __('Main Home Address'))
-                            ->addItem('address1Complement', __('Adress Complement'))
+                            ->addItem('address1Complement', __('Address Complement'))
                             ->addItem('address1ZipCode', __('ZIP'))
                             ->addItem('address1City', __('City'))
                             ->addItem('address1Country', __('Country'), 'France')
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
 
-                        $card->getPanel("leftPanel")
-                            ->getSection('comments')
-                            ->addItem('comments', __('Comments'))
-                            ->addMetaData("classes", $leftPanelSectionHeaderClasses);
-                        
-                        $rightPanelSectionHeaderClasses = [
-                            "sectionHeader" => "section bg-green-200 pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
-                            "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1 border-b border-1 border-black"
-                        ];
-                        
-                        // Right Panel Registration Info Section Items
-                        $card->getPanel("rightPanel")
-                            ->getSection('registrationInfo')
-                            ->addItem('username', __('Username'))
+                        $sectionRegistrationInfo = new Section ('registrationInfo', __('Registration'));
+                        $sectionRegistrationInfo
                             ->addItem('seniority', __('New Student ?'))
                             ->addItem('registrationStatusName', __('Registration Status'));
-
+                        $sectionRegistrationInfo->getItem("registrationStatusName")
+                            ->translatable();
                         if($row["registrationStatusName"] === "Cancelled"){
-                            $card->getPanel("rightPanel")
-                            ->getSection("registrationInfo")
-                            ->addItem('departureReason', __('Departure Reason'));
+                            $sectionRegistrationInfo->addItem('departureReason', __('Departure Reason'));
                         }
-
-                        $card->getPanel("rightPanel")
-                            ->getSection('registrationInfo')
+                        $sectionRegistrationInfo
                             ->addItem('courses', __('Courses'))
                             ->addItem('attendanceTypeName', __('Main Registration'))
+                            ->addItem('className', __('Main Class Name'))
+                            ->addItem('registrationFormula', __('Registration Formula'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
-
-                        $card->getPanel("rightPanel")
-                            ->getSection('registrationInfo')
-                            ->getItem('seniority')
+                        $sectionRegistrationInfo->getItem('seniority')
                             ->format(function($row) use ($studentGateway){ 
                                 // Fetch the student's enrollment history
                                 $resultSelect = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
                                 return $resultSelect->rowCount() > 0 ? __('No') : __('Yes');
-                        });
-
-                        $card->getPanel("rightPanel")
-                            ->getSection('registrationInfo')
-                            ->getItem('courses')
-                            ->format(function($row) use ($pdo, $session) { 
-                                // Fetch the student's courses
-                                $courseEnrolmentGateway = new CourseEnrolmentGateway($pdo);
-                                $criteria = $courseEnrolmentGateway->newQueryCriteria(true)
-                                ->sortBy('roleSortOrder')
-                                ->sortBy(['course']);
-                                $enrolmentCourses = $courseEnrolmentGateway->queryCourseEnrolmentByPerson($criteria, $session->get('gibbonSchoolYearID'), $row['gibbonPersonID']);
-
+                            });
+                        $sectionRegistrationInfo->getItem('courses')
+                            ->format(function() use ($enrolmentCourses){ 
                                 if (empty($enrolmentCourses)) {
                                     return __('No courses found.');
                                 }else{
                                     $displayEnrolment = "";
-                                    if(count($enrolmentCourses) > 1){;
-                                        foreach ($enrolmentCourses as $enrolmentCourse) {
+                                    foreach ($enrolmentCourses as $enrolmentCourse) {
                                             $displayEnrolment .= $enrolmentCourse['course'].' ('.$enrolmentCourse['courseName'].')'.'<br/>';
-                                        }
-                                    } else{
-                                        foreach ($enrolmentCourses as $enrolmentCourse) {
-                                            $displayEnrolment .= $enrolmentCourse['course'].' ('.$enrolmentCourse['courseName'].')'.'<br/>';
-                                        }
                                     }
                                     return $displayEnrolment;
                                 }
                         });
-                        
-                        // Right Panel Class Info Section Items
-                        $card->getPanel("rightPanel")
-                            ->getSection('educational')
-                            ->addItem('className', __('Class Name'))
-                            ->addItem('registrationFormula', __('Registration Formula'))
-                            ->addMetaData("classes", $rightPanelSectionHeaderClasses);
-                        
-                        $card->getPanel("rightPanel")
-                            ->getSection('educational')
-                            ->getItem('className')
+                        $sectionRegistrationInfo->getItem("attendanceTypeName")
+                        ->translatable();
+                        $sectionRegistrationInfo->getItem('className')
                             ->format(function($row) use ($container, $settingGateway) {
                                 if (isset($row['gibbonYearGroupID'])) {
                                     $yearGroupGateway = $container->get(YearGroupGateway::class);
@@ -869,178 +831,36 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                     return $output;
                                 }
                             });
-
+                            
+                        $sectionMiscellanous = new Section('miscellaneous', __('Miscellaneous'));
                         // Right Panel Miscellaneous Section Items
-                        $card->getPanel("rightPanel")
-                            ->getSection('miscellaneous')
+                        $sectionMiscellanous
                             ->addItem('name', __('Room Number'))
+                            ->addItem('comments', __('Comments'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
 
+                        $sectionMiscellanous->getItem('name')
+                        ->format(function($row){
+                            if(empty($row["name"])){
+                                return __("Not Assigned");
+                            }else{
+                                return $row["name"];
+                            }
+                        });
+
+                        $leftPanel
+                            ->addSection($sectionIdentity)
+                            ->addSection($sectionHomeInfo);
+
+                        $rightPanel
+                            ->addSection($sectionRegistrationInfo)
+                            ->addSection($sectionMiscellanous);
+
+                        $card
+                            ->addPanel($leftPanel)
+                            ->addPanel($rightPanel);
                         echo $card->render([$row]);
-
                         /* Student Card End Here */
-
-                        // $table = DataTable::createDetails('generalInfo');
-
-                        // $table->setTitle(__('General Information'));
-
-                        // if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage.php') == true) {
-                        //     $table->addHeaderAction('view', __('View Status Log'))
-                        //             ->displayLabel()
-                        //             ->addParam('gibbonPersonID', $gibbonPersonID)
-                        //             ->setURL('/modules/User Admin/user_manage_view_status_log.php')
-                        //             ->modalWindow();
-
-                        //     $table->addHeaderAction('edit', __('Edit'))
-                        //             ->displayLabel()
-                        //             ->addParam('gibbonPersonID', $gibbonPersonID)
-                        //             ->setURL('/modules/User Admin/user_manage_edit.php');
-                        // }
-
-                        // $table->addColumn('name', __('Name'))
-                        //         ->format(Format::using('name', ['', 'preferredName', 'surname', 'Student']));
-
-                        // $table->addColumn('studentID', __('Student ID'));
-
-                        // $table->addColumn('yearGroup', __('Year Group'))
-                        //         ->format(function($row) use ($container, $settingGateway) {
-                        //             if (isset($row['gibbonYearGroupID'])) {
-                        //                 $yearGroupGateway = $container->get(YearGroupGateway::class);
-                        //                 $yearGroup = $yearGroupGateway->getByID($row['gibbonYearGroupID']);
-                        //                 $output = '';
-                        //                 if (!empty($yearGroup)) {
-                        //                     $output .= __($yearGroup['name']);
-                        //                     $dayTypeOptions = $settingGateway->getSettingByScope('User Admin', 'dayTypeOptions');
-                        //                     if (!empty($dayTypeOptions) && !empty($row['dayType'])) {
-                        //                         $output .= ' ('.$row['dayType'].')';
-                        //                     }
-                        //                     $output .= '</i><br/>';
-                        //                 }
-                        //                 return $output;
-                        //             }
-                        //         });
-
-                        // $table->addColumn('formGroup', __('Form Group'))
-                        //         ->format(function($row) use ($container, $guid, $connection2, $session) {
-                        //             if (isset($row['gibbonFormGroupID'])) {
-                        //                 $formGroupGateway = $container->get(FormGroupGateway::class);
-                        //                 $formGroup = $formGroupGateway->getByID($row['gibbonFormGroupID']);
-                        //                 $output = '';
-                        //                 if (!empty($formGroup)) {
-                        //                     if (isActionAccessible($guid, $connection2, '/modules/Form Groups/formGroups_details.php')) {
-                        //                         $output .= Format::link('./index.php?q=/modules/Form Groups/formGroups_details.php&gibbonFormGroupID='.$formGroup['gibbonFormGroupID'], $formGroup['name']);
-                        //                     } else {
-                        //                         $output .= $formGroup['name'];
-                        //                     }
-                        //                 }
-                        //                 return $output;
-                        //             }
-                        //         });
-
-                        // $table->addColumn('username', __('Username'));
-
-                        // $table->addColumn('dateOfBirth', __('Date of Birth'))
-                        // ->format(function($row) {
-                        //     if (!is_null($row['dob']) && $row['dob'] != '0000-00-00') {
-                        //         return date('d/m/Y', strtotime($row['dob']));
-                        //     }
-                        //     return '';
-                        // });
-
-                        // $table->addColumn('email', __('Email'))
-                        //         ->format(Format::using('link', ['email']));
-
-                        
-                        // $table->addColumn('schoolHistory', __('School History'))
-                        // ->format(function($row) use ($connection2, $studentGateway ) {
-                        //     if ($row['dateStart'] != '') {
-                        //         echo '<u>'.__('Start Date').'</u>: '.Format::date($row['dateStart']).'</br>';
-                        //     }
-
-                        //     $resultSelect = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
-                            
-                        //     while ($rowSelect = $resultSelect->fetch()) {
-                        //         echo '<u>'.$rowSelect['schoolYear'].'</u>: '.$rowSelect['formGroup'].' ('.$rowSelect['studyYear'].')'.'<br/>';
-                        //     }
-
-                        //     if ($row['dateEnd'] != '') {
-                        //         echo '<u>'.__('End Date').'</u>: '.Format::date($row['dateEnd']).'</br>';
-                        //     }
-                        // });
-                        
-                        // $table->addColumn('homeAddress', __('Home Address'))
-                        //     ->format(function($row) use ($container, $guid, $connection2) {
-                        //         $userGateway = $container->get(UserGateway::class);
-                        //         $homeAddress = $userGateway->getUserHomeAddress($row['gibbonPersonID']);
-                        //         if (!empty($homeAddress)) {
-                        //             if (isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php')) {
-                        //                 return $homeAddress['address1']. "," . $homeAddress['address1Country'];
-                        //             } else {
-                        //                 return "Access denied";
-                        //             }
-                        //         }
-
-                        //         return '';
-                        //     });
-
-                        // $table->addColumn('doubleCourses', __('Double Courses'))
-                        //     ->format(function($row) use ($container, $guid, $connection2, $session) {
-                        //         $courseEnrolmentGateway = $container->get(CourseEnrolmentGateway::class);
-                                
-                        //         // QUERY
-                        //         $criteria = $courseEnrolmentGateway->newQueryCriteria(true)
-                        //         ->sortBy('roleSortOrder')
-                        //         ->sortBy(['course'])
-                        //         ->fromPOST();
-
-                        //         $enrolment = $courseEnrolmentGateway->queryCourseEnrolmentByPerson($criteria, $session->get('gibbonSchoolYearID'), $row['gibbonPersonID']);
-                        //         if (!empty($enrolment)) {
-                        //             if (isActionAccessible($guid, $connection2, '/modules/Staff/staff_view_details.php')) {
-                        //                 if(count($enrolment) > 1){
-                        //                     foreach ($enrolment as $rowSelect) {
-                        //                         echo '<u>'.$rowSelect['class'].'</u>: '.$rowSelect['courseName'].' ('.$rowSelect['course'].')'.'<br/>';
-                        //                     }
-                        //                 }
-                        //                 else{
-                        //                     echo '<p>Non</p>';
-                        //                 }
-                        //             } else {
-                        //                 echo '<p>Access denied</p>';
-                        //             }
-                        //         }
-                        //     });
-
-                        // $privacySetting = $settingGateway->getSettingByScope('User Admin', 'privacy');
-                        // if ($privacySetting == 'Y') {
-                        //     $table->addColumn('privacy', __('Privacy'))
-                        //         ->format(function($row) {
-                        //             $output = '';
-
-                        //             if ($row['privacy'] != '') {
-                        //                 $output .= "<span style='color: #cc0000; background-color: #F6CECB'>";
-                        //                 $output .= __('Privacy required:').' '.$row['privacy'];
-                        //                 $output .= '</span>';
-                        //             } else {
-                        //                 $output .= "<span style='color: #390; background-color: #D4F6DC;'>";
-                        //                 $output .= __('Privacy not required or not set.');
-                        //                 $output .= '</span>';
-                        //             }
-
-                        //             return $output;
-                        //         });
-                        // }
-
-                        // $studentAgreementOptions = $settingGateway->getSettingByScope('School Admin', 'studentAgreementOptions');
-                        // if ($studentAgreementOptions != '') {
-                        //     $table->addColumn('studentAgreements', __('Student Agreements'))
-                        //         ->format(function($row) {
-                        //             return __('Agreements Signed:').' '.$row['studentAgreements'];
-                        //         });
-                        // }
-
-                        // $container->get(CustomFieldHandler::class)->addCustomFieldsToTable($table, 'User', ['student' => 1], $row['fields']);
-                       
-                        //echo $table->render([$row]);
 
                         // Get Student School History
                         $studentEnrolmentHistory = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
@@ -1056,12 +876,12 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             $studentHistoryTable->setDescription($studentHistoryTableDescription);                 
                             $studentHistoryTable->addColumn('schoolYear', __('School Year'));
                             $studentHistoryTable->addColumn('formGroup', __('Form Group'));
-                            $studentHistoryTable->addColumn('studyYear', __('Study Year'));
+                            // $studentHistoryTable->addColumn('studyYear', __('Year Group'));
                             
                         }else{
-                            $studentHistoryTable->addColumn('empty',__("No Invoices Found !"))
+                            $studentHistoryTable->addColumn('empty',__("No History Found !"))
                             ->format(function(){
-                                return __("No records found.");
+                                return __("There are no records to display.");
                             });
                         }
                         
@@ -1171,7 +991,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             } else {
                                 $studentInvoicesTable->addColumn('empty',__("No Invoices Found !"))
                                 ->format(function(){
-                                    return __('No invoicee found.');
+                                    return __('There are no records to display.');
                                 });
                             }
                             echo $studentInvoicesTable->render($invoices);
