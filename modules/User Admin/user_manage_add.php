@@ -106,12 +106,10 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $row = $form->addRow();
         $row->addLabel('phone1', __('Phone 1'))->description(__('Type, country code, number.'));
         $row->addPhoneNumber('phone1');
-
-    $phone2Set = ($values['phone2'] != '')? 'Yes' : '';
     
     $row = $form->addRow();
         $row->addLabel('showSecondPhone', __('Enter Second Phone Number ?'));
-        $row->addCheckbox('showSecondPhone')->setValue('Yes')->checked($phone2Set);
+        $row->addCheckbox('showSecondPhone')->setValue('Yes')->checked('No');
     
     $form->toggleVisibilityByClass('phone2')->onCheckbox('showSecondPhone')->when('Yes');
 
@@ -243,9 +241,9 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $form->toggleVisibilityByClass('studentDetails')->onSelect('gibbonRoleIDPrimary')->when($studentRoles);
     //$form->toggleVisibilityByClass('studentRecord')->onCheckbox('studentRecord')->when('Y');
     // $form->addRow()->addClass('studentDetails')->addHeading('Student', __('Student'))->addClass('studentDetails');
-    // $row = $form->addRow()->addClass('studentDetails');
-    //     $row->addLabel('studentRecord', __('Add Student Enrolment'));
-    //     $row->addCheckbox('studentRecord')->setValue('Y')->description(__('Create a linked student record?'));
+    $row = $form->addRow()->addClass('studentDetails');
+        $row->addLabel('studentRecord', __('Add Student Enrolment'));
+        $row->addCheckbox('studentRecord')->setValue('Y')->checked('Yes');
 
     $row = $form->addRow()->addClass('studentDetails');
         $row->addLabel('studentID', __('Student ID'));
@@ -289,9 +287,9 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     // $form->toggleVisibilityByClass('staffRecord')->onCheckbox('staffRecord')->when('Y');
     // $form->addRow()->addClass('staffDetails')->addHeading('Staff', __('Staff'))->addClass('staffDetails');
 
-    // $row = $form->addRow()->addClass('staffDetails');
-    //     $row->addLabel('staffRecord', __('Add Staff'));
-    //     $row->addCheckbox('staffRecord')->setValue('Y')->description(__('Create a linked staff record?'));
+    $row = $form->addRow()->addClass('staffDetails');
+        $row->addLabel('staffRecord', __('Add Staff'));
+        $row->addCheckbox('staffRecord')->setValue('Y')->checked('Yes');
 
     $types = array ('Teaching' => __('Teaching'), 'Support' => __('Support'));
     $row = $form->addRow()->addClass('staffDetails');
@@ -377,11 +375,6 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
 
     // BACKGROUND INFORMATION
     // $form->addRow()->addHeading('Background Information', __('Background Information'));
-
-    // $row = $form->addRow();
-    //     $row->addLabel('languageThird', __('Third Language'));
-    //     $row->addSelectLanguage('languageThird');
-
    
     // $ethnicities = $settingGateway->getSettingByScope('User Admin', 'ethnicity');
     // $row = $form->addRow();
@@ -463,8 +456,6 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     // $row = $form->addRow();
     //     $row->addLabel('gibbonHouseID', __('House'));
     //     $row->addSelect('gibbonHouseID')->fromQuery($pdo, $sql)->placeholder();
-
-    
 
     $sql = "SELECT DISTINCT transport FROM gibbonPerson
             JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID)

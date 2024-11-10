@@ -65,13 +65,11 @@ class PhoneNumber extends Input
         $this->phoneType = $this->column
             ->addSelect($name.'Type')
             ->fromArray($types)
-            ->placeholder()
             ->setClass('mr-1 w-1/3 sm:w-1/4');
         
         $this->phoneCodes = $this->column
             ->addSelect($name.'CountryCode')
             ->fromArray($countryCodes)
-            ->placeholder()
             ->setClass('mr-1 w-1/3 sm:w-1/4');
             
         $this->phoneNumber = $this->column

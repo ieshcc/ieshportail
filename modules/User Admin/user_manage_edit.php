@@ -152,7 +152,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             // -1.09
             $row = $form->addRow();
                 $emailLabel = $row->addLabel('email', __('Email'));
-                $email = $row->addEmail('email')->required;
+                $email = $row->addEmail('email')->required();
 
             $settingGateway = $container->get(SettingGateway::class);
 
@@ -650,7 +650,23 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                         else if ($('#status').val()=="Expected" ) {
                             alert("As you have marked this person as expected, please consider setting the Start Date field.") ;
                         }
-                        });
+                    });
+                    function updateNames() {
+                        const firstName = $('#firstName').val();
+                        const surname = $('#surname').val();
+                        if (firstName && surname) {
+                            $('#officialName').val(surname + ' ' + firstName);
+                        } else {
+                            $('#officialName').val(''); // Clear if either input is empty
+                        }
+                        
+                        if (firstName){
+                            $('#preferredName').val(firstName);
+                        } else {
+                            $('#preferredName').val('');
+                        }
+                    }
+                    $('#firstName, #surname').on('input', updateNames);
                 });
             </script>
 
