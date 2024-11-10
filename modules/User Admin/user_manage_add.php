@@ -77,16 +77,104 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
         $row->addTextField('firstName')->required()->maxLength(60);
 
     $row = $form->addRow();
-        $row->addLabel('preferredName', __('Preferred Name'))->description(__('Most common name, alias, nickname, etc.'));
-        $row->addTextField('preferredName')->required()->maxLength(60);
+        $row->addLabel('officialName', __('Full Name'))->description(__('Full name as shown in ID documents.'));
+        $row->addTextField('officialName')->required()->maxLength(150)->readOnly();
 
     $row = $form->addRow();
-        $row->addLabel('officialName', __('Official Name'))->description(__('Full name as shown in ID documents.'));
-        $row->addTextField('officialName')->required()->maxLength(150)->setTitle(__('Please enter full name as shown in ID documents'));
+        $row->addLabel('preferredName', __('Displayed Name'))->description(__('Named that will be displayed in the system.'));
+        $row->addTextField('preferredName')->required()->maxLength(60)->readOnly();
 
     $row = $form->addRow();
-        $row->addLabel('nameInCharacters', __('Name In Characters'))->description(__('Chinese or other character-based name.'));
+        $row->addLabel('nameInCharacters', __('Name In Characters'))->description(__('Arabic or other character-based name.'));
         $row->addTextField('nameInCharacters')->maxLength(60);
+
+    $row = $form->addRow();
+        $emailLabel = $row->addLabel('email', __('Email'));
+        $email = $row->addEmail('email')->required();
+
+    $settingGateway = $container->get(SettingGateway::class);
+
+    $uniqueEmailAddress = $settingGateway->getSettingByScope('User Admin', 'uniqueEmailAddress');
+    if ($uniqueEmailAddress == 'Y') {
+        $email->uniqueField($session->get('absoluteURL').'/modules/User Admin/user_manage_emailAjax.php');
+    }
+
+    $row = $form->addRow();
+        $row->addLabel('emailAlternate', __('Alternate Email'));
+        $row->addEmail('emailAlternate');
+    
+    $row = $form->addRow();
+        $row->addLabel('phone1', __('Phone 1'))->description(__('Type, country code, number.'));
+        $row->addPhoneNumber('phone1');
+
+    $phone2Set = ($values['phone2'] != '')? 'Yes' : '';
+    
+    $row = $form->addRow();
+        $row->addLabel('showSecondPhone', __('Enter Second Phone Number ?'));
+        $row->addCheckbox('showSecondPhone')->setValue('Yes')->checked($phone2Set);
+    
+    $form->toggleVisibilityByClass('phone2')->onCheckbox('showSecondPhone')->when('Yes');
+
+    $row = $form->addRow()->addClass('phone2');
+        $row->addLabel('phone2', __('Phone 2'))->description(__('Type, country code, number.'));
+        $row->addPhoneNumber('phone2');
+    
+    $row = $form->addRow()->addClass('address');
+        $row->addLabel('address1', __('Address 1'))->description(__('Unit, Building, Street'));
+        $row->addTextField('address1')->maxLength(255);
+    
+    $row = $form->addRow()->addClass('address');
+        $row->addLabel('address1Complement', __('Address 1 Complement'))->description(__('If needed'));
+        $row->addTextArea('address1Complement')->maxLength(255)->setRows(2);
+
+    $row = $form->addRow()->addClass('address');
+        $row->addLabel('address1City', __('Address 1 City'));
+        $row->addTextFieldDistrict('address1City');
+    
+    $row = $form->addRow()->addClass('address');
+        $row->addLabel('address1ZipCode', __('Address 1 Zip Code'));
+        $row->addTextFieldDistrict('address1ZipCode');
+
+    $row = $form->addRow()->addClass('address');
+        $row->addLabel('address1Country', __('Address 1 Country'));
+        $row->addSelectCountry('address1Country');
+
+    $row = $form->addRow();
+        $row->addLabel('addSecondAddress', __('Enter Second Address ?'));
+        $row->addCheckbox('addSecondAddress')->setValue('Yes')->checked(false);
+
+    $form->toggleVisibilityByClass('address2')->onCheckbox('addSecondAddress')->when('Yes');
+
+    $row = $form->addRow()->addClass('address2');
+        $row->addLabel('address2', __('Address 2'))->description(__('Unit, Building, Street'));
+        $row->addTextField('address2')->maxLength(255);
+
+    $row = $form->addRow()->addClass('address2');
+        $row->addLabel('address2Complement', __('Address 2 Complement'))->description(__('If needed'));
+        $row->addTextArea('address2Complement')->maxLength(255)->setRows(2);
+
+    $row = $form->addRow()->addClass('address2');
+        $row->addLabel('address2City', __('Address 2 City'));
+        $row->addTextFieldDistrict('address2City');
+        
+    $row = $form->addRow()->addClass('address2');
+        $row->addLabel('address2ZipCode', __('Address 2 Zip Code'));
+        $row->addTextFieldDistrict('address2ZipCode');
+
+    $row = $form->addRow()->addClass('address2');
+        $row->addLabel('address2Country', __('Address 2 Country'));
+        $row->addSelectCountry('address2Country');
+
+    $form->addRow()->addHeading('Profile Information', __('Profile Information'));
+    
+    $row = $form->addRow();
+        $row->addLabel('file1', __('User Photo'))
+            ->description(__('Displayed at 240px by 320px.'))
+            ->description(__('Accepts images up to 360px by 480px.'))
+            ->description(__('Accepts aspect ratio between 1:1.2 and 1:1.4.'));
+        $row->addFileUpload('file1')
+            ->accepts('.jpg,.jpeg,.gif,.png')
+            ->setMaxUpload(false);
 
     $row = $form->addRow();
         $row->addLabel('gender', __('Gender'));
@@ -97,13 +185,24 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
         $row->addDate('dob');
 
     $row = $form->addRow();
-        $row->addLabel('file1', __('User Photo'))
-            ->description(__('Displayed at 240px by 320px.'))
-            ->description(__('Accepts images up to 360px by 480px.'))
-            ->description(__('Accepts aspect ratio between 1:1.2 and 1:1.4.'));
-        $row->addFileUpload('file1')
-            ->accepts('.jpg,.jpeg,.gif,.png')
-            ->setMaxUpload(false);
+        $row->addLabel('cityOfBirth', __('City of Birth'));
+        $row->addTextField('cityOfBirth')->maxLength(60);
+
+    $row = $form->addRow();
+        $row->addLabel('countryOfBirth', __('Country of Birth'));
+        $row->addSelectCountry('countryOfBirth');
+
+    $row = $form->addRow();
+        $row->addLabel('languageFirst', __('First Language'));
+        $row->addSelectLanguage('languageFirst');
+
+    $row = $form->addRow();
+        $row->addLabel('languageSecond', __('Second Language'));
+        $row->addSelectLanguage('languageSecond');
+
+    $row = $form->addRow();
+        $row->addLabel('languageThird', __('Third Language'));
+        $row->addSelectLanguage('languageThird');
 
     // SYSTEM ACCESS
     $form->addRow()->addHeading('System Access', __('System Access'));
@@ -139,6 +238,69 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $row = $form->addRow();
         $row->addLabel('gibbonRoleIDPrimary', __('Primary Role'))->description(__('Controls what a user can do and see.'));
         $row->addSelect('gibbonRoleIDPrimary')->fromArray($availableRoles)->required()->placeholder();
+    
+    // STUDENT
+    $form->toggleVisibilityByClass('studentDetails')->onSelect('gibbonRoleIDPrimary')->when($studentRoles);
+    //$form->toggleVisibilityByClass('studentRecord')->onCheckbox('studentRecord')->when('Y');
+    // $form->addRow()->addClass('studentDetails')->addHeading('Student', __('Student'))->addClass('studentDetails');
+    // $row = $form->addRow()->addClass('studentDetails');
+    //     $row->addLabel('studentRecord', __('Add Student Enrolment'));
+    //     $row->addCheckbox('studentRecord')->setValue('Y')->description(__('Create a linked student record?'));
+
+    $row = $form->addRow()->addClass('studentDetails');
+        $row->addLabel('studentID', __('Student ID'));
+        $row->addTextField('studentID')
+            ->maxLength(15)
+            ->readOnly()
+            ->setValue(__("Defined by the system"));
+
+    $row = $form->addRow()->addClass('studentDetails');
+        $row->addLabel('yearName', __('School Year'))
+            ->description(__('To change the school year, return to the home screen and select the desired school year.'));
+        $row->addTextField('yearName')
+            ->readOnly()
+            ->maxLength(20)
+            ->setValue($session->get('gibbonSchoolYearName'));
+
+    $row = $form->addRow()->addClass('studentDetails');
+        $row->addLabel('gibbonYearGroupID', __('Year Group'));
+        $row->addSelectYearGroup('gibbonYearGroupID')->required();
+
+    $row = $form->addRow()->addClass('studentDetails');
+        $row->addLabel('gibbonFormGroupID', __('Form Group'));
+        $row->addSelectFormGroup('gibbonFormGroupID', $session->get('gibbonSchoolYearID'))->required();
+
+    // $row = $form->addRow()->addClass('studentDetails');
+    //     $row->addLabel('rollOrder', __('Roll Order'));
+    //     $row->addNumber('rollOrder')->maxLength(2);
+
+    // Check to see if any class mappings exists -- otherwise this feature is inactive, hide it
+    $classMapCount = $container->get(CourseSyncGateway::class)->countAll();
+    if ($classMapCount > 0) {
+        $autoEnrolDefault = $settingGateway->getSettingByScope('Timetable Admin', 'autoEnrolCourses');
+        $row = $form->addRow()->addClass('studentRecord');;
+            $row->addLabel('autoEnrolStudent', __('Auto-Enrol Courses?'))
+                ->description(__('Should this student be automatically enrolled in courses for their Form Group?'));
+            $row->addYesNo('autoEnrolStudent')->selected($autoEnrolDefault);
+    }
+
+    // STAFF
+    $form->toggleVisibilityByClass('staffDetails')->onSelect('gibbonRoleIDPrimary')->when($staffRoles);
+    // $form->toggleVisibilityByClass('staffRecord')->onCheckbox('staffRecord')->when('Y');
+    // $form->addRow()->addClass('staffDetails')->addHeading('Staff', __('Staff'))->addClass('staffDetails');
+
+    // $row = $form->addRow()->addClass('staffDetails');
+    //     $row->addLabel('staffRecord', __('Add Staff'));
+    //     $row->addCheckbox('staffRecord')->setValue('Y')->description(__('Create a linked staff record?'));
+
+    $types = array ('Teaching' => __('Teaching'), 'Support' => __('Support'));
+    $row = $form->addRow()->addClass('staffDetails');
+        $row->addLabel('staffType', __('Type'));
+        $row->addSelect('staffType')->fromArray($types)->placeholder()->required();
+
+    $row = $form->addRow()->addClass('staffDetails');
+        $row->addLabel('jobTitle', __('Job Title'));
+        $row->addTextField('jobTitle')->maxlength(100);
 
     $row = $form->addRow();
         $row->addLabel('username', __('Username'))->description(__('System login name.'));
@@ -146,18 +308,19 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
             ->required()
             ->addGenerateUsernameButton($form);
 
+    $row = $form->addRow();
+    $row->addLabel('passwordNew', __('Password'));
+    $row->addPassword('passwordNew')
+    ->addPasswordPolicy($pdo)
+    ->addGeneratePasswordButton($form)
+    ->required()
+    ->maxLength(30);
+    
     /** @var PasswordPolicy */
     $policies = $container->get(PasswordPolicy::class);
     if (($policiesHTML = $policies->describeHTML()) !== '') {
         $form->addRow()->addAlert($policiesHTML, 'warning');
     }
-    $row = $form->addRow();
-        $row->addLabel('passwordNew', __('Password'));
-        $row->addPassword('passwordNew')
-            ->addPasswordPolicy($pdo)
-            ->addGeneratePasswordButton($form)
-            ->required()
-            ->maxLength(30);
 
     $row = $form->addRow();
         $row->addLabel('passwordConfirm', __('Confirm Password'));
@@ -172,85 +335,26 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
 
     $row = $form->addRow();
         $row->addLabel('canLogin', __('Can Login?'));
-        $row->addYesNo('canLogin')->required();
+        $row->addNoYes('canLogin');
 
     $row = $form->addRow();
         $row->addLabel('passwordForceReset', __('Force Reset Password?'))->description(__('User will be prompted on next login.'));
-        $row->addYesNo('passwordForceReset')->required();
+        $row->addYesNo('passwordForceReset')->required()->setValue("No");
 
-    // CONTACT INFORMATION
-    $form->addRow()->addHeading('Contact Information', __('Contact Information'));
+    // // CONTACT INFORMATION
+    // $form->addRow()->addHeading('Contact Information', __('Contact Information'));
 
-    $row = $form->addRow();
-        $emailLabel = $row->addLabel('email', __('Email'));
-        $email = $row->addEmail('email');
-
-    $settingGateway = $container->get(SettingGateway::class);
-
-    $uniqueEmailAddress = $settingGateway->getSettingByScope('User Admin', 'uniqueEmailAddress');
-    if ($uniqueEmailAddress == 'Y') {
-        $email->uniqueField($session->get('absoluteURL').'/modules/User Admin/user_manage_emailAjax.php');
-    }
-
-    $row = $form->addRow();
-        $row->addLabel('emailAlternate', __('Alternate Email'));
-        $row->addEmail('emailAlternate');
-
-    $row = $form->addRow();
-    $row->addAlert(__('Address information for an individual only needs to be set under the following conditions:'), 'warning')
-        ->append('<ol>')
-        ->append('<li>'.__('If the user is not in a family.').'</li>')
-        ->append('<li>'.__('If the user\'s family does not have a home address set.').'</li>')
-        ->append('<li>'.__('If the user needs an address in addition to their family\'s home address.').'</li>')
-        ->append('</ol>');
-
-    $row = $form->addRow();
-        $row->addLabel('showAddresses', __('Enter Personal Address?'));
-        $row->addCheckbox('showAddresses')->setValue('Yes');
-
-    $form->toggleVisibilityByClass('address')->onCheckbox('showAddresses')->when('Yes');
-
-    $row = $form->addRow()->addClass('address');
-        $row->addLabel('address1', __('Address 1'))->description(__('Unit, Building, Street'));
-        $row->addTextField('address1')->maxLength(255);
-
-    $row = $form->addRow()->addClass('address');
-        $row->addLabel('address1District', __('Address 1 District'))->description(__('County, State, District'));
-        $row->addTextFieldDistrict('address1District');
-
-    $row = $form->addRow()->addClass('address');
-        $row->addLabel('address1Country', __('Address 1 Country'));
-        $row->addSelectCountry('address1Country');
-
-    $row = $form->addRow()->addClass('address');
-        $row->addLabel('address2', __('Address 2'))->description(__('Unit, Building, Street'));
-        $row->addTextField('address2')->maxLength(255);
-
-    $row = $form->addRow()->addClass('address');
-        $row->addLabel('address2District', __('Address 2 District'))->description(__('County, State, District'));
-        $row->addTextFieldDistrict('address2District');
-
-    $row = $form->addRow()->addClass('address');
-        $row->addLabel('address2Country', __('Address 2 Country'));
-        $row->addSelectCountry('address2Country');
-
-    for ($i = 1; $i < 5; ++$i) {
-        $row = $form->addRow();
-        $row->addLabel('phone'.$i, __('Phone').' '.$i)->description(__('Type, country code, number.'));
-        $row->addPhoneNumber('phone'.$i);
-    }
-
-    $row = $form->addRow();
-        $row->addLabel('website', __('Website'))->description(__('Include http://'));
-        $row->addURL('website');
+    // $row = $form->addRow();
+    //     $row->addLabel('website', __('Website'))->description(__('Include http://'));
+    //     $row->addURL('website');
 
     // SCHOOL INFORMATION
-    $form->addRow()->addHeading('School Information', __('School Information'));
+    $form->addRow()->addClass('studentDetails')->addHeading('School Information', __('School Information'));
 
     $dayTypeOptions = $settingGateway->getSettingByScope('User Admin', 'dayTypeOptions');
     if (!empty($dayTypeOptions)) {
         $dayTypeText = $settingGateway->getSettingByScope('User Admin', 'dayTypeText');
-        $row = $form->addRow();
+        $row = $form->addRow()->addClass('studentDetails');
             $row->addLabel('dayType', __('Day Type'))->description($dayTypeText);
             $row->addSelect('dayType')->fromString($dayTypeOptions)->placeholder();
     }
@@ -259,57 +363,46 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $result = $pdo->executeQuery(array(), $sql);
     $schools = ($result && $result->rowCount() > 0)? $result->fetchAll(\PDO::FETCH_COLUMN) : array();
 
-    $row = $form->addRow();
+    $row = $form->addRow()->addClass('studentDetails');
         $row->addLabel('lastSchool', __('Last School'));
         $row->addTextField('lastSchool')->autocomplete($schools);
 
-    $row = $form->addRow();
+    $row = $form->addRow()->addClass('studentDetails');
         $row->addLabel('dateStart', __('Start Date'))->description(__("Users's first day at school."));
         $row->addDate('dateStart');
 
-    $row = $form->addRow();
-        $row->addLabel('gibbonSchoolYearIDClassOf', __('Class Of'))->description(__('When is the student expected to graduate?'));
+    $row = $form->addRow()->addClass('studentDetails');
+        $row->addLabel('gibbonSchoolYearIDClassOf', __('Expected to graduate'))->description(__('When is the student expected to graduate?'));
         $row->addSelectSchoolYear('gibbonSchoolYearIDClassOf');
 
     // BACKGROUND INFORMATION
-    $form->addRow()->addHeading('Background Information', __('Background Information'));
+    // $form->addRow()->addHeading('Background Information', __('Background Information'));
 
-    $row = $form->addRow();
-        $row->addLabel('languageFirst', __('First Language'));
-        $row->addSelectLanguage('languageFirst');
+    // $row = $form->addRow();
+    //     $row->addLabel('languageThird', __('Third Language'));
+    //     $row->addSelectLanguage('languageThird');
 
-    $row = $form->addRow();
-        $row->addLabel('languageSecond', __('Second Language'));
-        $row->addSelectLanguage('languageSecond');
+   
+    // $ethnicities = $settingGateway->getSettingByScope('User Admin', 'ethnicity');
+    // $row = $form->addRow();
+    //     $row->addLabel('ethnicity', __('Ethnicity'));
+    //     if (!empty($ethnicities)) {
+    //         $row->addSelect('ethnicity')->fromString($ethnicities)->placeholder();
+    //     } else {
+    //         $row->addTextField('ethnicity')->maxLength(255);
+    //     }
 
-    $row = $form->addRow();
-        $row->addLabel('languageThird', __('Third Language'));
-        $row->addSelectLanguage('languageThird');
+    // $religions = $settingGateway->getSettingByScope('User Admin', 'religions');
+    // $row = $form->addRow();
+    //     $row->addLabel('religion', __('Religion'));
+    //     if (!empty($religions)) {
+    //         $row->addSelect('religion')->fromString($religions)->placeholder();
+    //     } else {
+    //         $row->addTextField('religion')->maxLength(30);
+    //     }
 
-    $row = $form->addRow();
-        $row->addLabel('countryOfBirth', __('Country of Birth'));
-        $row->addSelectCountry('countryOfBirth');
-
-    $ethnicities = $settingGateway->getSettingByScope('User Admin', 'ethnicity');
-    $row = $form->addRow();
-        $row->addLabel('ethnicity', __('Ethnicity'));
-        if (!empty($ethnicities)) {
-            $row->addSelect('ethnicity')->fromString($ethnicities)->placeholder();
-        } else {
-            $row->addTextField('ethnicity')->maxLength(255);
-        }
-
-    $religions = $settingGateway->getSettingByScope('User Admin', 'religions');
-    $row = $form->addRow();
-        $row->addLabel('religion', __('Religion'));
-        if (!empty($religions)) {
-            $row->addSelect('religion')->fromString($religions)->placeholder();
-        } else {
-            $row->addTextField('religion')->maxLength(30);
-        }
-
-    $nationalityList = $settingGateway->getSettingByScope('User Admin', 'nationality');
-    $residencyStatusList = $settingGateway->getSettingByScope('User Admin', 'residencyStatus');
+    // $nationalityList = $settingGateway->getSettingByScope('User Admin', 'nationality');
+    // $residencyStatusList = $settingGateway->getSettingByScope('User Admin', 'residencyStatus');
 
     // EMPLOYMENT
     $form->addRow()->addHeading('Employment', __('Employment'));
@@ -366,16 +459,12 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     // MISCELLANEOUS
     $form->addRow()->addHeading('Miscellaneous', __('Miscellaneous'));
 
-    $sql = "SELECT gibbonHouseID as value, name FROM gibbonHouse ORDER BY name";
-    $row = $form->addRow();
-        $row->addLabel('gibbonHouseID', __('House'));
-        $row->addSelect('gibbonHouseID')->fromQuery($pdo, $sql)->placeholder();
+    // $sql = "SELECT gibbonHouseID as value, name FROM gibbonHouse ORDER BY name";
+    // $row = $form->addRow();
+    //     $row->addLabel('gibbonHouseID', __('House'));
+    //     $row->addSelect('gibbonHouseID')->fromQuery($pdo, $sql)->placeholder();
 
-    $row = $form->addRow();
-        $row->addLabel('studentID', __('Student ID'));
-        $row->addTextField('studentID')
-            ->maxLength(15)
-            ->uniqueField('./modules/User Admin/user_manage_studentIDAjax.php');
+    
 
     $sql = "SELECT DISTINCT transport FROM gibbonPerson
             JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID)
@@ -396,9 +485,9 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
         $row->addLabel('lockerNumber', __('Locker Number'));
         $row->addTextField('lockerNumber')->maxLength(20);
 
-    $row = $form->addRow();
-        $row->addLabel('vehicleRegistration', __('Vehicle Registration'));
-        $row->addTextField('vehicleRegistration')->maxLength(20);
+    // $row = $form->addRow();
+    //     $row->addLabel('vehicleRegistration', __('Vehicle Registration'));
+    //     $row->addTextField('vehicleRegistration')->maxLength(20);
 
     $privacySetting = $settingGateway->getSettingByScope('User Admin', 'privacy');
     $privacyOptions = $settingGateway->getSettingByScope('User Admin', 'privacyOptions');
@@ -420,63 +509,37 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
         $row->addCheckbox('studentAgreements[]')->fromArray($options);
     }
 
-    // STAFF
-    $form->toggleVisibilityByClass('staffDetails')->onSelect('gibbonRoleIDPrimary')->when($staffRoles);
-    $form->toggleVisibilityByClass('staffRecord')->onCheckbox('staffRecord')->when('Y');
-    $form->addRow()->addClass('staffDetails')->addHeading('Staff', __('Staff'))->addClass('staffDetails');
-
-    $row = $form->addRow()->addClass('staffDetails');
-        $row->addLabel('staffRecord', __('Add Staff'));
-        $row->addCheckbox('staffRecord')->setValue('Y')->description(__('Create a linked staff record?'));
-
-    $types = array ('Teaching' => __('Teaching'), 'Support' => __('Support'));
-    $row = $form->addRow()->addClass('staffRecord');
-        $row->addLabel('staffType', __('Type'));
-        $row->addSelect('staffType')->fromArray($types)->placeholder()->required();
-
-    $row = $form->addRow()->addClass('staffRecord');
-        $row->addLabel('jobTitle', __('Job Title'));
-        $row->addTextField('jobTitle')->maxlength(100);
-
-    // STUDENT
-    $form->toggleVisibilityByClass('studentDetails')->onSelect('gibbonRoleIDPrimary')->when($studentRoles);
-    $form->toggleVisibilityByClass('studentRecord')->onCheckbox('studentRecord')->when('Y');
-    $form->addRow()->addClass('studentDetails')->addHeading('Student', __('Student'))->addClass('studentDetails');
-
-    $row = $form->addRow()->addClass('studentDetails');
-        $row->addLabel('studentRecord', __('Add Student Enrolment'));
-        $row->addCheckbox('studentRecord')->setValue('Y')->description(__('Create a linked student record?'));
-
-    $row = $form->addRow()->addClass('studentRecord');
-    $row->addLabel('yearName', __('School Year'));
-    $row->addTextField('yearName')->readOnly()->maxLength(20)->setValue($session->get('gibbonSchoolYearName'));
-
-    $row = $form->addRow()->addClass('studentRecord');
-        $row->addLabel('gibbonYearGroupID', __('Year Group'));
-        $row->addSelectYearGroup('gibbonYearGroupID')->required();
-
-    $row = $form->addRow()->addClass('studentRecord');
-        $row->addLabel('gibbonFormGroupID', __('Form Group'));
-        $row->addSelectFormGroup('gibbonFormGroupID', $session->get('gibbonSchoolYearID'))->required();
-
-    $row = $form->addRow()->addClass('studentRecord');
-        $row->addLabel('rollOrder', __('Roll Order'));
-        $row->addNumber('rollOrder')->maxLength(2);
-
-    // Check to see if any class mappings exists -- otherwise this feature is inactive, hide it
-    $classMapCount = $container->get(CourseSyncGateway::class)->countAll();
-    if ($classMapCount > 0) {
-        $autoEnrolDefault = $settingGateway->getSettingByScope('Timetable Admin', 'autoEnrolCourses');
-        $row = $form->addRow()->addClass('studentRecord');;
-            $row->addLabel('autoEnrolStudent', __('Auto-Enrol Courses?'))
-                ->description(__('Should this student be automatically enrolled in courses for their Form Group?'));
-            $row->addYesNo('autoEnrolStudent')->selected($autoEnrolDefault);
-    }
-
+    
     // SUBMIT
     $row = $form->addRow();
         $row->addFooter()->append('<small>'.getMaxUpload(true).'</small>');
         $row->addSubmit();
 
     echo $form->getOutput();
+    ?>
+    
+    <!-- Filling PreferredName and OfficialName automatically -->
+    <script type="text/javascript">
+        $(document).ready(function(){
+            function updateNames() {
+                const firstName = $('#firstName').val();
+                const surname = $('#surname').val();
+                if (firstName && surname) {
+                    $('#officialName').val(surname + ' ' + firstName);
+                } else {
+                    $('#officialName').val(''); // Clear if either input is empty
+                }
+                
+                if (firstName){
+                    $('#preferredName').val(firstName);
+                } else {
+                    $('#preferredName').val('');
+                }
+            }
+
+            $('#firstName, #surname').on('input', updateNames);
+        });
+    </script>
+
+    <?php
 }

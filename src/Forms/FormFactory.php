@@ -340,6 +340,11 @@ class FormFactory implements FormFactoryInterface
         return $this->createSelect($name)->fromArray(array( 'Y' => __('Yes'), 'N' => __('No') ));
     }
 
+    public function createNoYes($name)
+    {
+        return $this->createSelect($name)->fromArray(array('N' => __('No'), 'Y' => __('Yes')));
+    }
+
     public function createYesNoRadio($name)
     {
         return $this->createRadio($name)->fromArray(array('Y' => __('Yes'), 'N' => __('No') ))->inline(true);
@@ -353,7 +358,7 @@ class FormFactory implements FormFactoryInterface
     public function createSelectTitle($name)
     {
         return $this->createSelect($name)->fromArray(array(
-            'Ms.'  => __('Ms.'),
+            // 'Ms.'  => __('Ms.'),
             'Miss' => __('Miss'),
             'Mr.'  => __('Mr.'),
             'Mrs.' => __('Mrs.'),

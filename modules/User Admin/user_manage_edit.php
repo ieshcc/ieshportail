@@ -152,7 +152,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             // -1.09
             $row = $form->addRow();
                 $emailLabel = $row->addLabel('email', __('Email'));
-                $email = $row->addEmail('email');
+                $email = $row->addEmail('email')->required;
 
             $settingGateway = $container->get(SettingGateway::class);
 
@@ -185,7 +185,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                 $row->addLabel('phone2', __('Phone 2'))->description(__('Type, country code, number.'));
                 $row->addPhoneNumber('phone2');
             
-            $addressSet = ($values['address1'] != '' or $values['address1District'] != '' or $values['address1Country'] != '')? 'Yes' : '';
+            $addressSet = ($values['address1'] != '' or $values['address1City'] != '' or $values['address1Country'] != '')? 'Yes' : '';
 
             // -1.14
             // $row = $form->addRow();
@@ -242,7 +242,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                 }
             }
     
-            $address2Set = ($values['address2'] != '' or $values['address2District'] != '' or $values['address2Country'] != '')? 'Yes' : '';
+            $address2Set = ($values['address2'] != '' or $values['address2City'] != '' or $values['address2Country'] != '')? 'Yes' : '';
     
             $row = $form->addRow();
                 $row->addLabel('addSecondAddress', __('Enter Second Address ?'));

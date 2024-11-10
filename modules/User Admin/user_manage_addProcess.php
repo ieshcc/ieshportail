@@ -57,10 +57,14 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $email = trim($_POST['email'] ?? '');
     $emailAlternate = trim($_POST['emailAlternate'] ?? '');
     $address1 = $_POST['address1'] ?? '';
-    $address1District = $_POST['address1District'] ?? '';
+    $address1Complement = $_POST['address1Complement'] ?? '';
+    $address1City = $_POST['address1City'] ?? '';
+    $address1ZipCode = $_POST['address1ZipCode'] ?? '';
     $address1Country = $_POST['address1Country'] ?? '';
     $address2 = $_POST['address2'] ?? '';
-    $address2District = $_POST['address2District'] ?? '';
+    $address2Complement = $_POST['address2Complement'] ?? '';
+    $address2City = $_POST['address2City'] ?? '';
+    $address2ZipCode = $_POST['address2ZipCode'] ?? '';
     $address2Country = $_POST['address2Country'] ?? '';
     $phone1Type = $_POST['phone1Type'] ?? '';
     if ($_POST['phone1'] != '' and $phone1Type == '') {
@@ -69,46 +73,62 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $phone1CountryCode = $_POST['phone1CountryCode'] ?? '';
     $phone1 = preg_replace('/[^0-9+]/', '', $_POST['phone1'] ?? '');
     $phone2Type = $_POST['phone2Type'] ?? '';
-    if ($_POST['phone2'] != '' and $phone2Type == '') {
+    if(isset($_POST['phone2'])){
+        if ($_POST['phone2'] != '' && $phone2Type == '') {
+            $phone2Type = 'Other';
+        }
+        $phone2CountryCode = $_POST['phone2CountryCode'] ?? '';
+        $phone2 = preg_replace('/[^0-9+]/', '', $_POST['phone2'] ?? '');
+    } else{
         $phone2Type = 'Other';
+        $phone2CountryCode = '';
+        $phone2 = '';
     }
-    $phone2CountryCode = $_POST['phone2CountryCode'] ?? '';
-    $phone2 = preg_replace('/[^0-9+]/', '', $_POST['phone2'] ?? '');
-    $phone3Type = $_POST['phone3Type'] ?? '';
-    if ($_POST['phone3'] != '' and $phone3Type == '') {
-        $phone3Type = 'Other';
-    }
-    $phone3CountryCode = $_POST['phone3CountryCode'] ?? '';
-    $phone3 = preg_replace('/[^0-9+]/', '', $_POST['phone3'] ?? '');
-    $phone4Type = $_POST['phone4Type'] ?? '';
-    if ($_POST['phone4'] != '' and $phone4Type == '') {
-        $phone4Type = 'Other';
-    }
-    $phone4CountryCode = $_POST['phone4CountryCode'] ?? '';
-    $phone4 = preg_replace('/[^0-9+]/', '', $_POST['phone4'] ?? '');
-    $website = $_POST['website'] ?? '';
+    // if ($_POST['phone2'] != '' and $phone2Type == '') {
+    //     $phone2Type = 'Other';
+    // }
+    // $phone2CountryCode = $_POST['phone2CountryCode'] ?? '';
+    // $phone2 = preg_replace('/[^0-9+]/', '', $_POST['phone2'] ?? '');
+    // $phone3Type = $_POST['phone3Type'] ?? '';
+    // if ($_POST['phone3'] != '' and $phone3Type == '') {
+    //     $phone3Type = 'Other';
+    // }
+    // $phone3CountryCode = $_POST['phone3CountryCode'] ?? '';
+    // $phone3 = preg_replace('/[^0-9+]/', '', $_POST['phone3'] ?? '');
+    // $phone4Type = $_POST['phone4Type'] ?? '';
+    // if ($_POST['phone4'] != '' and $phone4Type == '') {
+    //     $phone4Type = 'Other';
+    // }
+    // $phone4CountryCode = $_POST['phone4CountryCode'] ?? '';
+    // $phone4 = preg_replace('/[^0-9+]/', '', $_POST['phone4'] ?? '');
+    // $website = $_POST['website'] ?? '';
     $languageFirst = $_POST['languageFirst'] ?? '';
     $languageSecond = $_POST['languageSecond'] ?? '';
     $languageThird = $_POST['languageThird'] ?? '';
     $countryOfBirth = $_POST['countryOfBirth'] ?? '';
-    $ethnicity = $_POST['ethnicity'] ?? '';
-    $religion = $_POST['religion'] ?? '';
+    // $ethnicity = $_POST['ethnicity'] ?? '';
+    // $religion = $_POST['religion'] ?? '';
+
     $profession = $_POST['profession'] ?? '';
     $employer = $_POST['employer'] ?? '';
     $jobTitle = $_POST['jobTitle'] ?? '';
+
     $emergency1Name = $_POST['emergency1Name'] ?? '';
     $emergency1Number1 = $_POST['emergency1Number1'] ?? '';
     $emergency1Number2 = $_POST['emergency1Number2'] ?? '';
     $emergency1Relationship = $_POST['emergency1Relationship'] ?? '';
+
     $emergency2Name = $_POST['emergency2Name'] ?? '';
     $emergency2Number1 = $_POST['emergency2Number1'] ?? '';
     $emergency2Number2 = $_POST['emergency2Number2'] ?? '';
     $emergency2Relationship = $_POST['emergency2Relationship'] ?? '';
+
     $profession = $_POST['profession'] ?? '';
     $employer = $_POST['employer'] ?? '';
     $jobTitle = $_POST['jobTitle'] ?? '';
-    $gibbonHouseID = !empty($_POST['gibbonHouseID']) ? $_POST['gibbonHouseID'] : null;
-    $studentID = $_POST['studentID'] ?? '';
+    //$gibbonHouseID = !empty($_POST['gibbonHouseID']) ? $_POST['gibbonHouseID'] : null;
+    //$studentID = $_POST['studentID'] ?? '';
+    $studentID = '28';
     $dateStart = !empty($_POST['dateStart']) ? Format::dateConvert($_POST['dateStart']) : null;
 
     $gibbonSchoolYearIDClassOf = !empty($_POST['gibbonSchoolYearIDClassOf']) ? $_POST['gibbonSchoolYearIDClassOf'] : null;
@@ -116,7 +136,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $transport = $_POST['transport'] ?? '';
     $transportNotes = $_POST['transportNotes'] ?? '';
     $lockerNumber = $_POST['lockerNumber'] ?? '';
-    $vehicleRegistration = $_POST['vehicleRegistration'] ?? '';
+    //$vehicleRegistration = $_POST['vehicleRegistration'] ?? '';
 
     $privacy = !empty($_POST['privacyOptions']) ? implode(',', $_POST['privacyOptions']) : null;
     $agreements = !empty($_POST['studentAgreements']) ? implode(',', $_POST['studentAgreements']) : null;
@@ -196,8 +216,8 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
 
                     //Write to database
                     try {
-                        $data = array('title' => $title, 'surname' => $surname, 'firstName' => $firstName, 'preferredName' => $preferredName, 'officialName' => $officialName, 'nameInCharacters' => $nameInCharacters, 'gender' => $gender, 'username' => $username, 'passwordStrong' => $passwordStrong, 'passwordStrongSalt' => $salt, 'status' => $status, 'canLogin' => $canLogin, 'passwordForceReset' => $passwordForceReset, 'gibbonRoleIDPrimary' => $gibbonRoleIDPrimary, 'gibbonRoleIDAll' => $gibbonRoleIDPrimary, 'dob' => $dob, 'email' => $email, 'emailAlternate' => $emailAlternate, 'address1' => $address1, 'address1District' => $address1District, 'address1Country' => $address1Country, 'address2' => $address2, 'address2District' => $address2District, 'address2Country' => $address2Country, 'phone1Type' => $phone1Type, 'phone1CountryCode' => $phone1CountryCode, 'phone1' => $phone1, 'phone2Type' => $phone2Type, 'phone2CountryCode' => $phone2CountryCode, 'phone2' => $phone2, 'phone3Type' => $phone3Type, 'phone3CountryCode' => $phone3CountryCode, 'phone3' => $phone3, 'phone4Type' => $phone4Type, 'phone4CountryCode' => $phone4CountryCode, 'phone4' => $phone4, 'website' => $website, 'languageFirst' => $languageFirst, 'languageSecond' => $languageSecond, 'languageThird' => $languageThird, 'countryOfBirth' => $countryOfBirth, 'ethnicity' => $ethnicity, 'religion' => $religion, 'emergency1Name' => $emergency1Name, 'emergency1Number1' => $emergency1Number1, 'emergency1Number2' => $emergency1Number2, 'emergency1Relationship' => $emergency1Relationship, 'emergency2Name' => $emergency2Name, 'emergency2Number1' => $emergency2Number1, 'emergency2Number2' => $emergency2Number2, 'emergency2Relationship' => $emergency2Relationship, 'profession' => $profession, 'employer' => $employer, 'jobTitle' => $jobTitle, 'attachment1' => $attachment1, 'gibbonHouseID' => $gibbonHouseID, 'studentID' => $studentID, 'dateStart' => $dateStart, 'gibbonSchoolYearIDClassOf' => $gibbonSchoolYearIDClassOf, 'lastSchool' => $lastSchool, 'transport' => $transport, 'transportNotes' => $transportNotes, 'lockerNumber' => $lockerNumber, 'vehicleRegistration' => $vehicleRegistration, 'privacy' => $privacy, 'agreements' => $agreements, 'dayType' => $dayType);
-                        $sql = "INSERT INTO gibbonPerson SET title=:title, surname=:surname, firstName=:firstName, preferredName=:preferredName, officialName=:officialName, nameInCharacters=:nameInCharacters, gender=:gender, username=:username, passwordStrong=:passwordStrong, passwordStrongSalt=:passwordStrongSalt, status=:status, canLogin=:canLogin, passwordForceReset=:passwordForceReset, gibbonRoleIDPrimary=:gibbonRoleIDPrimary, gibbonRoleIDAll=:gibbonRoleIDAll, dob=:dob, email=:email, emailAlternate=:emailAlternate, address1=:address1, address1District=:address1District, address1Country=:address1Country, address2=:address2, address2District=:address2District, address2Country=:address2Country, phone1Type=:phone1Type, phone1CountryCode=:phone1CountryCode, phone1=:phone1, phone2Type=:phone2Type, phone2CountryCode=:phone2CountryCode, phone2=:phone2, phone3Type=:phone3Type, phone3CountryCode=:phone3CountryCode, phone3=:phone3, phone4Type=:phone4Type, phone4CountryCode=:phone4CountryCode, phone4=:phone4, website=:website, languageFirst=:languageFirst, languageSecond=:languageSecond, languageThird=:languageThird, countryOfBirth=:countryOfBirth, ethnicity=:ethnicity, religion=:religion, emergency1Name=:emergency1Name, emergency1Number1=:emergency1Number1, emergency1Number2=:emergency1Number2, emergency1Relationship=:emergency1Relationship, emergency2Name=:emergency2Name, emergency2Number1=:emergency2Number1, emergency2Number2=:emergency2Number2, emergency2Relationship=:emergency2Relationship, profession=:profession, employer=:employer, jobTitle=:jobTitle, image_240=:attachment1, gibbonHouseID=:gibbonHouseID, studentID=:studentID, dateStart=:dateStart, gibbonSchoolYearIDClassOf=:gibbonSchoolYearIDClassOf, lastSchool=:lastSchool, transport=:transport, transportNotes=:transportNotes, lockerNumber=:lockerNumber, vehicleRegistration=:vehicleRegistration, privacy=:privacy, studentAgreements=:agreements, dayType=:dayType";
+                        $data = array('title' => $title, 'surname' => $surname, 'firstName' => $firstName, 'preferredName' => $preferredName, 'officialName' => $officialName, 'nameInCharacters' => $nameInCharacters, 'gender' => $gender, 'username' => $username, 'passwordStrong' => $passwordStrong, 'passwordStrongSalt' => $salt, 'status' => $status, 'canLogin' => $canLogin, 'passwordForceReset' => $passwordForceReset, 'gibbonRoleIDPrimary' => $gibbonRoleIDPrimary, 'gibbonRoleIDAll' => $gibbonRoleIDPrimary, 'dob' => $dob, 'email' => $email, 'emailAlternate' => $emailAlternate, 'address1' => $address1, 'address1Complement' => $address1Complement, 'address1ZipCode' => $address1ZipCode, 'address1City' => $address1City, 'address1Country' => $address1Country, 'address2' => $address2, 'address2Complement' => $$address2Complement, 'address2ZipCode' => $address2ZipCode,'address2City' => $address2City, 'address2Country' => $address2Country, 'phone1Type' => $phone1Type, 'phone1CountryCode' => $phone1CountryCode, 'phone1' => $phone1, 'phone2Type' => $phone2Type, 'phone2CountryCode' => $phone2CountryCode, 'phone2' => $phone2, 'languageFirst' => $languageFirst, 'languageSecond' => $languageSecond, 'languageThird' => $languageThird, 'cityOfBirth' => $cityOfBirth, 'countryOfBirth' => $countryOfBirth, 'emergency1Name' => $emergency1Name, 'emergency1Number1' => $emergency1Number1, 'emergency1Number2' => $emergency1Number2, 'emergency1Relationship' => $emergency1Relationship, 'emergency2Name' => $emergency2Name, 'emergency2Number1' => $emergency2Number1, 'emergency2Number2' => $emergency2Number2, 'emergency2Relationship' => $emergency2Relationship, 'profession' => $profession, 'employer' => $employer, 'jobTitle' => $jobTitle, 'attachment1' => $attachment1, 'studentID' => $studentID, 'dateStart' => $dateStart, 'gibbonSchoolYearIDClassOf' => $gibbonSchoolYearIDClassOf, 'lastSchool' => $lastSchool, 'transport' => $transport, 'transportNotes' => $transportNotes, 'lockerNumber' => $lockerNumber, 'privacy' => $privacy, 'agreements' => $agreements, 'dayType' => $dayType);
+                        $sql = "INSERT INTO gibbonPerson SET title=:title, surname=:surname, firstName=:firstName, preferredName=:preferredName, officialName=:officialName, nameInCharacters=:nameInCharacters, gender=:gender, username=:username, passwordStrong=:passwordStrong, passwordStrongSalt=:passwordStrongSalt, status=:status, canLogin=:canLogin, passwordForceReset=:passwordForceReset, gibbonRoleIDPrimary=:gibbonRoleIDPrimary, gibbonRoleIDAll=:gibbonRoleIDAll, dob=:dob, email=:email, emailAlternate=:emailAlternate, address1=:address1, address1Complement=:address1Complement, address1ZipCode=:address1ZipCode ,address1City=:address1City, address1Country=:address1Country, address2=:address2, address1Complement=:address1Complement, address2ZipCode=:address2ZipCode ,address2City=:address2City,address2Country=:address2Country, phone1Type=:phone1Type, phone1CountryCode=:phone1CountryCode, phone1=:phone1, phone2Type=:phone2Type, phone2CountryCode=:phone2CountryCode, phone2=:phone2, languageFirst=:languageFirst, languageSecond=:languageSecond, languageThird=:languageThird, cityOfBirth=:cityOfBirth, countryOfBirth=:countryOfBirth, emergency1Name=:emergency1Name, emergency1Number1=:emergency1Number1, emergency1Number2=:emergency1Number2, emergency1Relationship=:emergency1Relationship, emergency2Name=:emergency2Name, emergency2Number1=:emergency2Number1, emergency2Number2=:emergency2Number2, emergency2Relationship=:emergency2Relationship, profession=:profession, employer=:employer, jobTitle=:jobTitle, image_240=:attachment1, studentID=:studentID, dateStart=:dateStart, gibbonSchoolYearIDClassOf=:gibbonSchoolYearIDClassOf, lastSchool=:lastSchool, transport=:transport, transportNotes=:transportNotes, lockerNumber=:lockerNumber, privacy=:privacy, studentAgreements=:agreements, dayType=:dayType";
                         $result = $connection2->prepare($sql);
                         $result->execute($data);
                     } catch (PDOException $e) {
