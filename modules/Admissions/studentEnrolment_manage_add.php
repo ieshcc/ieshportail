@@ -86,6 +86,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
             $row->addSelectFormGroup('gibbonFormGroupID', $gibbonSchoolYearID)->required();
 
         $row = $form->addRow();
+            $row->addLabel('registrationStatusID', _('Registration Status'));
+            $row->addSelectRegistrationStatus('registrationStatusID')->required();
+
+        $row = $form->addRow();
             $row->addLabel('rollOrder', __('Roll Order'));
             $row->addNumber('rollOrder')->maxLength(2);
 
