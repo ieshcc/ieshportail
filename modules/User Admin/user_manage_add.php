@@ -239,20 +239,21 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     
     // STUDENT
     $form->toggleVisibilityByClass('studentDetails')->onSelect('gibbonRoleIDPrimary')->when($studentRoles);
-    //$form->toggleVisibilityByClass('studentRecord')->onCheckbox('studentRecord')->when('Y');
+    $form->toggleVisibilityByClass('studentRecord')->onCheckbox('studentRecord')->when('Y');
+
     // $form->addRow()->addClass('studentDetails')->addHeading('Student', __('Student'))->addClass('studentDetails');
     $row = $form->addRow()->addClass('studentDetails');
-        $row->addLabel('studentRecord', __('Add Student Enrolment'));
-        $row->addCheckbox('studentRecord')->setValue('Y')->checked('Yes');
+        $row->addLabel('studentRecord', __('Add Student Enrolment Now?'));
+        $row->addCheckbox('studentRecord')->setValue('Y');
 
-    $row = $form->addRow()->addClass('studentDetails');
-        $row->addLabel('studentID', __('Student ID'));
-        $row->addTextField('studentID')
-            ->maxLength(15)
-            ->readOnly()
-            ->setValue(__("Defined by the system"));
+    // $row = $form->addRow()->addClass('studentDetails');
+    //     $row->addLabel('studentID', __('Student ID'))
+    //         ->description(__("Defined by the system"));
+    //     $row->addTextField('studentID')
+    //         ->maxLength(15)
+    //         ->readOnly();
 
-    $row = $form->addRow()->addClass('studentDetails');
+    $row = $form->addRow()->addClass('studentRecord');
         $row->addLabel('yearName', __('School Year'))
             ->description(__('To change the school year, return to the home screen and select the desired school year.'));
         $row->addTextField('yearName')
@@ -260,11 +261,11 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
             ->maxLength(20)
             ->setValue($session->get('gibbonSchoolYearName'));
 
-    $row = $form->addRow()->addClass('studentDetails');
+    $row = $form->addRow()->addClass('studentRecord');
         $row->addLabel('gibbonYearGroupID', __('Year Group'));
         $row->addSelectYearGroup('gibbonYearGroupID')->required();
 
-    $row = $form->addRow()->addClass('studentDetails');
+    $row = $form->addRow()->addClass('studentRecord');
         $row->addLabel('gibbonFormGroupID', __('Form Group'));
         $row->addSelectFormGroup('gibbonFormGroupID', $session->get('gibbonSchoolYearID'))->required();
 
@@ -284,19 +285,19 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
 
     // STAFF
     $form->toggleVisibilityByClass('staffDetails')->onSelect('gibbonRoleIDPrimary')->when($staffRoles);
-    // $form->toggleVisibilityByClass('staffRecord')->onCheckbox('staffRecord')->when('Y');
+    $form->toggleVisibilityByClass('staffRecord')->onCheckbox('staffRecord')->when('Y');
     // $form->addRow()->addClass('staffDetails')->addHeading('Staff', __('Staff'))->addClass('staffDetails');
 
     $row = $form->addRow()->addClass('staffDetails');
-        $row->addLabel('staffRecord', __('Add Staff'));
-        $row->addCheckbox('staffRecord')->setValue('Y')->checked('Yes');
+        $row->addLabel('staffRecord', __('Add Staff Profile Now?'));
+        $row->addCheckbox('staffRecord')->setValue('Y');
 
     $types = array ('Teaching' => __('Teaching'), 'Support' => __('Support'));
-    $row = $form->addRow()->addClass('staffDetails');
+    $row = $form->addRow()->addClass('staffRecord');
         $row->addLabel('staffType', __('Type'));
         $row->addSelect('staffType')->fromArray($types)->placeholder()->required();
 
-    $row = $form->addRow()->addClass('staffDetails');
+    $row = $form->addRow()->addClass('staffRecord');
         $row->addLabel('jobTitle', __('Job Title'));
         $row->addTextField('jobTitle')->maxlength(100);
 
