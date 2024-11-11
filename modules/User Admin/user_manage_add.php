@@ -180,7 +180,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
 
     $row = $form->addRow();
         $row->addLabel('dob', __('Date of Birth'));
-        $row->addDate('dob');
+        $row->addDate('dob')->required();
 
     $row = $form->addRow();
         $row->addLabel('cityOfBirth', __('City of Birth'));

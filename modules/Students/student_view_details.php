@@ -793,7 +793,6 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('courses', __('Courses'))
                             ->addItem('attendanceTypeName', __('Main Registration'))
                             ->addItem('className', __('Main Class Name'))
-                            ->addItem('registrationFormula', __('Registration Formula'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
                         $sectionRegistrationInfo->getItem('seniority')
                             ->format(function($row) use ($studentGateway){ 
@@ -816,16 +815,16 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $sectionRegistrationInfo->getItem("attendanceTypeName")
                         ->translatable();
                         $sectionRegistrationInfo->getItem('className')
-                            ->format(function($row) use ($container, $settingGateway) {
-                                if (isset($row['gibbonYearGroupID'])) {
-                                    $yearGroupGateway = $container->get(YearGroupGateway::class);
-                                    $yearGroup = $yearGroupGateway->getByID($row['gibbonYearGroupID']);
+                            ->format(function($row) use ($container, $guid, $connection2, $session) {
+                                if (isset($row['gibbonFormGroupID'])) {
+                                    $formGroupGateway = $container->get(FormGroupGateway::class);
+                                    $formGroup = $formGroupGateway->getByID($row['gibbonFormGroupID']);
                                     $output = '';
-                                    if (!empty($yearGroup)) {
-                                        $output .= __($yearGroup['name']);
-                                        $dayTypeOptions = $settingGateway->getSettingByScope('User Admin', 'dayTypeOptions');
-                                        if (!empty($dayTypeOptions) && !empty($row['dayType'])) {
-                                            $output .= ' ('.$row['dayType'].')';
+                                    if (!empty($formGroup)) {
+                                        if (isActionAccessible($guid, $connection2, '/modules/Form Groups/formGroups_details.php')) {
+                                            $output .= Format::link('./index.php?q=/modules/Form Groups/formGroups_details.php&gibbonFormGroupID='.$formGroup['gibbonFormGroupID'], $formGroup['name']);
+                                        } else {
+                                            $output .= $formGroup['name'];
                                         }
                                     }
                                     return $output;
@@ -878,14 +877,14 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             $studentHistoryTable->addColumn('formGroup', __('Form Group'));
                             // $studentHistoryTable->addColumn('studyYear', __('Year Group'));
                             
+                            echo $studentHistoryTable->render([$studentEnrolmentHistoryData]);
                         }else{
                             $studentHistoryTable->addColumn('empty',__("No History Found !"))
                             ->format(function(){
                                 return __("There are no records to display.");
                             });
-                        }
-                        
-                        echo $studentHistoryTable->render([$studentEnrolmentHistoryData]);
+                            echo $studentHistoryTable->render([]);
+                        }                      
 
                         //Get and display Student related invoices if any
 
@@ -903,25 +902,26 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             $invoicee = $invoiceeGateway->queryInvoicee($criteria);
                             $invoiceedata = $invoicee->toArray();
                             
-                            $gibbonFinanceInvoiceeID = $invoiceedata[0]['gibbonFinanceInvoiceeID'];
-                            $studentInvoicesParams = [
-                                'gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'),
-                                'status' => '',
-                                'gibbonFinanceInvoiceeID' => $gibbonFinanceInvoiceeID,
-                                'monthOfIssue' => '',
-                                'gibbonFinanceBillingScheduleID' => '',
-                                'gibbonFinanceFeeCategoryID' => ''
-                            ];
-
-                            $studentInvoicesTable->addHeaderAction('add', __('Add a new bill'))
-                            ->setURL('/modules/Finance/invoices_manage_add.php')
-                            ->setIcon('page_new_multi')
-                            ->addParams($studentInvoicesParams)
-                            ->displayLabel()
-                            ->append('<br/>');
-
                             // Check if there's data returned
                             if (!empty($invoiceedata)) {
+                                $gibbonFinanceInvoiceeID = $invoiceedata[0]['gibbonFinanceInvoiceeID'];
+                                $studentInvoicesParams = [
+                                    'gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'),
+                                    'status' => '',
+                                    'gibbonFinanceInvoiceeID' => $gibbonFinanceInvoiceeID,
+                                    'monthOfIssue' => '',
+                                    'gibbonFinanceBillingScheduleID' => '',
+                                    'gibbonFinanceFeeCategoryID' => ''
+                                ];
+                                
+                                $studentInvoicesTable->addHeaderAction('add', __('Add a new bill'))
+                                ->setURL('/modules/Finance/invoices_manage_add.php')
+                                ->setIcon('page_new_multi')
+                                ->addParams($studentInvoicesParams)
+                                ->displayLabel()
+                                ->append('<br/>');
+                            
+
                                 $invoiceGateway = $container->get(InvoiceGateway::class);
                                 $criteria = $invoiceGateway->newQueryCriteria(true)
                                 ->sortBy(['defaultSortOrder', 'invoiceIssueDate', 'surname', 'preferredName'])
@@ -988,13 +988,14 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                                 ->setIcon('print');
                                         }
                                     });
+                                    echo $studentInvoicesTable->render($invoices);
                             } else {
                                 $studentInvoicesTable->addColumn('empty',__("No Invoices Found !"))
                                 ->format(function(){
                                     return __('There are no records to display.');
                                 });
+                                echo $studentInvoicesTable->render([]);
                             }
-                            echo $studentInvoicesTable->render($invoices);
                         }
 
                         //Get and display a list of student's teachers

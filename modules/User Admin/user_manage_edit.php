@@ -310,7 +310,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             // -4.03
             $row = $form->addRow();
                 $row->addLabel('dob', __('Date of Birth'));
-                $row->addDate('dob');
+                $row->addDate('dob')->required();
             
             // -4.04
             $row = $form->addRow();
