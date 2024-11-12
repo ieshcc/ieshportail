@@ -231,27 +231,23 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 gibbonStudentEnrolment.gibbonFormGroupID, 
                                 gibbonStudentEnrolment.rollOrder,
                                 iesh_studentRegistrationDetails.comments,
-                                iesh_RegistrationFormulas.registrationFormulaName,
                                 iesh_RegistrationStatuses.registrationStatusName,
                                 iesh_AttendanceTypes.attendanceTypeName,
-                                gibbonspace.name
+                                gibbonspace.name as roomNumber
                             FROM 
                                 gibbonPerson
                             JOIN 
                                 gibbonStudentEnrolment ON (gibbonPerson.gibbonPersonID=gibbonStudentEnrolment.gibbonPersonID)
                             LEFT JOIN
-                                iesh_studentRegistrationDetails ON (gibbonStudentEnrolment.studentRegistrationDetailsID = iesh_studentRegistrationDetails.studentRegistrationDetailsID)
+                                iesh_studentRegistrationDetails ON (gibbonStudentEnrolment.gibbonStudentEnrolmentID = iesh_studentRegistrationDetails.gibbonStudentEnrolmentID)
                             LEFT JOIN
                                 iesh_RegistrationStatuses ON (iesh_studentRegistrationDetails.registrationStatusID = iesh_RegistrationStatuses.registrationStatusID)
                             LEFT JOIN
-                                iesh_RegistrationFormulas ON iesh_studentRegistrationDetails.registrationFormulaID = iesh_RegistrationFormulas.registrationFormulaID
-                            LEFT JOIN
                                 iesh_AttendanceTypes ON (iesh_studentRegistrationDetails.attendanceTypeID = iesh_AttendanceTypes.attendanceTypeID)
-                            LEFT JOIN
-                                iesh_DormitoryRooms ON (iesh_studentRegistrationDetails.dormitoryRoomID = iesh_DormitoryRooms.dormitoryRoomID)
                             LEFT JOIN 
-                                gibbonspace ON (iesh_DormitoryRooms.gibbonSpaceID = gibbonspace.gibbonSpaceID)
-                            WHERE gibbonSchoolYearID=:gibbonSchoolYearID
+                                gibbonspace ON (iesh_studentRegistrationDetails.gibbonSpaceID = gibbonspace.gibbonSpaceID)
+                            WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID
+                                AND iesh_studentRegistrationDetails.gibbonSchoolYearID=:gibbonSchoolYearID
                                 AND gibbonPerson.gibbonPersonID=:gibbonPersonID 
                                 AND status='Full'
                                 AND (dateStart IS NULL OR dateStart<=:today) 
@@ -790,8 +786,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             $sectionRegistrationInfo->addItem('departureReason', __('Departure Reason'));
                         }
                         $sectionRegistrationInfo
-                            ->addItem('courses', __('Courses'))
                             ->addItem('attendanceTypeName', __('Main Registration'))
+                            ->addItem('courses', __('Courses'))
                             ->addItem('className', __('Main Class Name'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
                         $sectionRegistrationInfo->getItem('seniority')
@@ -834,16 +830,16 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $sectionMiscellanous = new Section('miscellaneous', __('Miscellaneous'));
                         // Right Panel Miscellaneous Section Items
                         $sectionMiscellanous
-                            ->addItem('name', __('Room Number'))
+                            ->addItem('roomNumber', __('Room Number'))
                             ->addItem('comments', __('Comments'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses);
 
-                        $sectionMiscellanous->getItem('name')
+                        $sectionMiscellanous->getItem('roomNumber')
                         ->format(function($row){
-                            if(empty($row["name"])){
+                            if(empty($row["roomNumber"])){
                                 return __("Not Assigned");
                             }else{
-                                return $row["name"];
+                                return $row["roomNumber"];
                             }
                         });
 

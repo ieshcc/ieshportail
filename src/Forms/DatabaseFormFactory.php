@@ -134,8 +134,35 @@ class DatabaseFormFactory extends FormFactory
 
     public function createSelectRegistrationStatus($name, $all = false)
     {
-        $sql = "SELECT registrationStatusID as value, registrationStatusName as name FROM iesh_registrationstatuses";
+        $sql = "SELECT registrationStatusID as value, registrationStatusName as name FROM iesh_registrationstatuses ORDER BY registrationStatusID";
         $results = $this->pdo->select($sql);
+
+        if (!$all)
+            return $this->createSelect($name)->fromResults($results)->placeholder();
+        else
+            return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResults($results)->placeholder();
+    }
+
+    public function createSelectAttendanceType($name, $all = false)
+    {
+        $sql = "SELECT attendanceTypeID as value, attendanceTypeName as name FROM iesh_attendancetypes ORDER BY attendanceTypeID";
+        $results = $this->pdo->select($sql);
+
+        if (!$all)
+            return $this->createSelect($name)->fromResults($results)->placeholder();
+        else
+            return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResults($results)->placeholder();
+    }
+
+    public function createSelectDormitoryRooms($name, $gibbonSchoolYearID, $all = false)
+    {
+        $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID);
+        $sql = "SELECT gibbonSpaceID as value, name FROM gibbonSpace WHERE type IN ('chambre', 'studio')
+         AND gibbonSpaceID NOT IN (
+                SELECT gibbonSpaceID 
+                FROM iesh_studentregistrationDetails 
+                WHERE gibbonSchoolYearID = :gibbonSchoolYearID)";
+        $results = $this->pdo->select($sql, $data);
 
         if (!$all)
             return $this->createSelect($name)->fromResults($results)->placeholder();

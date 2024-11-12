@@ -90,6 +90,19 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
             $row->addSelectRegistrationStatus('registrationStatusID')->required();
 
         $row = $form->addRow();
+            $row->addLabel('attendanceTypeID', _('Main Registration'))
+                ->description(_('On-site Day Boarder, On-site Evening Boarder, On-site External Student, On-site Midday Boarder, Online Student'));
+            $row->addSelectAttendanceType('attendanceTypeID')->required();
+
+        $row = $form->addRow();
+            $row->addLabel('dormitoryRoomID', _('Room Number'));
+            $row->addSelectDormitoryRooms('dormitoryRoomID', $gibbonSchoolYearID);
+
+        $row = $form->addRow();
+            $row->addLabel('comments', _('Comments'));
+            $row->addTextArea('comments');
+
+        $row = $form->addRow();
             $row->addLabel('rollOrder', __('Roll Order'));
             $row->addNumber('rollOrder')->maxLength(2);
 

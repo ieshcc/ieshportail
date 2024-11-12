@@ -182,7 +182,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
                     $studentID = (string) ((int) $highestStudentID + 1);
                     
                 }catch (PDOException $e) {
-                    $URL .= '&return=error13&errorMessage='.$e->getMessage();
+                    $URL .= '&return=error13';
                     header("Location: {$URL}");
                     exit();
                 }
