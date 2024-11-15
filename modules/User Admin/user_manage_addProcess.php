@@ -178,10 +178,17 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
                     $row = $result->fetch();
                     
                     $highestStudentID = $row['highestStudentID'];
-                    
-                    $studentID = (string) ((int) $highestStudentID + 1);
+
+                    if($highestStudentID != '0' || !empty($highestStudentID)) {
+                        $studentID = (string) ((int) $highestStudentID + 1);
+                    }else{
+                        $studentID = '1';
+                    }
+                        
                     
                 }catch (PDOException $e) {
+                    error_log("Error with student ID Generation");
+                    error_log($e->getMessage());
                     $URL .= '&return=error13';
                     header("Location: {$URL}");
                     exit();

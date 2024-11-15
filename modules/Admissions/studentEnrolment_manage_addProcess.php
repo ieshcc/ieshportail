@@ -114,6 +114,31 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
                         header("Location: {$URL}");
                         exit;
                     } else {
+                        //Generate studentID
+                        try{
+                            $sql = 'SELECT MAX(CAST(studentID AS UNSIGNED)) AS highestStudentID FROM gibbonPerson;';
+                            $result = $connection2->prepare($sql);
+                            $result->execute();
+                            $row = $result->fetch();
+
+                            $studentID = '1';
+
+                            if ($result->rowCount() > 0) {
+                                $highestStudentID = $row['highestStudentID'];
+                                $studentID = !empty($highestStudentID) ? (string) ((int) $highestStudentID + 1) : '1';
+                            }     
+                            
+                        }catch (PDOException $e) {
+                            if($session->get('installType') == 'Development');
+                            {
+                                error_log("Error with student ID Generation");
+                                error_log($e->getMessage());
+                            }
+                            $URL .= '&return=error13';
+                            header("Location: {$URL}");
+                            exit();
+                        }
+
                         //Write to database
                         try {
                             $data = array('gibbonPersonID' => $gibbonPersonID, 'gibbonSchoolYearID' => $gibbonSchoolYearID, 'gibbonYearGroupID' => $gibbonYearGroupID, 'gibbonFormGroupID' => $gibbonFormGroupID, 'rollOrder' => $rollOrder, 'fields' => $fields);
