@@ -132,42 +132,45 @@ class DatabaseFormFactory extends FormFactory
             return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResults($results)->placeholder();
     }
 
-    public function createSelectRegistrationStatus($name, $all = false)
+    public function createSelectEnrolmentStatus($name)
     {
-        $sql = "SELECT registrationStatusID as value, registrationStatusName as name FROM iesh_registrationstatuses ORDER BY registrationStatusID";
+        $sql = "SELECT enrolmentStatusID as value, enrolmentStatusName as name FROM iesh_enrolmentstatus ORDER BY enrolmentStatusID";
         $results = $this->pdo->select($sql);
 
-        if (!$all)
-            return $this->createSelect($name)->fromResults($results)->placeholder();
-        else
-            return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResults($results)->placeholder();
+        return $this->createSelect($name)->fromResults($results)->placeholder();
+        
     }
 
-    public function createSelectAttendanceType($name, $all = false)
+    public function createSelectAttendanceType($name)
     {
         $sql = "SELECT attendanceTypeID as value, attendanceTypeName as name FROM iesh_attendancetypes ORDER BY attendanceTypeID";
         $results = $this->pdo->select($sql);
 
-        if (!$all)
-            return $this->createSelect($name)->fromResults($results)->placeholder();
-        else
-            return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResults($results)->placeholder();
+        return $this->createSelect($name)->fromResults($results)->placeholder();
     }
 
-    public function createSelectDormitoryRooms($name, $gibbonSchoolYearID, $all = false)
+    public function createSelectDormitoryRooms($name)
+    {
+        $sql = "SELECT gibbonSpaceID as value, name FROM gibbonSpace WHERE type IN ('chambre', 'studio')";
+
+        $results = $this->pdo->select($sql);
+
+        return $this->createSelect($name)->fromResults($results)->placeholder();
+    }
+
+    public function createSelectAvailableDormitoryRooms($name, $gibbonSchoolYearID, $all = false)
     {
         $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID);
         $sql = "SELECT gibbonSpaceID as value, name FROM gibbonSpace WHERE type IN ('chambre', 'studio')
-         AND gibbonSpaceID NOT IN (
+         AND NOT EXISTS (
                 SELECT gibbonSpaceID 
-                FROM iesh_studentregistrationDetails 
-                WHERE gibbonSchoolYearID = :gibbonSchoolYearID)";
-        $results = $this->pdo->select($sql, $data);
+                FROM iesh_studentEnrolmentDetails 
+                WHERE gibbonSchoolYearID = :gibbonSchoolYearID
+                AND iesh_studentEnrolmentDetails.gibbonSpaceID = gibbonSpace.gibbonSpaceID)";
 
-        if (!$all)
-            return $this->createSelect($name)->fromResults($results)->placeholder();
-        else
-            return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResults($results)->placeholder();
+        $results = $this->pdo->select($sql, $data);
+        return $this->createSelect($name)->fromResults($results)->placeholder();
+      
     }
 
     public function createSelectHouse($name)

@@ -86,8 +86,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
             $row->addSelectFormGroup('gibbonFormGroupID', $gibbonSchoolYearID)->required();
 
         $row = $form->addRow();
-            $row->addLabel('registrationStatusID', _('Registration Status'));
-            $row->addSelectRegistrationStatus('registrationStatusID')->required();
+            $row->addLabel('enrolmentStatusID', _('Enrolment Status'));
+            $row->addSelectEnrolmentStatus('enrolmentStatusID')->required();
 
         $row = $form->addRow();
             $row->addLabel('attendanceTypeID', _('Main Registration'))
@@ -96,7 +96,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
 
         $row = $form->addRow();
             $row->addLabel('dormitoryRoomID', _('Room Number'));
-            $row->addSelectDormitoryRooms('dormitoryRoomID', $gibbonSchoolYearID);
+            $row->addSelectAvailableDormitoryRooms('dormitoryRoomID', $gibbonSchoolYearID);
 
         $row = $form->addRow();
             $row->addLabel('comments', _('Comments'));

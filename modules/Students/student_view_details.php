@@ -230,8 +230,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 gibbonStudentEnrolment.gibbonYearGroupID, 
                                 gibbonStudentEnrolment.gibbonFormGroupID, 
                                 gibbonStudentEnrolment.rollOrder,
-                                iesh_studentRegistrationDetails.comments,
-                                iesh_RegistrationStatuses.registrationStatusName,
+                                iesh_studentEnrolmentDetails.comments,
+                                iesh_EnrolmentStatus.enrolmentStatusName,
                                 iesh_AttendanceTypes.attendanceTypeName,
                                 gibbonspace.name as roomNumber
                             FROM 
@@ -239,15 +239,15 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             JOIN 
                                 gibbonStudentEnrolment ON (gibbonPerson.gibbonPersonID=gibbonStudentEnrolment.gibbonPersonID)
                             LEFT JOIN
-                                iesh_studentRegistrationDetails ON (gibbonStudentEnrolment.gibbonStudentEnrolmentID = iesh_studentRegistrationDetails.gibbonStudentEnrolmentID)
+                                iesh_studentEnrolmentDetails ON (gibbonStudentEnrolment.gibbonStudentEnrolmentID = iesh_studentEnrolmentDetails.gibbonStudentEnrolmentID)
                             LEFT JOIN
-                                iesh_RegistrationStatuses ON (iesh_studentRegistrationDetails.registrationStatusID = iesh_RegistrationStatuses.registrationStatusID)
+                                iesh_EnrolmentStatus ON (iesh_studentEnrolmentDetails.enrolmentStatusID = iesh_EnrolmentStatus.enrolmentStatusID)
                             LEFT JOIN
-                                iesh_AttendanceTypes ON (iesh_studentRegistrationDetails.attendanceTypeID = iesh_AttendanceTypes.attendanceTypeID)
+                                iesh_AttendanceTypes ON (iesh_studentEnrolmentDetails.attendanceTypeID = iesh_AttendanceTypes.attendanceTypeID)
                             LEFT JOIN 
-                                gibbonspace ON (iesh_studentRegistrationDetails.gibbonSpaceID = gibbonspace.gibbonSpaceID)
+                                gibbonspace ON (iesh_studentEnrolmentDetails.gibbonSpaceID = gibbonspace.gibbonSpaceID)
                             WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID
-                                AND iesh_studentRegistrationDetails.gibbonSchoolYearID=:gibbonSchoolYearID
+                                AND iesh_studentEnrolmentDetails.gibbonSchoolYearID=:gibbonSchoolYearID
                                 AND gibbonPerson.gibbonPersonID=:gibbonPersonID 
                                 AND status='Full'
                                 AND (dateStart IS NULL OR dateStart<=:today) 
@@ -758,10 +758,19 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('age', __('Age'))
                             ->addItem('birthplace', __('Birthplace'))
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
-                        $sectionIdentity->getItem('dob')
-                            ->format(Format::using('date','dob'));
-                        $sectionIdentity->getItem('age')
-                            ->format(Format::using('age', $row['dob']));
+                        
+                        if (!is_null($row['dob']) && !$row['dob'] === '') {
+                            $sectionIdentity->getItem('dob')
+                                ->format(Format::using('date','dob'));
+                            $sectionIdentity->getItem('age')
+                                ->format(Format::using('age', $row['dob']));
+                        } else {
+                            $sectionIdentity->getItem('dob')
+                                ->format(Format::using('date','1900-01-01'));
+                            $sectionIdentity->getItem('age')
+                                ->format(Format::using('age', '1900-01-01'));
+                        }
+                                          
                         $sectionIdentity->getItem('birthplace')
                             ->format(function($row) {
                                  return $row['cityOfBirth'].', '.$row['countryOfBirth'];
@@ -779,10 +788,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         $sectionRegistrationInfo = new Section ('registrationInfo', __('Registration'));
                         $sectionRegistrationInfo
                             ->addItem('seniority', __('New Student ?'))
-                            ->addItem('registrationStatusName', __('Registration Status'));
-                        $sectionRegistrationInfo->getItem("registrationStatusName")
+                            ->addItem('enrolmentStatusName', __('Registration Status'));
+                        $sectionRegistrationInfo->getItem("enrolmentStatusName")
                             ->translatable();
-                        if($row["registrationStatusName"] === "Cancelled"){
+                        if($row["enrolmentStatusName"] === "Cancelled"){
                             $sectionRegistrationInfo->addItem('departureReason', __('Departure Reason'));
                         }
                         $sectionRegistrationInfo

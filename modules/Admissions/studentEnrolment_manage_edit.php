@@ -54,7 +54,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
             return;
         }
 
-        $values = $container->get(StudentGateway::class)->selectActiveStudentByPerson($gibbonSchoolYearID, $enrollment['gibbonPersonID'], false)->fetch();
+        $values = $container->get(StudentGateway::class)->selectActiveStudentByPersonWithDetails($gibbonSchoolYearID, $enrollment['gibbonPersonID'], false)->fetch();
         if (empty($values)) {
             $page->addError(__('The specified record cannot be found.'));
             return;
@@ -91,6 +91,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
             $row->addTextField('studentName')->readOnly()->setValue(Format::name('', $values['preferredName'], $values['surname'], 'Student', true));
 
         $row = $form->addRow();
+            $row->addLabel('studentID', __('Student ID'));
+            $row->addTextField('studentID')->readOnly();
+
+        $row = $form->addRow();
             $row->addLabel('gibbonYearGroupID', __('Year Group'));
             $row->addSelectYearGroup('gibbonYearGroupID')->required();
 
@@ -99,8 +103,21 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
             $row->addSelectFormGroup('gibbonFormGroupID', $gibbonSchoolYearID)->required();
 
         $row = $form->addRow();
-            $row->addLabel('registrationStatusID', _('Registration Status'));
-            $row->addSelectRegistrationStatus('registrationStatusID')->required();
+            $row->addLabel('enrolmentStatusID', _('Registration Status'));
+            $row->addSelectEnrolmentStatus('enrolmentStatusID')->required();
+
+            $row = $form->addRow();
+            $row->addLabel('attendanceTypeID', _('Main Registration'))
+                ->description(_('On-site Day Boarder, On-site Evening Boarder, On-site External Student, On-site Midday Boarder, Online Student'));
+            $row->addSelectAttendanceType('attendanceTypeID')->required();
+
+        $row = $form->addRow();
+            $row->addLabel('gibbonSpaceID', _('Room Number'));
+            $row->addSelectDormitoryRooms('gibbonSpaceID', $gibbonSchoolYearID);
+
+        $row = $form->addRow();
+            $row->addLabel('comments', _('Comments'));
+            $row->addTextArea('comments');
 
         $row = $form->addRow();
             $row->addLabel('rollOrder', __('Roll Order'));

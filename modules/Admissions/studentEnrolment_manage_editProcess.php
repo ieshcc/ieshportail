@@ -122,6 +122,24 @@ if ($gibbonStudentEnrolmentID == '' or $gibbonSchoolYearID == '') { echo 'Fatal 
                         exit;
                     }
 
+                     // Write registration details to database
+                     $enrolmentStatusID = isset($_POST['enrolmentStatusID']) && !empty($_POST['enrolmentStatusID']) ? $_POST['enrolmentStatusID'] : '1';
+                     $attendanceTypeID = isset($_POST['attendanceTypeID']) && !empty($_POST['attendanceTypeID']) ? $_POST['attendanceTypeID'] : '1';
+                     $dormitoryRoomID = isset($_POST['gibbonSpaceID']) && !empty($_POST['gibbonSpaceID']) ? $_POST['gibbonSpaceID'] : null;
+                     $comments = isset($_POST['comments']) && !empty($_POST['comments']) ? $_POST['comments'] : 'No comment';
+                     try{
+                         $data = array('gibbonStudentEnrolmentID' => $gibbonStudentEnrolmentID, 'gibbonSchoolYearID' => $gibbonSchoolYearID, 'enrolmentStatusID' => $enrolmentStatusID, 'attendanceTypeID' => $attendanceTypeID, 'gibbonSpaceID'  => $dormitoryRoomID, 'comments' => $comments);
+                         $sql = 'UPDATE iesh_studentenrolmentdetails SET enrolmentStatusID=:enrolmentStatusID, attendanceTypeID=:attendanceTypeID, gibbonSpaceID=:gibbonSpaceID, comments=:comments WHERE gibbonStudentEnrolmentID=:gibbonStudentEnrolmentID AND gibbonSchoolYearID=:gibbonSchoolYearID';
+                         $result = $connection2->prepare($sql);
+                         $result->execute($data);
+                     }catch(PDOException $e){
+                         error_log($e->getMessage());
+                         error_log($_POST['gibbonSpaceID']);
+                         $URL .= '&return=warning1&editID='.$AI;
+                         header("Location: {$URL}");
+                         exit;
+                     }
+
                     $partialFail = false;
 
                     // Handle automatic course enrolment if enabled

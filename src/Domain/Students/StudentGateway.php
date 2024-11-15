@@ -256,6 +256,28 @@ class StudentGateway extends QueryableGateway
         return $this->db()->select($sql, $data);
     }
 
+    public function selectActiveStudentByPersonWithDetails($gibbonSchoolYearID, $gibbonPersonID, $onlyFull = true)
+    {
+        $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID, 'gibbonPersonID' => $gibbonPersonID);
+        $sql = "SELECT gibbonPerson.gibbonPersonID, studentID, title, surname, preferredName, email, image_240, gender, dateStart, dateEnd, gibbonStudentEnrolment.gibbonStudentEnrolmentID, gibbonStudentEnrolment.gibbonSchoolYearID, gibbonYearGroup.gibbonYearGroupID, gibbonYearGroup.nameShort AS yearGroup, gibbonYearGroup.name AS yearGroupName, gibbonFormGroup.gibbonFormGroupID, gibbonFormGroup.nameShort AS formGroup, gibbonFormGroup.name AS formGroupName, 'Student' as roleCategory, gibbonPerson.privacy, gibbonStudentEnrolment.fields, iesh_studentEnrolmentDetails.attendanceTypeID, iesh_studentEnrolmentDetails.enrolmentStatusID, iesh_studentEnrolmentDetails.gibbonSpaceID, iesh_studentEnrolmentDetails.comments
+                FROM gibbonPerson
+                JOIN gibbonStudentEnrolment ON (gibbonPerson.gibbonPersonID=gibbonStudentEnrolment.gibbonPersonID)
+                JOIN gibbonYearGroup ON (gibbonStudentEnrolment.gibbonYearGroupID=gibbonYearGroup.gibbonYearGroupID)
+                JOIN gibbonFormGroup ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID)
+                JOIN iesh_studentEnrolmentDetails ON (gibbonStudentEnrolment.gibbonStudentEnrolmentID=iesh_studentEnrolmentDetails.gibbonStudentEnrolmentID)
+                WHERE gibbonPerson.gibbonPersonID=:gibbonPersonID
+                AND gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID ";
+
+        if ($onlyFull) {
+            $data['today'] = date('Y-m-d');
+            $sql .= " AND gibbonPerson.status='Full'
+                AND (dateStart IS NULL OR dateStart<=:today)
+                AND (dateEnd IS NULL  OR dateEnd>=:today) ";
+        }
+
+        return $this->db()->select($sql, $data);
+    }
+
     public function getStudentByUsername($gibbonSchoolYearID, $username)
     {
         $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID, 'username' => $username);

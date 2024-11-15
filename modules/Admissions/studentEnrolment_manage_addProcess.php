@@ -154,19 +154,19 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
                         //Last insert ID
                         $AI = str_pad($connection2->lastInsertID(), 8, '0', STR_PAD_LEFT);
                         
-                        // Write resgitration details to database
-                        $registrationStatusID = isset($_POST['registrationStatusID']) && !empty($_POST['registrationStatusID']) ? $_POST['registrationStatusID'] : '1';
+                        // Write registration details to database
+                        $enrolmentStatusID = isset($_POST['enrolmentStatusID']) && !empty($_POST['enrolmentStatusID']) ? $_POST['enrolmentStatusID'] : '1';
                         $attendanceTypeID = isset($_POST['attendanceTypeID']) && !empty($_POST['attendanceTypeID']) ? $_POST['attendanceTypeID'] : '1';
-                        $dormitoryRoomID = isset($_POST['dormitoryRoomID']) && !empty($_POST['dormitoryRoomID']) ? $_POST['dormitoryRoomID'] : null;
+                        $dormitoryRoomID = isset($_POST['gibbonSpaceID']) && !empty($_POST['gibbonSpaceID']) ? $_POST['gibbonSpaceID'] : null;
                         $comments = isset($_POST['comments']) && !empty($_POST['comments']) ? $_POST['comments'] : 'No comment';
                         try{
-                            $data = array('gibbonStudentEnrolmentID' => $AI, 'gibbonSchoolYearID' => $gibbonSchoolYearID, 'registrationStatusID' => $registrationStatusID, 'attendanceTypeID' => $attendanceTypeID, 'gibbonSpaceID'  => $dormitoryRoomID, 'comments' => $comments);
-                            $sql = 'INSERT INTO iesh_studentregistrationdetails SET gibbonStudentEnrolmentID=:gibbonStudentEnrolmentID, gibbonSchoolYearID=:gibbonSchoolYearID, registrationStatusID=:registrationStatusID, attendanceTypeID=:attendanceTypeID, gibbonSpaceID=:gibbonSpaceID, comments=:comments';
+                            $data = array('gibbonStudentEnrolmentID' => $AI, 'gibbonSchoolYearID' => $gibbonSchoolYearID, 'enrolmentStatusID' => $enrolmentStatusID, 'attendanceTypeID' => $attendanceTypeID, 'gibbonSpaceID'  => $dormitoryRoomID, 'comments' => $comments);
+                            $sql = 'INSERT INTO iesh_studentenrolmentdetails SET gibbonStudentEnrolmentID=:gibbonStudentEnrolmentID, gibbonSchoolYearID=:gibbonSchoolYearID, enrolmentStatusID=:enrolmentStatusID, attendanceTypeID=:attendanceTypeID, gibbonSpaceID=:gibbonSpaceID, comments=:comments';
                             $result = $connection2->prepare($sql);
                             $result->execute($data);
                         }catch(PDOException $e){
                             error_log($e->getMessage());
-                            error_log($_POST['dormitoryRoomID']);
+                            error_log($_POST['gibbonSpaceID']);
                             $URL .= '&return=warning1&editID='.$AI;
                             header("Location: {$URL}");
                             exit;
