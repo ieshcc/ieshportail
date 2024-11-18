@@ -687,6 +687,13 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             echo '</div>';
                         }
 
+                        $page->return->addReturns(['warning11' => __('Some elements of your request failed, but others were successful.'), 
+                        'warning12' => __('Your request was completed successfully, but one or more requested emails could not be sent.'), 
+                        'warning13' => __('Your request was completed successfully, but one or more images were the wrong size and so were not saved.')]);
+
+                        $currentPage = "/modules/Students/student_view_details.php&gibbonPersonID=".$gibbonPersonID."&sort=surname,preferredName&allStudents=";
+                        $returnUrl = urlencode($currentPage);
+
                         $schoolYearGateway = $container->get(SchoolYearGateway::class);
                         $studentGateway = $container->get(StudentGateway::class);
                         $currentSchoolYearDisplayedName = $schoolYearGateway->getSchoolYearByID($session->get('gibbonSchoolYearID'))["name"];
@@ -727,6 +734,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 "panelDescription" => "text-transform: none;",
                             ])
                             ->addPanelAction('edit', __('Edit'))
+                            ->addParam('returnUrl', $returnUrl)
                             ->addParam('gibbonPersonID', $gibbonPersonID)
                             ->setURL('/modules/User Admin/user_manage_edit.php');
                             
@@ -802,6 +810,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('comments', __('Comments'))
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses)
                             ->addSectionAction('edit', __('Edit'))
+                            ->addParam('returnUrl', $returnUrl)
                             ->addParam('gibbonSchoolYearID', $row['gibbonSchoolYearID'])
                             ->addParam('gibbonStudentEnrolmentID', $row['gibbonStudentEnrolmentID'])
                             ->setURL('/modules/Admissions/studentEnrolment_manage_edit.php');
@@ -847,6 +856,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addMetaData("classes", $rightPanelSectionHeaderClasses)
                             ->addSectionAction('edit', __('Edit'))
                             // ->addParam('search', $criteria->getSearchText(true))
+                            ->addParam('returnUrl', $returnUrl)
                             ->addParam('allUsers', false)
                             ->addParam('gibbonSchoolYearID', $row['gibbonSchoolYearID'])
                             ->addParam('type', 'Student')
@@ -996,10 +1006,13 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                                     $left = $totalFee - $paidAmount;
                                     return Format::currency($left);
-                                });                                          
+                                });
+                                
+                               
                                 
                                 $studentInvoicesTable->addActionColumn()
                                     ->addParam('gibbonFinanceInvoiceID')
+                                    ->addParam('returnUrl', $returnUrl)
                                     ->addParams($studentInvoicesParams)
                                     ->format(function ($invoice, $actions) {
                                         if ($invoice['status'] != 'Cancelled' && $invoice['status'] != 'Refunded') {

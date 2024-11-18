@@ -158,6 +158,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
 
         // Custom Fields
         $container->get(CustomFieldHandler::class)->addCustomFieldsToForm($form, 'Student Enrolment', [], $values['fields']);
+
+        if(isset($_GET['returnUrl'])){
+            $form->addHiddenValue('returnUrl', $_GET['returnUrl']);
+        }
         
         $row = $form->addRow();
             $row->addFooter();

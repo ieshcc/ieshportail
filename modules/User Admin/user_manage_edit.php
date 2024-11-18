@@ -628,6 +628,10 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             //     $row->addTextField('religion')->maxLength(30);
             // }
 
+            if(isset($_GET['returnUrl'])){
+                $form->addHiddenValue('returnUrl', $_GET['returnUrl']);
+            }
+
             $row = $form->addRow();
                 $row->addFooter()->append('<small>'.getMaxUpload(true).'</small>');
                 $row->addSubmit();

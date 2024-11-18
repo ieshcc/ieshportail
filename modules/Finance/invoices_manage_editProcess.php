@@ -364,14 +364,27 @@ if ($gibbonFinanceInvoiceID == '' or $gibbonSchoolYearID == '') { echo 'Fatal er
                 }
 
                 if ($partialFail == true) {
-                    $URL .= '&return=error3';
-                    header("Location: {$URL}");
+                    if(isset($_POST['returnUrl'])){
+                        header("Location: ".$session->get('absoluteURL').'/index.php?q='.urldecode($_POST['returnUrl']).'&return=warning11');
+                    }else{
+                        $URL .= '&return=error3';
+                        header("Location: {$URL}");
+                    }
                 } elseif ($emailFail == true) {
-                    $URL .= '&return=success1';
-                    header("Location: {$URL}");
+                    if(isset($_POST['returnUrl'])){
+                        header("Location: ".$session->get('absoluteURL').'/index.php?q='.urldecode($_POST['returnUrl']).'&return=warning12');
+                    }else{
+                        $URL .= '&return=warning1';
+                        header("Location: {$URL}");
+                    }
                 } else {
-                    $URL .= '&return=success0';
-                    header("Location: {$URL}");
+                    if(isset($_POST['returnUrl'])){
+                        header("Location: ".$session->get('absoluteURL').'/index.php?q='.urldecode($_POST['returnUrl']).'&return=success0');
+                    }else{
+                        $URL .= '&return=success0';
+                        header("Location: {$URL}");
+                    }
+
                 }
             }
         }

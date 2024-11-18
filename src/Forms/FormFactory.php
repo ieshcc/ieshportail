@@ -298,6 +298,7 @@ class FormFactory implements FormFactoryInterface
     public function createSubmit($label = 'Submit', $class = '')
     {
         $content = sprintf('<input type="submit" value="%1$s" class="%2$s">', __($label), $class);
+
         return $this->createContent($content)->setClass('right');
     }
 

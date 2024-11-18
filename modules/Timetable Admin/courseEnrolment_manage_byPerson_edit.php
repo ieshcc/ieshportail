@@ -78,9 +78,16 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
                 ->add(Format::name('', $values['preferredName'], $values['surname'], 'Student'));
 
             //INTERFACE TO ADD NEW CLASSES
-            echo '<h2>';
-            echo __('Add Classes');
-            echo '</h2>';
+            $returnUrl = $session->get('absoluteURL').'/index.php?q=/modules/'.urlencode('Timetable Admin').'/courseEnrolment_manage_byPerson.php&gibbonSchoolYearID='.$gibbonSchoolYearID.'&allUsers='.$allUsers;
+
+            if(isset($_GET['returnUrl'])){
+                $returnUrl = $session->get('absoluteURL').'/index.php?q='.urldecode($_GET['returnUrl']).'&return=success0';
+            }
+
+            echo '<div class="flex justify-between border-b items-start"><h2>';
+            echo __('Add Classes').'</h2>';
+            echo '<a href="'.$returnUrl.'" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">'.__('Finish').'</a>';
+            echo '</div>';
             
             $form = Form::create('manageEnrolment', $session->get('absoluteURL').'/modules/'.$session->get('module')."/courseEnrolment_manage_byPerson_edit_addProcess.php?type=$type&gibbonSchoolYearID=$gibbonSchoolYearID&gibbonPersonID=$gibbonPersonID&allUsers=$allUsers&search=$search");
                 
@@ -103,9 +110,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
                     "allUsers" => $allUsers,
                     "gibbonSchoolYearID" => $gibbonSchoolYearID
                 ];
-            $form->addHeaderAction('view', __('View'))
+            $form->addHeaderAction('view', __('Timetable'))
                 ->setURL('/modules/Timetable/tt_view.php')
                 ->addParams($params)
+                ->modalWindow()
                 ->setIcon('planner')
                 ->displayLabel()
                 ->prepend((!empty($search)) ? ' | ' : '');
@@ -147,6 +155,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
             $row = $form->addRow();
                 $row->addLabel('role', __('Role'));
                 $row->addSelect('role')->fromArray($roles)->required()->selected($selectedRole);
+            
+            $form->addHiddenValue("returnUrl", $_GET['returnUrl']);
 
             $row = $form->addRow();
                 $row->addFooter();

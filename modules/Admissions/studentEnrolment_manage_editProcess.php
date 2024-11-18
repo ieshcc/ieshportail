@@ -134,7 +134,6 @@ if ($gibbonStudentEnrolmentID == '' or $gibbonSchoolYearID == '') { echo 'Fatal 
                          $result->execute($data);
                      }catch(PDOException $e){
                          error_log($e->getMessage());
-                         error_log($_POST['gibbonSpaceID']);
                          $URL .= '&return=warning1&editID='.$AI;
                          header("Location: {$URL}");
                          exit;
@@ -210,10 +209,23 @@ if ($gibbonStudentEnrolmentID == '' or $gibbonSchoolYearID == '') { echo 'Fatal 
                         $event->sendNotifications($pdo, $session);
                     }
 
-                    $URL .= $partialFail
-                        ? '&return=warning1'
-                        : '&return=success0';
-                    header("Location: {$URL}");
+                    if($partialFail){
+                        if(isset($_POST['returnUrl'])){
+                            header("Location: ".$session->get('absoluteURL').'/index.php?q='.urldecode($_POST['returnUrl']).'&return=warning11');
+                        }else{
+                            $URL .= '&return=warning1';
+                            header("Location: {$URL}");
+                        }
+                    }
+                    else{
+                        if(isset($_POST['returnUrl'])){
+                            header("Location: ".$session->get('absoluteURL').'/index.php?q='.urldecode($_POST['returnUrl']).'&return=success0');
+                        }else{
+                            $URL .= '&return=success0';
+                            header("Location: {$URL}");
+                        }
+                    }
+
                     exit;
                 }
             }
