@@ -269,7 +269,24 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
         $row->addLabel('gibbonFormGroupID', __('Form Group'));
         $row->addSelectFormGroup('gibbonFormGroupID', $session->get('gibbonSchoolYearID'))->required();
 
-    // $row = $form->addRow()->addClass('studentDetails');
+    $row = $form->addRow()->addClass('studentRecord');
+        $row->addLabel('enrolmentStatusID', _('Enrolment Status'));
+        $row->addSelectEnrolmentStatus('enrolmentStatusID')->required();
+
+    $row = $form->addRow()->addClass('studentRecord');
+        $row->addLabel('attendanceTypeID', _('Main Registration'))
+            ->description(_('On-site Day Boarder, On-site Evening Boarder, On-site External Student, On-site Internal Student, On-site Midday Boarder, Online Student'));
+        $row->addSelectAttendanceType('attendanceTypeID')->required();
+
+    $row = $form->addRow()->addClass('studentRecord');
+        $row->addLabel('dormitoryRoomID', _('Room Number'));
+        $row->addSelectAvailableDormitoryRooms('dormitoryRoomID', $gibbonSchoolYearID);
+
+    $row = $form->addRow();
+        $row->addLabel('comments', _('Comments'));
+        $row->addTextArea('comments');
+    
+        // $row = $form->addRow()->addClass('studentDetails');
     //     $row->addLabel('rollOrder', __('Roll Order'));
     //     $row->addNumber('rollOrder')->maxLength(2);
 

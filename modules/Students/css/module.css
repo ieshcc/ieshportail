@@ -89,3 +89,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none; /* Standard */
 }
+
+.textUnderFee {
+    color: red;
+    font-weight: bold;
+}
+
+.textMatchesFee {
+    color: green;
+    font-weight: bold;
+}

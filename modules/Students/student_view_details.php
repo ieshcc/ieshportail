@@ -225,7 +225,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             //     AND gibbonPerson.gibbonPersonID=:gibbonPersonID AND status='Full'
                             //     AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today) ";
                             $sql = "SELECT 
-                                gibbonPerson.*, 
+                                gibbonPerson.*,
+                                gibbonStudentEnrolment.gibbonStudentEnrolmentID, 
                                 gibbonStudentEnrolment.gibbonSchoolYearID, 
                                 gibbonStudentEnrolment.gibbonYearGroupID, 
                                 gibbonStudentEnrolment.gibbonFormGroupID, 
@@ -740,12 +741,12 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             
                         // Panel Sections
                         $leftPanelSectionHeaderClasses = [
-                            "sectionHeader" => "section bg-white pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
-                            "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1 border-b border-1 border-black"
+                            "sectionHeader" => "section bg-white pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b",
+                            "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1"
                         ];
                         $rightPanelSectionHeaderClasses = [
-                            "sectionHeader" => "section bg-blue-100 pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b border-1 border-black",
-                            "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1 border-b border-1 border-black"
+                            "sectionHeader" => "section bg-blue-100 pl-4 py-2 mt-4 rounded-md shadow-sm md:flex-1 border-b ",
+                            "sectionTitle" => "text-xl text-gray font-bold mt-0 mb-1"
                         ];
 
                         $sectionIdentity = new Section('identity', __('Identity'));
@@ -796,27 +797,21 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                         }
                         $sectionRegistrationInfo
                             ->addItem('attendanceTypeName', __('Main Registration'))
-                            ->addItem('courses', __('Courses'))
                             ->addItem('className', __('Main Class Name'))
-                            ->addMetaData("classes", $rightPanelSectionHeaderClasses);
+                            ->addItem('roomNumber', __('Room Number'))
+                            ->addItem('comments', __('Comments'))
+                            ->addMetaData("classes", $rightPanelSectionHeaderClasses)
+                            ->addSectionAction('edit', __('Edit'))
+                            ->addParam('gibbonSchoolYearID', $row['gibbonSchoolYearID'])
+                            ->addParam('gibbonStudentEnrolmentID', $row['gibbonStudentEnrolmentID'])
+                            ->setURL('/modules/Admissions/studentEnrolment_manage_edit.php');
                         $sectionRegistrationInfo->getItem('seniority')
                             ->format(function($row) use ($studentGateway){ 
                                 // Fetch the student's enrollment history
                                 $resultSelect = $studentGateway->selectStudentEnrolmentHistory($row['gibbonPersonID']);
                                 return $resultSelect->rowCount() > 0 ? __('No') : __('Yes');
                             });
-                        $sectionRegistrationInfo->getItem('courses')
-                            ->format(function() use ($enrolmentCourses){ 
-                                if (empty($enrolmentCourses)) {
-                                    return __('No courses found.');
-                                }else{
-                                    $displayEnrolment = "";
-                                    foreach ($enrolmentCourses as $enrolmentCourse) {
-                                            $displayEnrolment .= $enrolmentCourse['course'].' ('.$enrolmentCourse['courseName'].')'.'<br/>';
-                                    }
-                                    return $displayEnrolment;
-                                }
-                        });
+                        
                         $sectionRegistrationInfo->getItem("attendanceTypeName")
                         ->translatable();
                         $sectionRegistrationInfo->getItem('className')
@@ -836,19 +831,38 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 }
                             });
                             
-                        $sectionMiscellanous = new Section('miscellaneous', __('Miscellaneous'));
-                        // Right Panel Miscellaneous Section Items
-                        $sectionMiscellanous
-                            ->addItem('roomNumber', __('Room Number'))
-                            ->addItem('comments', __('Comments'))
-                            ->addMetaData("classes", $rightPanelSectionHeaderClasses);
-
-                        $sectionMiscellanous->getItem('roomNumber')
+                        $sectionRegistrationInfo->getItem('roomNumber')
                         ->format(function($row){
                             if(empty($row["roomNumber"])){
                                 return __("Not Assigned");
                             }else{
                                 return $row["roomNumber"];
+                            }
+                        });
+
+                        $sectionRegistration = new Section('courses', __('Courses'));
+                        // Right Panel Miscellaneous Section Items
+                        $sectionRegistration
+                            ->addItem('courses', __('Courses'))
+                            ->addMetaData("classes", $rightPanelSectionHeaderClasses)
+                            ->addSectionAction('edit', __('Edit'))
+                            // ->addParam('search', $criteria->getSearchText(true))
+                            ->addParam('allUsers', false)
+                            ->addParam('gibbonSchoolYearID', $row['gibbonSchoolYearID'])
+                            ->addParam('type', 'Student')
+                            ->addParam('gibbonPersonID', $gibbonPersonID)
+                            ->setURL('/modules/Timetable Admin/courseEnrolment_manage_byPerson_edit.php');
+
+                        $sectionRegistration->getItem('courses')
+                        ->format(function() use ($enrolmentCourses){ 
+                            if (empty($enrolmentCourses)) {
+                                return __('No courses found.');
+                            }else{
+                                $displayEnrolment = "";
+                                foreach ($enrolmentCourses as $enrolmentCourse) {
+                                        $displayEnrolment .= $enrolmentCourse['course'].' ('.$enrolmentCourse['courseName'].')'.'<br/>';
+                                }
+                                return $displayEnrolment;
                             }
                         });
 
@@ -858,7 +872,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $rightPanel
                             ->addSection($sectionRegistrationInfo)
-                            ->addSection($sectionMiscellanous);
+                            ->addSection($sectionRegistration);
 
                         $card
                             ->addPanel($leftPanel)
@@ -950,21 +964,39 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                             return __($invoice['status']);
                                         });
                                 
-
+                                        
                                 $studentInvoicesTable->addColumn('total', __('Total').' <small><i>('.$session->get('currency').')</i></small>')
-                                ->description(__('Paid').' ('.$session->get('currency').')')
                                 ->notSortable()
                                 ->format(function ($invoice) use ($pdo) {
                                     $totalFee = FinanceHelper::getInvoiceTotalFee($pdo, $invoice['gibbonFinanceInvoiceID'], $invoice['status']);
-                                    if (is_null($totalFee)) return '';
-
+                                    if (is_null($totalFee)) return '0';
                                     $output = Format::currency($totalFee);
+                                    return $output;
+                                });
+
+                                $studentInvoicesTable->addColumn('paidAmount',  __('Paid').' <small><i>('.$session->get('currency').')</i></small>')
+                                ->notSortable()
+                                ->format(function ($invoice) use ($pdo) {
+                                    $totalFee = FinanceHelper::getInvoiceTotalFee($pdo, $invoice['gibbonFinanceInvoiceID'], $invoice['status']);
+                                    $output = Format::currency($invoice['paidAmount']);
                                     if (!empty($invoice['paidAmount'])) {
-                                        $class = Format::number($invoice['paidAmount']) != Format::number($totalFee)? 'textOverBudget' : '';
-                                        $output .= '<br/><span class="small emphasis '.$class.'">'.Format::currency($invoice['paidAmount']).'</span>';
+                                        $class = Format::number($invoice['paidAmount']) != Format::number($totalFee)? 'textUnderFee' : 'textMatchesFee';
+                                        $output = '<span class="'.$class.'">'.Format::currency($invoice['paidAmount']).'</span>';
                                     }
                                     return $output;
                                 });
+
+                                $studentInvoicesTable->addColumn('left',  __('Outstanding Amount').' <small><i>('.$session->get('currency').')</i></small>')
+                                ->notSortable()
+                                ->format(function ($invoice) use ($pdo) {
+                                    $totalFee = FinanceHelper::getInvoiceTotalFee($pdo, $invoice['gibbonFinanceInvoiceID'], $invoice['status']);
+                                    // Ensure numeric values
+                                    $totalFee = is_numeric($totalFee) ? (float)$totalFee : 0;
+                                    $paidAmount = is_numeric($invoice['paidAmount']) ? (float)$invoice['paidAmount'] : 0;
+
+                                    $left = $totalFee - $paidAmount;
+                                    return Format::currency($left);
+                                });                                          
                                 
                                 $studentInvoicesTable->addActionColumn()
                                     ->addParam('gibbonFinanceInvoiceID')

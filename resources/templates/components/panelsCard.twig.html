@@ -17,7 +17,7 @@
         <div class="flex flex-col md:flex-row">
             {% for panel in panels %}
             <div id="panel-{{ loop.index }}" class="{{ panel.getMetaDatas.classes.panelHeader }}" style="{{ panel.getMetaDatas.styles.panelHeader }}">
-                <div class="flex justify-between">
+                <div class="flex justify-between border-b">
                     <div>
                         <h3 class="{{ panel.getMetaDatas.classes.panelTitle }}" style="{{ panel.getMetaDatas.styles.panelTitle }}">{{ panel.getTitle|raw }}</h3>
                         <h4 class="{{ panel.getMetaDatas.classes.panelDescription }}" style="{{ panel.getMetaDatas.styles.panelDescription }}">{{ panel.description }}</h4>
@@ -28,7 +28,12 @@
                 </div>
                 {% for section in panel.getSections %}
                 <div id="section-{{ loop.index }}" class="{{ section.getMetaDatas.classes.sectionHeader }}" style="{{ section.getMetaDatas.styles.sectionHeader }}">
-                    <h4 class="{{ section.getMetaDatas.classes.sectionTitle }}" style="{{ section.getMetaDatas.styles.sectionTitle }}">{{ section.getTitle }}</h4>
+                    <div class="flex justify-between border-b border-1 border-black pr-2">
+                        <h4 class="{{ section.getMetaDatas.classes.sectionTitle }}" style="{{ section.getMetaDatas.styles.sectionTitle }}">{{ section.getTitle }}</h4>
+                        {% if section.getSectionActions is not empty %}
+                        <p class="self-start">{{ section.getSectionAction("edit").getOutput|raw }}</p>
+                        {% endif %}
+                    </div>
                     <div id="items" class="p-4">
                         {% for item in section.getItems %}
                         <div class="grid {% if item.getItemActions is empty %}grid-cols-2{% else %}grid-cols-3{% endif %} items-start border-b border-1 border-gray-300 gap-y-2">

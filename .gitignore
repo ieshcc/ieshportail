@@ -12,6 +12,7 @@ themes/*
 !themes/Default
 !themes/Legacy
 !themes/2021
+!themes/Kouliya
 
 # Test generated temporary files
 tests/_logs/*
