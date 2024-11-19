@@ -78,11 +78,9 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
                 ->add(Format::name('', $values['preferredName'], $values['surname'], 'Student'));
 
             //INTERFACE TO ADD NEW CLASSES
-            $returnUrl = $session->get('absoluteURL').'/index.php?q=/modules/'.urlencode('Timetable Admin').'/courseEnrolment_manage_byPerson.php&gibbonSchoolYearID='.$gibbonSchoolYearID.'&allUsers='.$allUsers;
-
-            if(isset($_GET['returnUrl'])){
-                $returnUrl = $session->get('absoluteURL').'/index.php?q='.urldecode($_GET['returnUrl']).'&return=success0';
-            }
+            $returnUrl = isset($_GET['returnUrl']) ? 
+                    $session->get('absoluteURL').'/index.php?q='.urldecode($_GET['returnUrl']).'&return=success0' : 
+                    $session->get('absoluteURL').'/index.php?q=/modules/'.urlencode('Timetable Admin').'/courseEnrolment_manage_byPerson.php&gibbonSchoolYearID='.$gibbonSchoolYearID.'&allUsers='.$allUsers;
 
             echo '<div class="flex justify-between border-b items-start"><h2>';
             echo __('Add Classes').'</h2>';
@@ -156,7 +154,9 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
                 $row->addLabel('role', __('Role'));
                 $row->addSelect('role')->fromArray($roles)->required()->selected($selectedRole);
             
-            $form->addHiddenValue("returnUrl", $_GET['returnUrl']);
+            if(isset($_GET['returnUrl'])){
+                $form->addHiddenValue("returnUrl", $_GET['returnUrl']);
+            }
 
             $row = $form->addRow();
                 $row->addFooter();
@@ -183,6 +183,9 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
             $form->addHiddenValue('type', $type);
             $form->addHiddenValue('gibbonPersonID', $gibbonPersonID);
             $form->addHiddenValue('gibbonSchoolYearID', $gibbonSchoolYearID);
+            if(isset($_GET['returnUrl'])){
+                $form->addHiddenValue("returnUrl", $_GET['returnUrl']);
+            }
 
             $linkParams = array(
                 'gibbonSchoolYearID' => $gibbonSchoolYearID,
@@ -191,6 +194,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
                 'allUsers'           => $allUsers,
                 'search'             => $search,
             );
+
+            if (isset($_GET['returnUrl'])) { 
+                $linkParams['returnUrl'] = $_GET['returnUrl'];
+            }
 
             $bulkActions = array(
                 'Mark as left'      => __('Mark as left'),
@@ -215,7 +222,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
             $table->addColumn('reportable', __('Reportable'))
                   ->format(Format::using('yesNo', 'reportable'));
 
-            // ACTIONS
+            // ACTIONS 
             $table->addActionColumn()
                 ->addParam('gibbonCourseClassID')
                 ->addParams($linkParams)
@@ -224,7 +231,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
                         ->setURL('/modules/Timetable Admin/courseEnrolment_manage_byPerson_edit_edit.php');
                     $actions->addAction('delete', __('Delete'))
                         ->setURL('/modules/Timetable Admin/courseEnrolment_manage_byPerson_edit_delete.php');
-                });
+            });
+            
 
             $table->addCheckboxColumn('gibbonCourseClassID');
 

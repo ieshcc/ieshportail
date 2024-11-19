@@ -35,8 +35,13 @@ if ($gibbonSchoolYearID == '' or $gibbonPersonID == '') { echo 'Fatal error load
     $URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_POST['address'])."/courseEnrolment_manage_byPerson_edit.php&type=$type&gibbonSchoolYearID=$gibbonSchoolYearID&gibbonPersonID=$gibbonPersonID&allUsers=$allUsers&search=$search";
 
     if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnrolment_manage_byPerson_edit.php') == false) {
-        $URL .= '&return=error0';
-        header("Location: {$URL}");
+        if(isset($_POST['returnUrl'])){
+            $URL .= '&return=error1&returnUrl='.$_POST['returnUrl'];
+            header("Location: {$URL}");
+        }else{
+            $URL .= '&return=error0';
+            header("Location: {$URL}");
+        }
     } else {
         //Proceed!
         //Run through each of the selected participants.
@@ -45,8 +50,13 @@ if ($gibbonSchoolYearID == '' or $gibbonPersonID == '') { echo 'Fatal error load
         $role = $_POST['role'] ?? '';
 
         if (count($choices) < 1 or $role == '') {
-            $URL .= '&return=error1';
-            header("Location: {$URL}");
+            if(isset($_POST['returnUrl'])){
+                $URL .= '&return=error1&returnUrl='.$_POST['returnUrl'];
+                header("Location: {$URL}");
+            }else{
+                $URL .= '&return=error1';
+                header("Location: {$URL}");
+            }
         } else {
             foreach ($choices as $t) {
                 //Check to see if student is already registered in this class
@@ -83,11 +93,21 @@ if ($gibbonSchoolYearID == '' or $gibbonPersonID == '') { echo 'Fatal error load
             }
             //Write to database
             if ($update == false) {
-                $URL .= '&return=error2';
-                header("Location: {$URL}");
+                if(isset($_POST['returnUrl'])){
+                    $URL .= '&return=error2&returnUrl='.$_POST['returnUrl'];
+                    header("Location: {$URL}");
+                }else{
+                    $URL .= '&return=error2';
+                    header("Location: {$URL}");
+                }
             } else {
-                $URL .= '&return=success0';
-                header("Location: {$URL}");
+                if(isset($_POST['returnUrl'])){
+                    $URL .= '&return=success0&returnUrl='.$_POST['returnUrl'];
+                    header("Location: {$URL}");
+                }else{
+                    $URL .= '&return=success0';
+                    header("Location: {$URL}");
+                }
             }
         }
     }

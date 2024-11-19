@@ -32,6 +32,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
     $type = $_GET['type'] ?? '';
     $allUsers = $_GET['allUsers'] ?? '';
     $search = $_GET['search'] ?? '';
+    $returnUrl = $_GET['returnUrl'] ?? '';
 
     if ($gibbonPersonID == '' or $gibbonCourseClassID == '' or $gibbonSchoolYearID == '') {
         $page->addError(__('You have not specified one or more required parameters.'));
@@ -47,7 +48,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/courseEnro
         } else {
             //Let's go!
             $row = $result->fetch();
-            $form = DeleteForm::createForm($session->get('absoluteURL').'/modules/'.$session->get('module')."/courseEnrolment_manage_byPerson_edit_deleteProcess.php?gibbonCourseClassID=$gibbonCourseClassID&type=$type&gibbonSchoolYearID=$gibbonSchoolYearID&gibbonPersonID=$gibbonPersonID&allUsers=$allUsers&search=$search");
+            $decodeReturnUrl = urlencode($returnUrl);
+            $form = $returnUrl !== '' ? DeleteForm::createForm($session->get('absoluteURL').'/modules/'.$session->get('module')."/courseEnrolment_manage_byPerson_edit_deleteProcess.php?gibbonCourseClassID=$gibbonCourseClassID&type=$type&gibbonSchoolYearID=$gibbonSchoolYearID&gibbonPersonID=$gibbonPersonID&allUsers=$allUsers&search=$search&returnUrl=$decodeReturnUrl") :  DeleteForm::createForm($session->get('absoluteURL').'/modules/'.$session->get('module')."/courseEnrolment_manage_byPerson_edit_deleteProcess.php?gibbonCourseClassID=$gibbonCourseClassID&type=$type&gibbonSchoolYearID=$gibbonSchoolYearID&gibbonPersonID=$gibbonPersonID&allUsers=$allUsers&search=$search");
             echo $form->getOutput();
         }
     }
