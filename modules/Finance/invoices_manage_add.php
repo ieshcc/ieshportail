@@ -156,6 +156,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage_ad
             $customBlocks->addPredefinedBlock($gibbonFinanceFeeID, $data + array('feeType' => 'Standard', 'readonly' => ['name', 'fee', 'description', 'gibbonFinanceFeeCategoryID']) );
         }
 
+        if(isset($_GET['returnUrl'])){ 
+            $form->addHiddenValue('returnUrl', $_GET['returnUrl']);
+        }
+
         $row = $form->addRow();
             $row->addFooter();
             $row->addSubmit();

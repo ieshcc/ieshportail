@@ -687,9 +687,22 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             echo '</div>';
                         }
 
+                        $error3 = __('Some aspects of your update failed, effecting the following areas:').'<ul>';
+                        if (!empty($_GET['studentFailCount'])) {
+                            $error3 .= '<li>'.$_GET['studentFailCount'].' '.__('students encountered problems.').'</li>';
+                        }
+                        if (!empty($_GET['invoiceFailCount'])) {
+                            $error3 .= '<li>'.$_GET['invoiceFailCount'].' '.__('invoices encountered problems.').'</li>';
+                        }
+                        if (!empty($_GET['invoiceFeeFailCount'])) {
+                            $error3 .= '<li>'.$_GET['invoiceFeeFailCount'].' '.__('fee entries encountered problems.').'</li>';
+                        }
+                        $error3 .= '</ul>'.__('It is recommended that you remove all pending invoices and try to recreate them.');
+
                         $page->return->addReturns(['warning11' => __('Some elements of your request failed, but others were successful.'), 
                         'warning12' => __('Your request was completed successfully, but one or more requested emails could not be sent.'), 
-                        'warning13' => __('Your request was completed successfully, but one or more images were the wrong size and so were not saved.')]);
+                        'warning13' => __('Your request was completed successfully, but one or more images were the wrong size and so were not saved.'),
+                        'error3' => $error3]);
 
                         $currentPage = "/modules/Students/student_view_details.php&gibbonPersonID=".$gibbonPersonID."&sort=surname,preferredName&allStudents=";
                         $returnUrl = urlencode($currentPage);
@@ -947,6 +960,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 ->setURL('/modules/Finance/invoices_manage_add.php')
                                 ->setIcon('page_new_multi')
                                 ->addParams($studentInvoicesParams)
+                                ->addParam('returnUrl', $returnUrl)
                                 ->displayLabel()
                                 ->append('<br/>');
                             
@@ -1028,6 +1042,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                                 ->setURL('/modules/Finance/invoices_manage_delete.php');
                         
                                             $actions->addAction('preview', __('Preview Invoice'))
+                                                ->modalWindow()
                                                 ->setURL('/modules/Finance/invoices_manage_print_print.php')
                                                 ->addParam('type', 'invoice')
                                                 ->addParam('preview', 'true')
@@ -1035,6 +1050,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                         } else {
                                             $actions->addAction('print', __('Print Invoices, Receipts & Reminders'))
                                                 ->setURL('/modules/Finance/invoices_manage_print.php')
+                                                ->modalWindow()
                                                 ->setIcon('print');
                                         }
                                     });

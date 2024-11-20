@@ -37,13 +37,21 @@ if ($gibbonFinanceInvoiceID == '' or $gibbonSchoolYearID == '') { echo 'Fatal er
     $URLDelete = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_POST['address'])."/invoices_manage.php&gibbonSchoolYearID=$gibbonSchoolYearID&status=$status&gibbonFinanceInvoiceeID=$gibbonFinanceInvoiceeID&monthOfIssue=$monthOfIssue&gibbonFinanceBillingScheduleID=$gibbonFinanceBillingScheduleID&gibbonFinanceFeeCategoryID=$gibbonFinanceFeeCategoryID";
 
     if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage_delete.php') == false) {
-        $URL .= '&return=error0';
-        header("Location: {$URL}");
+        if(isset($_GET['returnUrl'])){
+            header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_GET['returnUrl'])."&return=error0");
+        }else{
+            $URL .= '&return=error0';
+            header("Location: {$URL}");
+        }
     } else {
         //Proceed!
         if ($gibbonFinanceInvoiceID == '') {
-            $URL .= '&return=error1';
-            header("Location: {$URL}");
+            if(isset($_GET['returnUrl'])){
+                header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_GET['returnUrl'])."&return=error1");
+            }else{
+                $URL .= '&return=error1';
+                header("Location: {$URL}");
+            }
         } else {
             try {
                 $data = array('gibbonFinanceInvoiceID' => $gibbonFinanceInvoiceID);
@@ -51,14 +59,23 @@ if ($gibbonFinanceInvoiceID == '' or $gibbonSchoolYearID == '') { echo 'Fatal er
                 $result = $connection2->prepare($sql);
                 $result->execute($data);
             } catch (PDOException $e) {
-                $URL .= '&return=error2';
-                header("Location: {$URL}");
-                exit();
+                if(isset($_GET['returnUrl'])){
+                    header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_GET['returnUrl'])."&return=error2");
+                    exit();
+                }else{
+                    $URL .= '&return=error2';
+                    header("Location: {$URL}");
+                    exit();
+                }
             }
 
             if ($result->rowCount() != 1) {
-                $URL .= '&return=error2';
-                header("Location: {$URL}");
+                if(isset($_GET['returnUrl'])){
+                    header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_GET['returnUrl'])."&return=error2");
+                }else{
+                    $URL .= '&return=error2';
+                    header("Location: {$URL}");
+                }
             } else {
                 //Write to database
                 try {
@@ -67,9 +84,14 @@ if ($gibbonFinanceInvoiceID == '' or $gibbonSchoolYearID == '') { echo 'Fatal er
                     $result = $connection2->prepare($sql);
                     $result->execute($data);
                 } catch (PDOException $e) {
-                    $URL .= '&return=error2';
-                    header("Location: {$URL}");
-                    exit();
+                    if(isset($_GET['returnUrl'])){
+                        header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_GET['returnUrl'])."&return=error2");
+                        exit();
+                    }else{
+                        $URL .= '&return=error2';
+                        header("Location: {$URL}");
+                        exit();
+                    }
                 }
 
                 try {
@@ -78,13 +100,22 @@ if ($gibbonFinanceInvoiceID == '' or $gibbonSchoolYearID == '') { echo 'Fatal er
                     $result = $connection2->prepare($sql);
                     $result->execute($data);
                 } catch (PDOException $e) {
-                    $URL .= '&return=error2';
-                    header("Location: {$URL}");
-                    exit();
+                    if(isset($_GET['returnUrl'])){
+                        header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_GET['returnUrl'])."&return=error2");
+                        exit();
+                    }else{
+                        $URL .= '&return=error2';
+                        header("Location: {$URL}");
+                        exit();
+                    }
                 }
 
-                $URLDelete = $URLDelete.'&return=success0';
-                header("Location: {$URLDelete}");
+                if(isset($_GET['returnUrl'])){
+                    header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_GET['returnUrl'])."&return=success0");
+                }else{
+                    $URLDelete = $URLDelete.'&return=success0';
+                    header("Location: {$URLDelete}");
+                }
             }
         }
     }

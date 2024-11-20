@@ -336,31 +336,4 @@ class Action extends WebLink
 
         return parent::getOutput();
     }
-
-    // /**
-    //  * Stores the current URL as the previous page in the session.
-    //  *
-    //  * @return self
-    //  */
-    // public function setPreviousPage() {
-    //     $_SESSION['previous_page'] = $_SERVER['REQUEST_URI'];
-    //     return $this;
-    // }
-
-    //  /**
-    //  * Generates a "Go Back" action based on the stored previous page.
-    //  *
-    //  * @param string $label
-    //  * @return self
-    //  */
-    // public function addGoBackAction($label = null) {
-
-    //     $label = $label ?? __('Go back');
-
-    //     if (isset($_SESSION['previous_page'])) {
-    //         $this->setURL($_SESSION['previous_page']);
-    //         $this->setLabel($label); // Assuming you have a back icon
-    //     }
-    //     return $this;
-    // }
 }

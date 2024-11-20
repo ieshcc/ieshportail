@@ -148,6 +148,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage_is
 				$form->addRow()->addInvoiceEmailCheckboxes('emails[]', 'names[]', $values, $session);
 			}
 
+            if(isset($_GET['returnUrl'])){
+                $form->addHiddenValue('returnUrl', $_GET['returnUrl']);
+            }
+
 			$row = $form->addRow();
                 $row->addFooter();
                 $row->addSubmit();

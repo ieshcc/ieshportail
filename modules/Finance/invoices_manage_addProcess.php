@@ -39,8 +39,12 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
     $URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_POST['address'])."/invoices_manage_add.php&gibbonSchoolYearID=$gibbonSchoolYearID&status=$status&gibbonFinanceInvoiceeID=$gibbonFinanceInvoiceeID&monthOfIssue=$monthOfIssue&gibbonFinanceBillingScheduleID=$gibbonFinanceBillingScheduleID&gibbonFinanceFeeCategoryID=$gibbonFinanceFeeCategoryID";
 
     if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage_add.php') == false) {
-        $URL .= '&return=error0';
-        header("Location: {$URL}");
+        if(isset($_POST['returnUrl'])){
+            header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_POST['returnUrl'])."&return=error0");
+        }else{
+            $URL .= '&return=error0';
+            header("Location: {$URL}");
+        }
     } else {
         $gibbonFinanceInvoiceeIDs = $_POST['gibbonFinanceInvoiceeIDs'] ?? '';
         $scheduling = $_POST['scheduling'] ?? '';
@@ -55,8 +59,12 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
         $order = $_POST['order'] ?? array();
 
         if (count($gibbonFinanceInvoiceeIDs) == 0 or $scheduling == '' or ($scheduling == 'Scheduled' and $gibbonFinanceBillingScheduleID == '') or ($scheduling == 'Ad Hoc' and empty($invoiceDueDate)) or count($order) == 0) {
-            $URL .= '&return=error1';
-            header("Location: {$URL}");
+            if(isset($_POST['returnUrl'])){
+                header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_POST['returnUrl'])."&return=error1");
+            }else{
+                $URL .= '&return=error1';
+                header("Location: {$URL}");
+            }
         } else {
             $studentFailCount = 0;
             $invoiceFailCount = 0;
@@ -82,9 +90,14 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
             }
 
             if ($feeFail == true) {
-                $URL .= '&return=error1';
-                header("Location: {$URL}");
-                exit();
+                if(isset($_POST['returnUrl'])){
+                    header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_POST['returnUrl'])."&return=error1");
+                    exit();
+                }else{
+                    $URL .= '&return=error1';
+                    header("Location: {$URL}");
+                    exit();
+                }
             } else {
                 //CYCLE THROUGH STUDENTS
                 foreach ($gibbonFinanceInvoiceeIDs as $gibbonFinanceInvoiceeID) {
@@ -188,9 +201,14 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
                                 }
 
                                 if ($continue == false) {
-                                    $URL .= '&return=error2';
-                                    header("Location: {$URL}");
-                                    exit();
+                                    if(isset($_POST['returnUrl'])){
+                                        header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_POST['returnUrl'])."&return=error2");
+                                        exit();
+                                    }else{
+                                        $URL .= '&return=error2';
+                                        header("Location: {$URL}");
+                                        exit();
+                                    }
                                 } else {
                                     try {
                                         if ($scheduling == 'Scheduled') {
@@ -318,9 +336,13 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
                                 }
 
                                 if ($continue == false) {
-                                    $URL .= '&return=error2';
-                                    header("Location: {$URL}");
-                                    exit();
+                                    if(isset($_POST['returnUrl'])){
+                                        header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_POST['returnUrl'])."&return=error2");
+                                    }else{
+                                        $URL .= '&return=error2';
+                                        header("Location: {$URL}");
+                                        exit();
+                                    }
                                 } else {
                                     try {
                                         if ($scheduling == 'Scheduled') {
@@ -440,11 +462,19 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
 
                 //Return results, include three types of fail and counts
                 if ($studentFailCount != 0 or $invoiceFailCount != 0 or $invoiceFeeFailCount != 0) {
-                    $URL .= "&return=error3&studentFailCount=$studentFailCount&invoiceFailCount=$invoiceFailCount&invoiceFeeFailCount=$invoiceFeeFailCount";
-                    header("Location: {$URL}");
+                    if(isset($_POST['returnUrl'])){
+                        header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_POST['returnUrl'])."&return=error3&studentFailCount=".$studentFailCount."&invoiceFailCount=".$invoiceFailCount."&invoiceFeeFailCount=".$invoiceFeeFailCount."");
+                    }else{
+                        $URL .= "&return=error3&studentFailCount=$studentFailCount&invoiceFailCount=$invoiceFailCount&invoiceFeeFailCount=$invoiceFeeFailCount";
+                        header("Location: {$URL}");
+                    }
                 } else {
-                    $URL .= '&return=success0';
-                    header("Location: {$URL}");
+                    if(isset($_POST['returnUrl'])){
+                        header("Location: ".$session->get('absoluteURL')."/index.php?q=".urldecode($_POST['returnUrl'])."&return=success0");
+                    }else{
+                        $URL .= '&return=success0';
+                        header("Location: {$URL}");
+                    }
                 }
             }
         }
