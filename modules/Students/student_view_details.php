@@ -807,10 +807,26 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('address1Country', __('Country'), 'France')
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
 
+                        $sectionEmployment = new Section ('employment', __('Professional Activity'));
+                        $sectionEmployment
+                            ->addItem('profession', __("Profession"))
+                            ->addItem('jobTitle', __("Job Title"))
+                            ->addItem('employer', __("Work Address"))
+                            ->addMetaData("classes", $leftPanelSectionHeaderClasses);
+
+                        foreach($sectionEmployment->getItems() as $employmentItem){
+                            if(empty($row[$employmentItem->getID()])){
+                                $sectionEmployment->getItem($employmentItem->getID())
+                                    ->format(function() {
+                                        return __("Not Assigned");
+                                     });
+                            }
+                        }
+
                         $sectionRegistrationInfo = new Section ('registrationInfo', __('Registration'));
                         $sectionRegistrationInfo
                             ->addItem('seniority', __('New Student ?'))
-                            ->addItem('enrolmentStatusName', __('Registration Status'));
+                            ->addItem('enrolmentStatusName', __('Enrolment Status'));
                         $sectionRegistrationInfo->getItem("enrolmentStatusName")
                             ->translatable();
                         if($row["enrolmentStatusName"] === "Cancelled"){
@@ -891,7 +907,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $leftPanel
                             ->addSection($sectionIdentity)
-                            ->addSection($sectionHomeInfo);
+                            ->addSection($sectionHomeInfo)
+                            ->addSection($sectionEmployment);
 
                         $rightPanel
                             ->addSection($sectionRegistrationInfo)
@@ -962,7 +979,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 ->addParams($studentInvoicesParams)
                                 ->addParam('returnUrl', $returnUrl)
                                 ->displayLabel()
-                                ->append('<br/>');
+                                ->append('<br/>');         
                             
 
                                 $invoiceGateway = $container->get(InvoiceGateway::class);
@@ -974,20 +991,68 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 //retrieve the invoices associated with the user
                                 $invoices = $invoiceGateway->queryInvoicesByYear($criteria, $session->get('gibbonSchoolYearID'));
                                 
-                                $studentInvoicesTable->addExpandableColumn('notes');
-                                
-                                $studentInvoicesTable->addColumn('billingSchedule', __('Period'));
+                                $studentInvoicesTable->addExpandableColumn("fees")
+                                    ->format(function($invoice) use ($pdo, $session){
+                                        // Ad Hoc OR Issued (Fixed Fees)
+                                        $dataFees = array('gibbonFinanceInvoiceID' => $invoice['gibbonFinanceInvoiceID']);
+                                        $sqlFees = "SELECT gibbonFinanceInvoiceFee.gibbonFinanceInvoiceFeeID, gibbonFinanceInvoiceFee.feeType, gibbonFinanceFeeCategory.name AS category, gibbonFinanceInvoiceFee.name AS name, gibbonFinanceInvoiceFee.fee, gibbonFinanceInvoiceFee.description AS description, NULL AS gibbonFinanceFeeID, gibbonFinanceInvoiceFee.gibbonFinanceFeeCategoryID AS gibbonFinanceFeeCategoryID, sequenceNumber FROM gibbonFinanceInvoiceFee JOIN gibbonFinanceFeeCategory ON (gibbonFinanceInvoiceFee.gibbonFinanceFeeCategoryID=gibbonFinanceFeeCategory.gibbonFinanceFeeCategoryID) WHERE gibbonFinanceInvoiceID=:gibbonFinanceInvoiceID";
 
-                                $studentInvoicesTable->addColumn('status', __('Status'))
-                                        ->format(function ($invoice) {
-                                            if ($invoice['status'] == 'Issued' && $invoice['invoiceDueDate'] < date('Y-m-d')) {
-                                                return __('Issued - Overdue');
-                                            } else if ($invoice['status'] == 'Paid' && $invoice['invoiceDueDate'] < $invoice['paidDate']) {
-                                                return __('Paid - Late');
+                                        // Union with Standard (Flexible Fees)
+                                        if ($invoice['status'] == 'Pending') {
+                                            $sqlFees = "(".$sqlFees." AND feeType='Ad Hoc')";
+                                            $sqlFees .= " UNION ";
+                                            $sqlFees .= "(SELECT gibbonFinanceInvoiceFee.gibbonFinanceInvoiceFeeID, gibbonFinanceInvoiceFee.feeType, gibbonFinanceFeeCategory.name AS category, gibbonFinanceFee.name AS name, gibbonFinanceFee.fee AS fee, gibbonFinanceFee.description AS description, gibbonFinanceInvoiceFee.gibbonFinanceFeeID AS gibbonFinanceFeeID, gibbonFinanceFeeCategory.gibbonFinanceFeeCategoryID AS gibbonFinanceFeeCategoryID, sequenceNumber FROM gibbonFinanceInvoiceFee JOIN gibbonFinanceFee ON (gibbonFinanceInvoiceFee.gibbonFinanceFeeID=gibbonFinanceFee.gibbonFinanceFeeID) JOIN gibbonFinanceFeeCategory ON (gibbonFinanceFee.gibbonFinanceFeeCategoryID=gibbonFinanceFeeCategory.gibbonFinanceFeeCategoryID) WHERE gibbonFinanceInvoiceID=:gibbonFinanceInvoiceID AND feeType='Standard')";
+                                        }
+
+                                        $sqlFees .= " ORDER BY sequenceNumber";
+                                        $resultFees = $pdo->executeQuery($dataFees, $sqlFees);
+
+                                        if ($resultFees->rowCount() == 0) {
+                                           return __('There are no records to display.');
+                                        } else {
+                                            // Start the HTML for the table
+                                            $feesList = "<table border='1' style='width: 100%; border-collapse: collapse;'>";
+                                            $feesList .= "<thead>
+                                                        <tr>
+                                                            <th>".__("Name")."</th>
+                                                            <th>".__("Category")."</th>
+                                                            <th>".__("Description")."</th>
+                                                            <th>".__("Fee")."<small><i>( ".$session->get('currency').")</i></small></th>
+                                                        </tr>
+                                                    </thead>";
+                                            $feesList .= "<tbody>";
+
+                                            $feeTotal = 0;
+                                            while ($fee = $resultFees->fetch()) {
+                                                $feeTotal += $fee['fee'];
+                                                $feesList .= "<tr>
+                                                            <td>{$fee['name']}</td>
+                                                            <td>{$fee['category']}</td>
+                                                            <td>{$fee['description']}</td>
+                                                            <td>{$fee['fee']}".substr($session->get('currency'), 4)."</td>
+                                                        </tr>";
                                             }
-                                            return __($invoice['status']);
-                                        });
-                                
+
+                                            // Close the table
+                                            $feesList .= "</tbody></table>";
+
+                                            return $feesList;
+                                        }
+                                    });
+                                    
+                                $studentInvoicesTable->addColumn('billingSchedule', __('Period'));
+                                    
+                                $studentInvoicesTable->addColumn('status', __('Status'))
+                                    ->format(function ($invoice) {
+                                        if ($invoice['status'] == 'Issued' && $invoice['invoiceDueDate'] < date('Y-m-d')) {
+                                            return __('Issued - Overdue');
+                                        } else if ($invoice['status'] == 'Paid' && $invoice['invoiceDueDate'] < $invoice['paidDate']) {
+                                            return __('Paid - Late');
+                                        }
+                                        return __($invoice['status']);
+                                    });
+                                    
+                                $studentInvoicesTable->addColumn('notes', __('Notes'));
                                         
                                 $studentInvoicesTable->addColumn('total', __('Total').' <small><i>('.$session->get('currency').')</i></small>')
                                 ->notSortable()

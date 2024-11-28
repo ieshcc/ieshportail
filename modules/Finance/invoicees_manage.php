@@ -110,6 +110,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoicees_manage.p
     $table->addColumn('invoiceTo', __('Invoice To'))
             ->format(function ($invoicee) {
                 switch ($invoicee['invoiceTo']) {
+                    case "Student":
+                        return __("Student");
                     case "Family":
                         return __("Family");
                     case "Company":
@@ -126,6 +128,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoicees_manage.p
                         return __("Unknown");
                 }
             });
+    $table->addColumn('email', __('Recipient Email'))->translatable();
     $table->addActionColumn()
             ->addParam('gibbonFinanceInvoiceeID')
             ->addParam('search', $search)

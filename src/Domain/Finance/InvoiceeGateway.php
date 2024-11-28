@@ -34,6 +34,7 @@ class InvoiceeGateway extends QueryableGateway implements ScrubbableGateway
                 'gibbonPerson.surname',
                 'gibbonPerson.preferredName',
                 'gibbonPerson.title',
+                'gibbonPerson.email',
                 'gibbonPerson.dateStart',
                 'gibbonPerson.dateEnd',
                 'gibbonPerson.status',

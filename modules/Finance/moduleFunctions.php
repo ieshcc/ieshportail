@@ -785,7 +785,7 @@ function invoiceContents($guid, $connection2, $gibbonFinanceInvoiceID, $gibbonSc
 
     try {
         $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID, 'gibbonSchoolYearID2' => $gibbonSchoolYearID, 'gibbonFinanceInvoiceID' => $gibbonFinanceInvoiceID);
-        $sql = 'SELECT gibbonPerson.gibbonPersonID, studentID, officialName, surname, preferredName, gibbonFinanceInvoice.*, companyContact, companyEmail, companyName, companyAddress, gibbonFormGroup.name AS formGroup FROM gibbonFinanceInvoice JOIN gibbonFinanceInvoicee ON (gibbonFinanceInvoice.gibbonFinanceInvoiceeID=gibbonFinanceInvoicee.gibbonFinanceInvoiceeID) JOIN gibbonPerson ON (gibbonFinanceInvoicee.gibbonPersonID=gibbonPerson.gibbonPersonID) JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID) JOIN gibbonFormGroup ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID) WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID2 AND gibbonFinanceInvoice.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonFinanceInvoiceID=:gibbonFinanceInvoiceID';
+        $sql = 'SELECT gibbonPerson.gibbonPersonID, studentID, officialName, surname, preferredName, email, gibbonFinanceInvoice.*, companyContact, companyEmail, companyName, companyAddress, gibbonFormGroup.name AS formGroup FROM gibbonFinanceInvoice JOIN gibbonFinanceInvoicee ON (gibbonFinanceInvoice.gibbonFinanceInvoiceeID=gibbonFinanceInvoicee.gibbonFinanceInvoiceeID) JOIN gibbonPerson ON (gibbonFinanceInvoicee.gibbonPersonID=gibbonPerson.gibbonPersonID) JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID) JOIN gibbonFormGroup ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID) WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID2 AND gibbonFinanceInvoice.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonFinanceInvoiceID=:gibbonFinanceInvoiceID';
         $result = $connection2->prepare($sql);
         $result->execute($data);
     } catch (PDOException $e) {
@@ -819,7 +819,10 @@ function invoiceContents($guid, $connection2, $gibbonFinanceInvoiceID, $gibbonSc
         $return .= '<tr>';
         $return .= "<td style='padding-top: 15px; padding-left: 10px; vertical-align: top; $style $style3' colspan=3>";
         $return .= "<span style='font-size: 115%; font-weight: bold'>".__('Invoice To').' ('.__($row['invoiceTo']).')</span><br/>';
-        if ($row['invoiceTo'] == 'Company') {
+        if ($row['invoiceTo'] == 'Student') {
+            $invoiceTo = '<b>'.$row['officialName'].'</b>, '.$row['email'];
+            $return .= $invoiceTo;
+        } else if ($row['invoiceTo'] == 'Company') {
             $invoiceTo = '';
             if ($row['companyContact'] != '') {
                 $invoiceTo .= '<b>'.$row['companyContact'].'</b>, ';
@@ -1118,7 +1121,7 @@ function receiptContents($guid, $connection2, $gibbonFinanceInvoiceID, $gibbonSc
 
     try {
         $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID, 'gibbonSchoolYearID2' => $gibbonSchoolYearID, 'gibbonFinanceInvoiceID' => $gibbonFinanceInvoiceID);
-        $sql = 'SELECT gibbonPerson.gibbonPersonID, studentID, officialName, surname, preferredName, gibbonFinanceInvoice.*, companyContact, companyEmail, companyName, companyAddress, gibbonFormGroup.name AS formGroup FROM gibbonFinanceInvoice JOIN gibbonFinanceInvoicee ON (gibbonFinanceInvoice.gibbonFinanceInvoiceeID=gibbonFinanceInvoicee.gibbonFinanceInvoiceeID) JOIN gibbonPerson ON (gibbonFinanceInvoicee.gibbonPersonID=gibbonPerson.gibbonPersonID) JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID) JOIN gibbonFormGroup ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID) WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID2 AND gibbonFinanceInvoice.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonFinanceInvoiceID=:gibbonFinanceInvoiceID';
+        $sql = 'SELECT gibbonPerson.gibbonPersonID, studentID, officialName, surname, preferredName, email, gibbonFinanceInvoice.*, companyContact, companyEmail, companyName, companyAddress, gibbonFormGroup.name AS formGroup FROM gibbonFinanceInvoice JOIN gibbonFinanceInvoicee ON (gibbonFinanceInvoice.gibbonFinanceInvoiceeID=gibbonFinanceInvoicee.gibbonFinanceInvoiceeID) JOIN gibbonPerson ON (gibbonFinanceInvoicee.gibbonPersonID=gibbonPerson.gibbonPersonID) JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID) JOIN gibbonFormGroup ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID) WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID2 AND gibbonFinanceInvoice.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonFinanceInvoiceID=:gibbonFinanceInvoiceID';
         $result = $connection2->prepare($sql);
         $result->execute($data);
     } catch (PDOException $e) {
@@ -1152,7 +1155,10 @@ function receiptContents($guid, $connection2, $gibbonFinanceInvoiceID, $gibbonSc
         $return .= '<tr>';
         $return .= "<td style='padding-top: 15px; padding-left: 10px; vertical-align: top; $style $style3' colspan=3>";
         $return .= "<span style='font-size: 115%; font-weight: bold'>".__('Receipt To').' ('._($row['invoiceTo']).')</span><br/>';
-        if ($row['invoiceTo'] == 'Company') {
+        if ($row['invoiceTo'] == 'Student') {
+            $invoiceTo = '<b>'.$row['officialName'].'</b>, '.$row['email'];
+            $return .= $invoiceTo;
+        } else if ($row['invoiceTo'] == 'Company') {
             $invoiceTo = '';
             if ($row['companyContact'] != '') {
                 $invoiceTo .= '<b>'.$row['companyContact'].'</b>, ';
@@ -1591,6 +1597,37 @@ function getBudgetAllocated($pdo, $gibbonFinanceBudgetCycleID, $gibbonFinanceBud
     }
     return $budgetAllocated;
 }
+
+function generateUniqueTransactionID($pdo) {
+    $isUnique = false;
+    $transactionID = '';
+
+    try{
+        $countfailsafe = 0;
+        while (!$isUnique and $countfailsafe < 100) {
+            // Generate a random transaction ID
+            $randomNumber = str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+            $transactionID = "PAY-" . $randomNumber;
+    
+            // Check if the ID already exists in the database
+            $data = [':transaction_id' => $transactionID];
+            $sqlCheckUniqueTransactionID = "SELECT COUNT(*) FROM gibbonPayment WHERE paymentTransactionID = :transaction_id";
+            $result = $pdo->executeQuery($data, $sqlCheckUniqueTransactionID);
+    
+            if ($result->rowCount() == 0) {
+                $isUnique = true; // No duplicate found
+            }
+
+            $countfailsafe++;
+        }
+    }catch (PDOException $e) {
+        return 'Database Error';
+    }
+    
+     return $transactionID;
+   
+}
+
 
 // function getInvoiceTotalFee($pdo, $gibbonFinanceInvoiceID, $status)
 // {

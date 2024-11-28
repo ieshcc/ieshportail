@@ -55,7 +55,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage_ed
     } else {
 
             $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID, 'gibbonFinanceInvoiceID' => $gibbonFinanceInvoiceID);
-            $sql = "SELECT gibbonFinanceInvoice.*, companyName, companyContact, companyEmail, companyCCFamily, gibbonSchoolYear.name as schoolYear, gibbonPerson.surname, gibbonPerson.preferredName, gibbonFinanceBillingSchedule.name as billingScheduleName
+            $sql = "SELECT gibbonFinanceInvoice.*, companyName, companyContact, companyEmail, companyCCFamily, gibbonSchoolYear.name as schoolYear, gibbonPerson.surname, gibbonPerson.firstname, gibbonPerson.preferredName, gibbonPerson.email as studentEmail, gibbonFinanceBillingSchedule.name as billingScheduleName
                     FROM gibbonFinanceInvoice
                     JOIN gibbonSchoolYear ON (gibbonSchoolYear.gibbonSchoolYearID=gibbonFinanceInvoice.gibbonSchoolYearID)
                     LEFT JOIN gibbonFinanceInvoicee ON (gibbonFinanceInvoice.gibbonFinanceInvoiceeID=gibbonFinanceInvoicee.gibbonFinanceInvoiceeID)
@@ -137,11 +137,11 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage_ed
 
                 $row = $form->addRow()->addClass('paymentInfo');
                     $row->addLabel('paymentTransactionID', __('Transaction ID'))->description(__('Transaction ID to identify this payment.'));
-                    $row->addTextField('paymentTransactionID')->maxLength(50);
+                    $row->addTextField('paymentTransactionID')->maxLength(50)->setValue(generateUniqueTransactionID($pdo));
 
                 $row = $form->addRow()->addClass('paymentInfo');
                     $row->addLabel('paidDate', __('Date Paid'))->description(__('Date of payment, not entry to system.'));
-                    $row->addDate('paidDate')->required();
+                    $row->addDate('paidDate')->required()->setValue(date("d/m/Y"));
 
                 $remainingFee = FinanceHelper::getInvoiceTotalFee($pdo, $gibbonFinanceInvoiceID, $values['status']);
                 if ($values['status'] == 'Paid - Partial') {

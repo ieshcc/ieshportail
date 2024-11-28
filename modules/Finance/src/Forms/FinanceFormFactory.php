@@ -252,8 +252,18 @@ class FinanceFormFactory extends DatabaseFormFactory
     {
         $table = $this->createTable()->setClass('fullWidth');
 
+        // Student Emails
+        if ($values['invoiceTo'] == 'Student') {
+            $row = $table->addRow();
+            $row->addLabel($checkboxName, $values['surname']." ".$values['firstname'])->description(__("Email sent to: ").$values['studentEmail']);
+            $row->addCheckbox($checkboxName)
+                ->description($values['studentEmail'])
+                ->setValue($values['studentEmail'])
+                ->checked($values['studentEmail'])
+                ->append('<input type="hidden" name="'.$hiddenValueName.'" value="'.$values['surname']." ".$values['firstname'].'">');
+        }
         // Company Emails
-        if ($values['invoiceTo'] == 'Company') {
+        else if ($values['invoiceTo'] == 'Company') {
             if (empty($values['companyEmail']) || empty($values['companyContact']) || empty($values['companyName'])) {
                 $table->addRow()->addTableCell(__('There is no company contact available to send this invoice to.'))->colSpan(2)->wrap('<div class="warning">', '</div>');
             } else {

@@ -85,9 +85,16 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoices_manage_ad
             $row->addLabel('schoolYear', __('School Year'));
             $row->addTextField('schoolYear')->required()->readonly()->setValue($schoolYearName);
 
-        $row = $form->addRow();
+        if(isset($_GET['gibbonFinanceInvoiceeID'])){     
+            $row = $form->addRow();
+                $row->addLabel('gibbonFinanceInvoiceeIDs', __('Invoicees'))->append(sprintf(__('Visit %1$sManage Invoicees%2$s to automatically generate missing students.'), "<a href='".$session->get('absoluteURL')."/index.php?q=/modules/Finance/invoicees_manage.php'>", '</a>'));
+                $row->addSelectInvoicee('gibbonFinanceInvoiceeIDs', $gibbonSchoolYearID, ["byClass" => true])->required()->selectMultiple()->selected($_GET['gibbonFinanceInvoiceeID']);
+        }else{
+            $row = $form->addRow();
             $row->addLabel('gibbonFinanceInvoiceeIDs', __('Invoicees'))->append(sprintf(__('Visit %1$sManage Invoicees%2$s to automatically generate missing students.'), "<a href='".$session->get('absoluteURL')."/index.php?q=/modules/Finance/invoicees_manage.php'>", '</a>'));
             $row->addSelectInvoicee('gibbonFinanceInvoiceeIDs', $gibbonSchoolYearID, ["byClass" => true])->required()->selectMultiple();
+        }
+
 
         $scheduling = array('Scheduled' => __('Scheduled'), 'Ad Hoc' => __('Ad Hoc'));
         $row = $form->addRow();

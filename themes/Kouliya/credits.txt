@@ -19,3 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 THEME CREDITS
 -------------
+Theme Developped by ODI Hamd on behalf oh IESH
+    ODI HAMD : https://odihamd.com
+    IESH : iesh.fr

@@ -54,7 +54,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoicees_manage_e
     } else {
 
             $data = array('gibbonFinanceInvoiceeID' => $gibbonFinanceInvoiceeID);
-            $sql = 'SELECT surname, preferredName, status, gibbonFinanceInvoicee.* FROM gibbonFinanceInvoicee JOIN gibbonPerson ON (gibbonFinanceInvoicee.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonFinanceInvoiceeID=:gibbonFinanceInvoiceeID';
+            $sql = 'SELECT surname, preferredName, status, email, gibbonFinanceInvoicee.* FROM gibbonFinanceInvoicee JOIN gibbonPerson ON (gibbonFinanceInvoicee.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonFinanceInvoiceeID=:gibbonFinanceInvoiceeID';
             $result = $connection2->prepare($sql);
             $result->execute($data);
 
@@ -68,6 +68,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoicees_manage_e
             $table = DataTable::createDetails('personal');
                 $table->addColumn('name', __('Name'))->format(Format::using('name', ['', 'preferredName', 'surname', 'Student', 'true']));
                 $table->addColumn('status', __('Status'))->translatable();
+                $table->addColumn('email', __('Recipient Email'))->translatable();
             echo $table->render([$values]);
 
             $form = Form::create('updateFinance', $session->get('absoluteURL').'/modules/'.$session->get('module')."/invoicees_manage_editProcess.php?gibbonFinanceInvoiceeID=$gibbonFinanceInvoiceeID&search=".$search.'&allUsers='.$allUsers);
@@ -82,7 +83,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoicees_manage_e
             $row = $form->addRow();
                 $row->addLabel('invoiceTo', __('Send Invoices To'));
                 $row->addRadio('invoiceTo')
-                    ->fromArray(array('Family' => __('Family'), 'Company' => __('Company')))
+                    ->fromArray(array('Student' => __('Student'), 'Family' => __('Family'), 'Company' => __('Company')))
                     ->inline();
 
             $form->toggleVisibilityByClass('paymentCompany')->onRadio('invoiceTo')->when('Company');
