@@ -9,8 +9,8 @@ $originalUserSettings = $I->grabAllFormValues();
 
 $newUserSettings = array_replace($originalUserSettings, array(
     'nationality'     => 'Nationality 1,Nationality 2,Nationality 3',
-    'ethnicity'       => 'Ethnicity 1,Ethnicity 2,Ethnicity 3',
-    'religions'       => 'Religion 1,Religion 2,Religion 3',
+    // 'ethnicity'       => 'Ethnicity 1,Ethnicity 2,Ethnicity 3',
+    // 'religions'       => 'Religion 1,Religion 2,Religion 3',
     'privacy'         => 'Y',
     'privacyBlurb'    => 'Privacy Blurb Test',
     'privacyOptions'  => 'Privacy 1,Privacy 2,Privacy 3',
@@ -55,10 +55,14 @@ $formValues = array(
     'email'                     => 'testmctest@gibbon.test',
     'emailAlternate'            => 'testmctest2@gibbon.test',
     'address1'                  => '123 Ficticious Lane',
-    'address1District'          => 'Nowhere',
+    'address1Complement'        => 'Building A',
+    'address1ZipCode'           => '0000',
+    'address1City'              => 'Nowhere',
     'address1Country'           => 'Antarctica',
     'address2'                  => '234 No Place',
-    'address2District'          => 'Somewhere',
+    'address2Complement'        => 'Building A',
+    'address2ZipCode'           => '0000',
+    'address2City'              => 'Somewhere',
     'address2Country'           => 'Antarctica',
     'phone1'                    => '12345678',
     'phone1CountryCode'         => '1',
@@ -76,9 +80,8 @@ $formValues = array(
     'languageFirst'             => 'Albanian',
     'languageSecond'            => 'Bulgarian',
     'languageThird'             => 'Cambodian',
+    'cityOfBirth'               => 'Somewhere',
     'countryOfBirth'            => 'Antarctica',
-    'ethnicity'                 => 'Ethnicity 2',
-    'religion'                  => 'Religion 3',
     'emergency1Name'            => 'Emergency Person 1',
     'emergency1Relationship'    => 'Doctor',
     'emergency1Number1'         => '12345678',
@@ -102,7 +105,7 @@ $I->fillField('passwordConfirm', 'ZY6pfPBb!');
 // Drop-downs
 $I->selectOption('gibbonRoleIDPrimary', 'Student');
 $I->selectFromDropdown('gibbonSchoolYearIDClassOf', 2);
-$I->selectFromDropdown('gibbonHouseID', 2);
+// $I->selectFromDropdown('gibbonHouseID', 2);
 
 // Handle privacy and student agreements?
 
@@ -136,10 +139,14 @@ $formValues = array(
     'email'                     => 'testmctesting@gibbon.test',
     'emailAlternate'            => 'testmctest2ing@gibbon.test',
     'address1'                  => '321 Ficticious Lane',
-    'address1District'          => 'Somewhere',
+    'address1Complement'        => 'Building C',
+    'address1ZipCode'           => '0000',
+    'address1City'              => 'Somewhere',
     'address1Country'           => 'Zimbabwe',
     'address2'                  => '4321 No Place',
-    'address2District'          => 'Nowhere',
+    'address1Complement'        => 'Building C',
+    'address1ZipCode'           => '0000',
+    'address1City'              => 'Nowhere',
     'address2Country'           => 'Zimbabwe',
     'phone1'                    => '87654321',
     'phone1CountryCode'         => '',
@@ -158,8 +165,6 @@ $formValues = array(
     'languageSecond'            => 'Welsh',
     'languageThird'             => 'Uzbek',
     'countryOfBirth'            => 'Zimbabwe',
-    'ethnicity'                 => 'Ethnicity 1',
-    'religion'                  => 'Religion 2',
     'emergency1Name'            => 'Emergency Person 1 Also',
     'emergency1Relationship'    => 'Friend',
     'emergency1Number1'         => '87654321',

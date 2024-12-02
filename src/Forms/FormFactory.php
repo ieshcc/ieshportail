@@ -359,7 +359,7 @@ class FormFactory implements FormFactoryInterface
     public function createSelectTitle($name)
     {
         return $this->createSelect($name)->fromArray(array(
-            // 'Ms.'  => __('Ms.'),
+            'Ms.'  => __('Ms.'),
             'Miss' => __('Miss'),
             'Mr.'  => __('Mr.'),
             'Mrs.' => __('Mrs.'),

@@ -408,6 +408,7 @@ class Installer
 
         // Let's populate the database with the SQL queries from the file.
         $sql = $this->getInstallSql($context);
+        $sql .= $this->getCustomInstallSqls($context);
         $sql = static::removeSqlRemarks($sql);
         $queries = static::splitSql($sql);
         try {
@@ -624,7 +625,53 @@ class Installer
         if (($sql = @fread(@fopen($context->getPath('gibbon.sql'), 'r'), @filesize($context->getPath('gibbon.sql')))) === false) {
             throw new \Exception(__('Unable to read ../gibbon.sql, and so the installer cannot proceed.'));
         }
+        
         return $sql;
+    }
+
+    /**
+     * Get the content of custom sql scripts to be launched after the main script is done
+     *
+     * @param \Gibbon\Install\Context $context
+     *
+     * @return string The SQL text.
+     */
+    public function getCustomInstallSqls(Context $context): string
+    {
+        $installSqlFiles = [
+            'dbcustomization/03_add_tables_for_registrationdetails.sql',
+            'dbcustomization/04_add_columns_address_completionzipandcity.sql',
+            'dbcustomization/05_add_column_cityOfBirth.sql',
+            'dbcustomization/06_update_document_enum.sql',
+            'dbcustomization/07_update_invoiceTo_enum.sql',
+            'dbcustomization/08_add_unique_contraint_on_transactionID.sql'];
+        
+        $combinedSql = '';
+
+        // Let's read the SQL files for basic schema and data creation.
+        foreach($installSqlFiles as $installSqlFile){
+            $filePath = $context->getPath($installSqlFile);
+
+            if (!file_exists($filePath)) {
+                throw new \Exception(__("../{$installSqlFile} does not exist, and so the installer cannot proceed."));
+            }
+            // Open the file for reading
+            $handle = fopen($filePath, 'r');
+            if (!$handle) {
+                throw new \Exception(__("Unable to open ../{$installSqlFile}, and so the installer cannot proceed."));
+            }
+
+            // Read the file content
+            $fileContent = fread($handle, filesize($filePath));
+            fclose($handle);
+
+            if ($fileContent === false) {
+                throw new \Exception(__("Unable to read ../{$installSqlFile}, and so the installer cannot proceed."));
+            }
+
+            $combinedSql .= $fileContent . PHP_EOL;
+        }
+        return $combinedSql;
     }
 
     /**
