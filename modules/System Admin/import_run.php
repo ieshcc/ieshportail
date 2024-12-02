@@ -277,6 +277,7 @@ if (isActionAccessible($guid, $connection2, "/modules/System Admin/import_run.ph
 
             // COLUMN SELECTION
             if (!empty($importType->getAllFields())) {
+                
                 $table = $form->addRow()->addTable()->setClass('colorOddEven fullWidth');
 
                 $header = $table->addHeaderRow();

@@ -40,6 +40,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
         ->add(__('Student Enrolment'), 'studentEnrolment_manage.php', ['gibbonSchoolYearID' => $gibbonSchoolYearID])
         ->add(__('Add Student Enrolment'));
 
+    $page->return->addReturns(['error33' => __('Unable to generate a StudentID')]);
+
     $editLink = '';
     if (isset($_GET['editID'])) {
         $editLink = $session->get('absoluteURL').'/index.php?q=/modules/Admissions/studentEnrolment_manage_edit.php&gibbonStudentEnrolmentID='.$_GET['editID'].'&search='.$_GET['search'].'&gibbonSchoolYearID='.$_GET['gibbonSchoolYearID'];

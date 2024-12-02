@@ -22,6 +22,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 use Gibbon\Domain\Timetable\CourseEnrolmentGateway;
 use Gibbon\Data\Validator;
 use Gibbon\Forms\CustomFieldHandler;
+use Gibbon\Data\StudentIDGenerator;
 
 include '../../gibbon.php';
 
@@ -116,19 +117,30 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
                     } else {
                         //Generate studentID
                         try{
-                            $sql = 'SELECT MAX(CAST(studentID AS UNSIGNED)) AS highestStudentID FROM gibbonPerson;';
+                            //Check is student does not have a studentID set
+                            $sql = "SELECT studentID FROM gibbonPerson WHERE gibbonPersonID = :gibbonPersonID LIMIT 1";
                             $result = $connection2->prepare($sql);
-                            $result->execute();
+                            $result->execute([':gibbonPersonID' => $gibbonPersonID]);
                             $row = $result->fetch();
 
-                            $studentID = '1';
+                            if ($row && empty($row['studentID'])) {
+                                $connection2->beginTransaction();
 
-                            if ($result->rowCount() > 0) {
-                                $highestStudentID = $row['highestStudentID'];
-                                $studentID = !empty($highestStudentID) ? (string) ((int) $highestStudentID + 1) : '1';
-                            }     
+                                // Generate a new studentID
+                                $studentIDGenerator = new StudentIDGenerator();
+                                $studentID = $studentIDGenerator->generate($connection2);
+
+                                // Insert the new studentID
+                                $sql = "UPDATE gibbonPerson SET studentID = :studentID WHERE gibbonPersonID = :gibbonPersonID";
+                                $update = $connection2->prepare($sql);
+                                $update->execute([':studentID' => $studentID, ':gibbonPersonID' => $gibbonPersonID]);
+
+                                // Commit the transaction
+                                $connection2->commit();
+                            }
                             
                         }catch (PDOException $e) {
+                            $connection2->rollBack(); 
                             if($session->get('installType') == 'Development');
                             {
                                 error_log("Error with student ID Generation");

@@ -1,0 +1,236 @@
+details:
+    type: usersCustom
+    name: User - Data - Custom
+    category: User
+    table: gibbonPerson
+    modes: { update: true, insert: true, export: true }
+access:
+    module: User Admin
+    action: Manage Users
+primaryKey:
+    gibbonPersonID
+uniqueKeys:
+    - username
+#   - [ username, email ]
+#    - studentID
+table:
+    title:
+        name: "Title"
+        desc: "e.g. Ms., Miss, Mr., Mrs., Dr."
+        args: {filter: string}
+    surname:
+        name: "Surname"
+        desc: "Last Name"
+        args: {filter: string, required: true}
+    firstName:
+        name: "First name"
+        desc: "First name"
+        args: {filter: string, required: true}
+    nameInCharacters:
+        name: "Name In Characters"
+        desc: "Arabic or other character-based name."
+        args: {filter: string}
+    email:
+        name: "Email"
+        desc: ""
+        args: {filter: email}
+    emailAlternate:
+        name: "Alternate Email"
+        desc: ""
+        args: {filter: email}
+    
+    phone1Type:
+        name: "Phone 1 (Type)"
+        desc: "Mobile, Home, Work, Fax, Pager, Other"
+        args: {filter: phonetype, custom: true}
+    phone1CountryCode:
+        name: "Phone 1 (Country Code)"
+        desc: "IDD code, without 00 or +"
+        args: {filter: phonecode }
+    phone1:
+        name: "Phone 1"
+        desc: "No spaces or punctuation, just numbers"
+        args: {filter: phone }
+    phone2Type:
+        name: "Phone 2 (Type)"
+        desc: "Mobile, Home, Work, Fax, Pager, Other"
+        args: {filter: phonetype, custom: true}
+    phone2CountryCode:
+        name: "Phone 2 (Country Code)"
+        desc: "IDD code, without 00 or +"
+        args: {filter: phonecode }
+    phone2:
+        name: "Phone 2"
+        desc: "No spaces or punctuation, just numbers"
+        args: {filter: phone }
+    
+    address1:
+        name: "Address 1"
+        desc: "Unit, Building, Street"
+        args: {filter: string}
+    address1Complement:
+        name: "Address 1 Complement"
+        desc: ""
+        args: {filter: string}
+    address1City:
+        name: "Address 1 City"
+        desc: ""
+        args: {filter: string }
+    address1ZipCode:
+        name: "Address 1 Zip Code"
+        desc: ""
+        args: {filter: string}
+    address1Country:
+        name: "Address 1 Country"
+        desc: ""
+        args: {filter: country }
+
+    address2:
+        name: "Address 2"
+        desc: "Unit, Building, Street"
+        args: {filter: string}
+    address2Complement:
+        name: "Address 2 Complement"
+        desc: ""
+        args: {filter: string}
+    address2City:
+        name: "Address 2 City"
+        desc: ""
+        args: {filter: string }
+    address2ZipCode:
+        name: "Address 2 Zip Code"
+        desc: ""
+        args: {filter: string}
+    address2Country:
+        name: "Address 2 Country"
+        desc: ""
+        args: {filter: country }
+    
+    gender:
+        name: "Gender"
+        desc: ""
+        args: {filter: gender, required: true}
+    dob:
+        name: "Date of Birth"
+        desc: "Use YYYY-MM-DD or dd-mm-yyyy"
+        args: {filter: date}
+    cityOfBirth:
+        name: "City of Birth"
+        desc: ""
+        args: {filter: string }
+    countryOfBirth:
+        name: "Country of Birth"
+        desc: ""
+        args: {filter: country }
+
+    languageFirst:
+        name: "First Language"
+        desc: ""
+        args: {filter: language }
+    languageSecond:
+        name: "Second Language"
+        desc: ""
+        args: {filter: language }
+    languageThird:
+        name: "Third Language"
+        desc: ""
+        args: {filter: language }
+
+    username:
+        name: "Username"
+        desc: "Must be unique."
+        args: {filter: nospaces, required: true}
+    passwordStrong:
+        name: "Password"
+        desc: ""
+        args: {filter: nospaces, custom: true, function: generatePassword}
+    passwordForceReset:
+        name: "Force Reset Password?"
+        desc: ""
+        args: {filter: yesno, custom: true}
+    gibbonRoleIDPrimary:
+        name: "Primary Role"
+        desc: "Name"
+        args: {filter: string, required: true, custom: true }
+        relationship: { table: gibbonRole, key: gibbonRoleID, field: name  }
+    gibbonRoleIDAll:
+        name: "All Roles"
+        desc: "Role Names, Comma separated"
+        args: {filter: csv, required: true, custom: true }
+        relationship: { table: gibbonRole, key: gibbonRoleID, field: name  }
+    status:
+        name: "Status"
+        desc: ""
+        args: {filter: status}
+    canLogin:
+        name: "Can Login?"
+        desc: ""
+        args: {filter: yesno, custom: true}
+    studentID:
+        name: "Student ID"
+        desc: "Must be unique if set."
+        args: {filter: string}
+
+    lastSchool:
+        name: "Last School"
+        desc: ""
+        args: {filter: string}
+    dateStart:
+        name: "Start Date"
+        desc: "Users's first day at school."
+        args: {filter: date}
+    gibbonSchoolYearIDClassOf:
+        name: "Class Of"
+        desc: "When is the student expected to graduate?"
+        args: {filter: schoolyear}
+        relationship: { table: gibbonSchoolYear, key: gibbonSchoolYearID, field: name }
+    profession:
+        name: "Profession"
+        desc: ""
+        args: {filter: string}
+    employer:
+        name: "Employer"
+        desc: ""
+        args: {filter: string}
+    jobTitle:
+        name: "Job Title"
+        desc: ""
+        args: {filter: string}
+
+    emergency1Name:
+        name: "Emergency 1 Name"
+        desc: "For students and staff only"
+        args: {filter: string}
+    emergency1Number1:
+        name: "Emergency 1 Number 1"
+        desc: "For students and staff only"
+        args: {filter: string}
+    emergency1Number2:
+        name: "Emergency 1 Number 2"
+        desc: "For students and staff only"
+        args: {filter: string}
+    emergency1Relationship:
+        name: "Emergency 1 Relationship"
+        desc: "For students and staff only"
+        args: {filter: relation}
+
+    emergency2Name:
+        name: "Emergency 2 Name"
+        desc: "For students and staff only"
+        args: {filter: string}
+    emergency2Number1:
+        name: "Emergency 2 Number 1"
+        desc: "For students and staff only"
+        args: {filter: string}
+    emergency2Number2:
+        name: "Emergency 2 Number 2"
+        desc: "For students and staff only"
+        args: {filter: string}
+    emergency2Relationship:
+        name: "Emergency 2 Relationship"
+        desc: "For students and staff only"
+        args: {filter: relation}
+    receiveNotificationEmails:
+        name: "Receive Email Notifications?"
+        desc: ""
+        args: {filter: yesno, custom: true}

@@ -25,6 +25,7 @@ use Gibbon\Contracts\Database\Connection;
 use ParseCsv\Csv as ParseCSV;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Reader\Exception as ReaderException;
+use PDOException;
 
 /**
  * Extended Import class
@@ -302,6 +303,28 @@ class Importer
 
         $this->tableData = [];
         $rowIndex = 0;
+        $studentsIDs = [];
+
+        // For students ID generate a batch of students id before importing
+        if($importType->getDetail("type") == "usersFull" or $importType->getDetail("type") == "usersCustom"){
+            //define how many studentID i need to generate
+            $quantity = 0;
+            foreach ($this->importData as $rowNum => $row) {
+                if(empty($row['Student ID'])){
+                    $roles = explode(",", $row['All Roles']);
+                    if ($row['Primary Role'] == "Student" or in_array("Student", $roles)) {
+                        $quantity++;
+                    }
+                };
+            }
+            
+            $studentIDGenerator = new StudentIDGenerator();
+            try{
+                $studentsIDs = $studentIDGenerator->bulkgenerate($this->pdo, $quantity);
+            }catch (PDOException $e){
+                error_log("Error in StudentIDGenerator::bulkgenerate: " . $e->getMessage());
+            }
+        }
 
         foreach ($this->importData as $rowNum => $row) {
             $fields = [];
@@ -481,16 +504,40 @@ class Importer
             }
 
             // Salt & hash passwords
-            if (isset($fields['passwordStrong'])) {
-                if (!isset($this->outputData['passwords'])) {
-                    $this->outputData['passwords'] = [];
+            if (isset($fields['username']) and isset($fields['passwordStrong'])) {
+                if(empty($fields['username'])){
+                    $this->log($rowNum, Importer::ERROR_REQUIRED_FIELD_MISSING,
+                    'username', $this->syncColumn);
+                    $partialFail = true;
+                }else{
+                    if (!isset($this->outputData['passwords'])) {
+                        $this->outputData['passwords'] = [];
+                    }
+                    $this->outputData['passwords'][] = ['username' => $fields['username'], 'password' => $fields['passwordStrong']];
+                    
+                    $salt = getSalt() ;
+                    $value = $fields['passwordStrong'];
+                    $fields['passwordStrong'] = hash("sha256", $salt.$value);
+                    $fields['passwordStrongSalt'] = $salt;
                 }
-                $this->outputData['passwords'][] = ['username' => $fields['username'], 'password' => $fields['passwordStrong']];
+            }
 
-                $salt = getSalt() ;
-                $value = $fields['passwordStrong'];
-                $fields['passwordStrong'] = hash("sha256", $salt.$value);
-                $fields['passwordStrongSalt'] = $salt;
+            // set generated StudentID
+            if(isset($fields['studentID']) and empty($fields['studentID'])){
+                $roles = explode(",", $fields['gibbonRoleIDAll']);
+                if ($fields['gibbonRoleIDPrimary'] == "003" or in_array("003", $roles)) {
+                    $fields['studentID'] = array_shift($studentsIDs);
+                }
+            }
+
+            //generate preferredname and official name
+            if(isset($fields['surname']) and isset($fields['firstName'])){
+                if(!isset($fields['preferredName']) or empty($fields['preferredName'])){
+                    $fields['preferredName'] = $fields['firstName'];
+                }
+                if(!isset($fields['officialName']) or empty($fields['officialName'])){
+                    $fields['officialName'] = $fields['surname']." ".$fields['firstName'];
+                }
             }
 
             if (!empty($fields) && $partialFail == false) {

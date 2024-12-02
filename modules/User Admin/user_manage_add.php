@@ -280,9 +280,9 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
 
     $row = $form->addRow()->addClass('studentRecord');
         $row->addLabel('dormitoryRoomID', _('Room Number'));
-        $row->addSelectAvailableDormitoryRooms('dormitoryRoomID', $gibbonSchoolYearID);
+        $row->addSelectAvailableDormitoryRooms('dormitoryRoomID', $session->get('gibbonSchoolYearID'));
 
-    $row = $form->addRow();
+    $row = $form->addRow()->addClass('studentRecord');
         $row->addLabel('comments', _('Comments'));
         $row->addTextArea('comments');
     

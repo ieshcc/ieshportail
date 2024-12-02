@@ -27,6 +27,7 @@ use Gibbon\Domain\Students\StudentGateway;
 use Gibbon\Domain\Timetable\CourseEnrolmentGateway;
 use Gibbon\Domain\User\UserStatusLogGateway;
 use Gibbon\Data\Validator;
+use Gibbon\Data\StudentIDGenerator;
 
 include '../../gibbon.php';
 
@@ -169,32 +170,6 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
             $URL .= '&return=error3';
             header("Location: {$URL}");
         } else {
-            //Generate Student ID
-            if($studentRecord == 'Y'){
-                try{
-                    $sql = 'SELECT MAX(CAST(studentID AS UNSIGNED)) AS highestStudentID FROM gibbonPerson;';
-                    $result = $connection2->prepare($sql);
-                    $result->execute();
-                    $row = $result->fetch();
-                    
-                    $highestStudentID = $row['highestStudentID'];
-
-                    if($highestStudentID != '0' || !empty($highestStudentID)) {
-                        $studentID = (string) ((int) $highestStudentID + 1);
-                    }else{
-                        $studentID = '1';
-                    }
-                        
-                    
-                }catch (PDOException $e) {
-                    error_log("Error with student ID Generation");
-                    error_log($e->getMessage());
-                    $URL .= '&return=error13';
-                    header("Location: {$URL}");
-                    exit();
-                }
-            }
-    
             //Check passwords for match
             if ($password != $passwordConfirm) {
                 $URL .= '&return=warning1';
@@ -256,6 +231,42 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
 
                     //Last insert ID
                     $AI = str_pad($connection2->lastInsertID(), 10, '0', STR_PAD_LEFT);
+
+
+                    //Generate Student ID for students users
+                    if($studentRecord == 'Y'){
+                        try{
+                            //Check is student does not have a studentID set
+                            $sql = "SELECT studentID FROM gibbonPerson WHERE gibbonPersonID = :gibbonPersonID LIMIT 1";
+                            $result = $connection2->prepare($sql);
+                            $result->execute([':gibbonPersonID' => $AI]);
+                            $row = $result->fetch();
+
+                            if ($row && empty($row['studentID'])) {
+                                $connection2->beginTransaction();
+
+                                // Generate a new studentID
+                                $studentIDGenerator = new StudentIDGenerator();
+                                $studentID = $studentIDGenerator->generate($connection2);
+
+                                // Insert the new studentID
+                                $sql = "UPDATE gibbonPerson SET studentID = :studentID WHERE gibbonPersonID = :gibbonPersonID";
+
+                                $update = $connection2->prepare($sql);
+                                $update->execute([':studentID' => $studentID, ':gibbonPersonID' => $AI]);
+
+                                // Commit the transaction
+                                $connection2->commit();
+                            }
+                        }catch (PDOException $e) {
+                            $connection2->rollBack(); 
+                            error_log("Error with student ID Generation");
+                            error_log($e->getMessage());
+                            $URL .= '&return=error13';
+                            header("Location: {$URL}");
+                            exit();
+                        }
+                    }
 
                     // Create the status log
                     $container->get(UserStatusLogGateway::class)->insert(['gibbonPersonID' => $AI, 'statusOld' => $status, 'statusNew' => $status, 'reason' => __('Created')]);
