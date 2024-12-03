@@ -276,7 +276,7 @@ class StaffCoverageGateway extends QueryableGateway
 
     }
 
-    public function selectCoverageByDateRange($dateStart, $dateEnd = null)
+    public function selectCoverageByDateRange($dateStart, $dateEnd = null, $gibbonPersonID = '')
     {
         if (empty($dateEnd)) $dateEnd = $dateStart;
 

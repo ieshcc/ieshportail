@@ -163,7 +163,7 @@ class Card implements OutputableInterface {
     }
     
     public function getOutput(){
-        return $this->renderCard($this, $this->data);
+        return $this->renderer->renderCard($this, $this->data);
     }
 
     public function setId($id){
