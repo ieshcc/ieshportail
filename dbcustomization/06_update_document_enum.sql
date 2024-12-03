@@ -6,7 +6,7 @@ USE ieshportail;
 
 -- Step 1: Check for usage of removed ENUM values
 SELECT `document`, COUNT(*) AS count
-FROM `gibbonpersonaldocument`
+FROM `gibbonPersonalDocument`
 WHERE `document` NOT IN ('Visa')
 OR `document` NOT IN ('Primary Passport')
 OR `document` NOT IN ('Additional Passport')
@@ -21,7 +21,7 @@ GROUP BY `document`;
 -- WHERE `document` NOT IN ('Passport', 'ID Card', 'Document');
 
 -- Step 3: Update the ENUM list in the 'document' column
-ALTER TABLE `gibbonpersonaldocument`
+ALTER TABLE `gibbonPersonalDocument`
 CHANGE COLUMN `document` `document` ENUM('ID Card', 'Document') NOT NULL DEFAULT 'Document';
 
 -- Add logging or output a message for successful migration

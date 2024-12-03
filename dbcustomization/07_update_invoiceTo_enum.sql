@@ -5,10 +5,10 @@
 USE ieshportail; 
 
 -- Update the ENUM list in the 'invoiceTo' column
-ALTER TABLE `gibbonfinanceinvoicee`
+ALTER TABLE `gibbonFinanceInvoicee`
 CHANGE COLUMN `invoiceTo` `invoiceTo` ENUM('Student', 'Family', 'Company') NOT NULL DEFAULT 'Student';
 
-ALTER TABLE `gibbonfinanceinvoice`
+ALTER TABLE `gibbonFinanceInvoice`
 CHANGE COLUMN `invoiceTo` `invoiceTo` ENUM('Student', 'Family', 'Company') NOT NULL DEFAULT 'Student';
 
 -- Add logging or output a message for successful migration

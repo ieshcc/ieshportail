@@ -1,4 +1,4 @@
-alter TABLE `gibbonperson`
+alter TABLE `gibbonPerson`
 add COLUMN `address1Complement` varchar(255) DEFAULT NULL,
 add COLUMN `address1City` varchar(255) DEFAULT NULL,
 add COLUMN `address1ZipCode` char(10) DEFAULT NULL,
