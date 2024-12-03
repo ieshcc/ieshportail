@@ -131,6 +131,7 @@ $formValues = array(
     'status'                    => 'Left',
     'canLogin'                  => 'Y',
     'passwordForceReset'        => 'Y',
+    'username'                  => 'testmctest',
     'email'                     => 'testmctesting@gibbon.test',
     'emailAlternate'            => 'testmctest2ing@gibbon.test',
     'address1'                  => '321 Ficticious Lane',
