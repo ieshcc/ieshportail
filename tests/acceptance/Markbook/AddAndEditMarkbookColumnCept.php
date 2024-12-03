@@ -118,7 +118,7 @@ $I->click('Submit');
 
 $I->seeInField('1-attainmentValueRaw', '21');
 $I->seeOptionIsSelected('1-attainmentValue', '4');
-$I->seeOptionIsSelected('1-effortValue', 'Late');
+$I->seeOptionIsSelected('1-effortValue', 'Late');seein
 $I->seeInField('comment1', 'Test comment.');
 $I->seeFieldIsNotEmpty('#attachment1');
 

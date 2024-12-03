@@ -97,6 +97,7 @@ $I->fillField('username', 'testmctest');
 $I->fillField('passwordNew', 'ZY6pfPBb!');
 $I->fillField('passwordConfirm', 'ZY6pfPBb!');
 
+
 // Drop-downs
 $I->selectOption('gibbonRoleIDPrimary', 'Student');
 $I->selectFromDropdown('gibbonSchoolYearIDClassOf', 2);
@@ -131,7 +132,6 @@ $formValues = array(
     'status'                    => 'Left',
     'canLogin'                  => 'Y',
     'passwordForceReset'        => 'Y',
-    'username'                  => 'testmctest',
     'email'                     => 'testmctesting@gibbon.test',
     'emailAlternate'            => 'testmctest2ing@gibbon.test',
     'address1'                  => '321 Ficticious Lane',
@@ -165,7 +165,6 @@ $formValues = array(
     'emergency2Relationship'    => 'Spouse',
     'emergency2Number1'         => '12345678',
     'emergency2Number2'         => '23456789',
-    'studentID'                 => 'testmctesting',
     'transport'                 => 'ABC321',
     'transportNotes'            => 'Tardis',
     'lockerNumber'              => '321',
