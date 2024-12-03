@@ -90,7 +90,6 @@ $formValues = array(
     'transport'                 => 'ABC123',
     'transportNotes'            => 'Teleportation',
     'lockerNumber'              => '123',
-    'vehicleRegistration'       => '1234',
 );
 
 // Non-editable Values
@@ -169,7 +168,6 @@ $formValues = array(
     'transport'                 => 'ABC321',
     'transportNotes'            => 'Tardis',
     'lockerNumber'              => '321',
-    'vehicleRegistration'       => '4321',
 );
 
 $I->submitForm('#content form', $formValues, 'Submit');
