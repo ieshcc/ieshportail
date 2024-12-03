@@ -2,8 +2,6 @@
 -- Date: 2024-11-25
 -- Author: ODI HAMD
 
-USE ieshportail; 
-
 -- Update the ENUM list in the 'invoiceTo' column
 ALTER TABLE `gibbonFinanceInvoicee`
 CHANGE COLUMN `invoiceTo` `invoiceTo` ENUM('Student', 'Family', 'Company') NOT NULL DEFAULT 'Student';

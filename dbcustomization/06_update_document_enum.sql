@@ -2,8 +2,6 @@
 -- Date: 2024-08-21
 -- Author: ODI HAMD
 
-USE ieshportail;
-
 -- Step 1: Check for usage of removed ENUM values
 SELECT `document`, COUNT(*) AS count
 FROM `gibbonPersonalDocument`
