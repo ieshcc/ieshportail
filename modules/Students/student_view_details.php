@@ -232,7 +232,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 gibbonStudentEnrolment.gibbonFormGroupID, 
                                 gibbonStudentEnrolment.rollOrder,
                                 iesh_studentEnrolmentDetails.comments,
-                                iesh_EnrolmentStatus.enrolmentStatusName,
+                                iesh_enrolmentStatus.enrolmentStatusName,
                                 iesh_AttendanceTypes.attendanceTypeName,
                                 gibbonspace.name as roomNumber
                             FROM 
@@ -242,7 +242,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             LEFT JOIN
                                 iesh_studentEnrolmentDetails ON (gibbonStudentEnrolment.gibbonStudentEnrolmentID = iesh_studentEnrolmentDetails.gibbonStudentEnrolmentID)
                             LEFT JOIN
-                                iesh_EnrolmentStatus ON (iesh_studentEnrolmentDetails.enrolmentStatusID = iesh_EnrolmentStatus.enrolmentStatusID)
+                                iesh_enrolmentStatus ON (iesh_studentEnrolmentDetails.enrolmentStatusID = iesh_enrolmentStatus.enrolmentStatusID)
                             LEFT JOIN
                                 iesh_AttendanceTypes ON (iesh_studentEnrolmentDetails.attendanceTypeID = iesh_AttendanceTypes.attendanceTypeID)
                             LEFT JOIN 

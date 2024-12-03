@@ -134,7 +134,7 @@ class DatabaseFormFactory extends FormFactory
 
     public function createSelectEnrolmentStatus($name)
     {
-        $sql = "SELECT enrolmentStatusID as value, enrolmentStatusName as name FROM iesh_enrolmentstatus ORDER BY enrolmentStatusID";
+        $sql = "SELECT enrolmentStatusID as value, enrolmentStatusName as name FROM iesh_enrolmentStatus ORDER BY enrolmentStatusID";
         $results = $this->pdo->select($sql);
 
         return $this->createSelect($name)->fromResults($results)->placeholder();
@@ -143,7 +143,7 @@ class DatabaseFormFactory extends FormFactory
 
     public function createSelectAttendanceType($name)
     {
-        $sql = "SELECT attendanceTypeID as value, attendanceTypeName as name FROM iesh_attendancetypes ORDER BY attendanceTypeID";
+        $sql = "SELECT attendanceTypeID as value, attendanceTypeName as name FROM iesh_attendanceTypes ORDER BY attendanceTypeID";
         $results = $this->pdo->select($sql);
 
         return $this->createSelect($name)->fromResults($results)->placeholder();

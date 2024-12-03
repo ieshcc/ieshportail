@@ -173,7 +173,7 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
                         $comments = isset($_POST['comments']) && !empty($_POST['comments']) ? $_POST['comments'] : 'No comment';
                         try{
                             $data = array('gibbonStudentEnrolmentID' => $AI, 'gibbonSchoolYearID' => $gibbonSchoolYearID, 'enrolmentStatusID' => $enrolmentStatusID, 'attendanceTypeID' => $attendanceTypeID, 'gibbonSpaceID'  => $dormitoryRoomID, 'comments' => $comments);
-                            $sql = 'INSERT INTO iesh_studentenrolmentdetails SET gibbonStudentEnrolmentID=:gibbonStudentEnrolmentID, gibbonSchoolYearID=:gibbonSchoolYearID, enrolmentStatusID=:enrolmentStatusID, attendanceTypeID=:attendanceTypeID, gibbonSpaceID=:gibbonSpaceID, comments=:comments';
+                            $sql = 'INSERT INTO iesh_studentEnrolmentDetails SET gibbonStudentEnrolmentID=:gibbonStudentEnrolmentID, gibbonSchoolYearID=:gibbonSchoolYearID, enrolmentStatusID=:enrolmentStatusID, attendanceTypeID=:attendanceTypeID, gibbonSpaceID=:gibbonSpaceID, comments=:comments';
                             $result = $connection2->prepare($sql);
                             $result->execute($data);
                         }catch(PDOException $e){

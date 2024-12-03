@@ -129,7 +129,7 @@ if ($gibbonStudentEnrolmentID == '' or $gibbonSchoolYearID == '') { echo 'Fatal 
                      $comments = isset($_POST['comments']) && !empty($_POST['comments']) ? $_POST['comments'] : 'No comment';
                      try{
                          $data = array('gibbonStudentEnrolmentID' => $gibbonStudentEnrolmentID, 'gibbonSchoolYearID' => $gibbonSchoolYearID, 'enrolmentStatusID' => $enrolmentStatusID, 'attendanceTypeID' => $attendanceTypeID, 'gibbonSpaceID'  => $dormitoryRoomID, 'comments' => $comments);
-                         $sql = 'UPDATE iesh_studentenrolmentdetails SET enrolmentStatusID=:enrolmentStatusID, attendanceTypeID=:attendanceTypeID, gibbonSpaceID=:gibbonSpaceID, comments=:comments WHERE gibbonStudentEnrolmentID=:gibbonStudentEnrolmentID AND gibbonSchoolYearID=:gibbonSchoolYearID';
+                         $sql = 'UPDATE iesh_studentEnrolmentDetails SET enrolmentStatusID=:enrolmentStatusID, attendanceTypeID=:attendanceTypeID, gibbonSpaceID=:gibbonSpaceID, comments=:comments WHERE gibbonStudentEnrolmentID=:gibbonStudentEnrolmentID AND gibbonSchoolYearID=:gibbonSchoolYearID';
                          $result = $connection2->prepare($sql);
                          $result->execute($data);
                      }catch(PDOException $e){
