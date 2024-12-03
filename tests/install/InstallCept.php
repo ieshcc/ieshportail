@@ -35,6 +35,8 @@ try {
 
     $I->selectOption('demoData', 'Y');
     $I->click('Submit');
+    $I->comment("Page Content: " . $I->grabTextFrom("body"));
+
 
     // STEP 3 --------------------------------------
     $I->see('Installation - Step 3', 'h2');
