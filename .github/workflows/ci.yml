@@ -22,8 +22,6 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-        volumes:
-      - /tmp/mysql-logs:/var/log/mysql
 
     steps:
 
@@ -161,7 +159,8 @@ jobs:
         run: |
           mkdir -p ./tests/_dump
           mysqldump -u root --protocol=tcp --column-statistics=0 gibbon_test > ./tests/_dump/mysqldump.sql
-          cp /tmp/mysql-logs/* ./tests/_dump/mysql/
+          docker exec $(docker ps -qf "ancestor=mysql:5.7") sh -c "cat /var/log/mysql/error.log" > ./tests/_dump/mysql-error.log || echo "No MySQL error log found."
+          docker exec $(docker ps -qf "ancestor=mysql:5.7") sh -c "cat /var/log/mysql/general.log" > ./tests/_dump/mysql-general.log || echo "No MySQL general log found."
 
       - name: Save Test Artifacts
         uses: actions/upload-artifact@v3
