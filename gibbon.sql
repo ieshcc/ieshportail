@@ -7015,7 +7015,8 @@ ALTER TABLE `gibbonOutcome`
 -- Indexes for table `gibbonPayment`
 --
 ALTER TABLE `gibbonPayment`
-  ADD PRIMARY KEY (`gibbonPaymentID`);
+  ADD PRIMARY KEY (`gibbonPaymentID`),
+  ADD UNIQUE KEY `uniquePaymentTransactionID` (`paymentTransactionID`);
 
 --
 -- Indexes for table `gibbonPermission`

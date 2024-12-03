@@ -414,6 +414,7 @@ class Installer
         try {
             $this->runQueries($pdo, $queries);
         } catch (\PDOException $e) {
+            error_log('Error :  '.$e->getMessage());
             throw new \Exception(__('Errors occurred in populating the database; empty your database, remove ../config.php and try again.'));
         }
 
@@ -643,8 +644,7 @@ class Installer
             'dbcustomization/04_add_columns_address_completionzipandcity.sql',
             'dbcustomization/05_add_column_cityOfBirth.sql',
             'dbcustomization/06_update_document_enum.sql',
-            'dbcustomization/07_update_invoiceTo_enum.sql',
-            'dbcustomization/08_add_unique_contraint_on_transactionID.sql'];
+            'dbcustomization/07_update_invoiceTo_enum.sql'];
         
         $combinedSql = '';
 

@@ -1,5 +1,5 @@
 -- Drop existing tables if they exist to avoid errors during import
-DROP TABLE IF EXISTS `iesh_studentEnrolementDetails`;
+DROP TABLE IF EXISTS `iesh_studentEnrolmentDetails`;
 DROP TABLE IF EXISTS `iesh_dormitoryRooms`;
 DROP TABLE IF EXISTS `iesh_enrolmentStatus`;
 DROP TABLE IF EXISTS `iesh_attendanceTypes`;
@@ -35,15 +35,14 @@ INSERT INTO `iesh_enrolmentStatus` (`enrolmentStatusName`) VALUES
 ('Cancelled');
 
 -- Create table for Student Enrolment Details
-CREATE TABLE `iesh_studentEnrolementDetails` (
-    `studentEnrolmentDetailsID` int(10) UNSIGNED ZEROFILL AUTO_INCREMENT,
+CREATE TABLE `iesh_studentEnrolmentDetails` (
+    `studentEnrolmentDetailsID` int(10) UNSIGNED ZEROFILL AUTO_INCREMENT PRIMARY KEY,
     `gibbonStudentEnrolmentID` int(8) UNSIGNED ZEROFILL NOT NULL,
     `gibbonSchoolYearID` int(3) UNSIGNED ZEROFILL NOT NULL,
     `attendanceTypeID` int(10) UNSIGNED ZEROFILL NOT NULL DEFAULT 1,  -- Default to 'Non specified'
     `enrolmentStatusID` int(10) UNSIGNED ZEROFILL NOT NULL DEFAULT 1, -- Default to 'Non specified'
     `gibbonSpaceID` int(10) UNSIGNED ZEROFILL DEFAULT NULL,  -- Nullable, as not all students may have a room
     `comments` TEXT DEFAULT NULL,  -- Nullable, as not all students may have a room
-    PRIMARY KEY (`studentEnrolementDetailsID`),
     CONSTRAINT `fk_iesh_studentEnrolmentDetails_gibbonStudentEnrolment` FOREIGN KEY (`gibbonStudentEnrolmentID`) REFERENCES `gibbonStudentEnrolment` (`gibbonStudentEnrolmentID`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_iesh_studentEnrolmentDetails_iesh_attendanceTypes` FOREIGN KEY (`attendanceTypeID`) REFERENCES `iesh_attendanceTypes` (`attendanceTypeID`) ON UPDATE CASCADE,
     CONSTRAINT `fk_iesh_studentEnrolmentDetails_iesh_enrolmentStatus` FOREIGN KEY (`enrolmentStatusID`) REFERENCES `iesh_enrolmentStatus` (`enrolmentStatusID`) ON UPDATE CASCADE,

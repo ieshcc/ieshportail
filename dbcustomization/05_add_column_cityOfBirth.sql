@@ -1,2 +1,2 @@
 ALTER TABLE `gibbonperson`
-ADD COLUMN `cityOfBirth` varchar(30)
+ADD COLUMN `cityOfBirth` varchar(30);
