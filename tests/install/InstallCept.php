@@ -33,15 +33,10 @@ try {
     $I->fillField('databaseUsername', getenv('DB_USERNAME'));
     $I->fillField('databasePassword', getenv('DB_PASSWORD'));
 
-    $I->selectOption('demoData', 'Y');
-    try {
-        $I->click("Submit");
-    } catch (\Exception $e) {
-        $I->comment("Error: " . $e->getMessage());
-        $I->comment("Page Content: " . $I->grabTextFrom("body"));
-    }
-    // $I->click('Submit');
-    // $I->comment("Page Content: " . $I->grabTextFrom("body"));
+    $I->selectOption('demoData', 'N');
+    
+    $I->click('Submit');
+    $I->comment("Page Content: " . $I->grabTextFrom("body"));
 
 
     // STEP 3 --------------------------------------
