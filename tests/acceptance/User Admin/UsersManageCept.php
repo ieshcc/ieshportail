@@ -86,7 +86,6 @@ $formValues = array(
     'emergency2Relationship'    => 'Other',
     'emergency2Number1'         => '87654321',
     'emergency2Number2'         => '98765432',
-    'studentID'                 => 'testmctest',
     'transport'                 => 'ABC123',
     'transportNotes'            => 'Teleportation',
     'lockerNumber'              => '123',
