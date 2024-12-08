@@ -31,7 +31,9 @@ jobs:
           php-version: ${{ matrix.php-version }}
           extensions: gettext, gd, zip, pdo-mysql, intl
           tools: composer:v2
-          ini-values: date.timezone="Etc/UTC", xdebug.max_nesting_level=-1, opcache.jit="off", opcache.enable_cli=1, xdebug.mode="
+          ini-values: date.timezone="Etc/UTC", xdebug.max_nesting_level=-1, opcache.jit="off", opcache.enable_cli=1, xdebug.mode="off", error_reporting="E_ALL & ~E_WARNING"
+
+#ini-values: date.timezone="Etc/UTC", xdebug.max_nesting_level=-1, opcache.jit="off"
 
       - name: Checkout source code
         uses: actions/checkout@v4
