@@ -27,6 +27,7 @@ use Gibbon\Domain\System\NotificationGateway;
 use Gibbon\Domain\User\UserStatusLogGateway;
 use Gibbon\Data\Validator;
 use Gibbon\Domain\User\RoleGateway;
+use Gibbon\Data\StudentIDGenerator;
 
 require_once '../../gibbon.php';
 
@@ -277,6 +278,38 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                     $URL .= '&return=error3';
                     header("Location: {$URL}");
                 } else {
+                    // check if user does not already have a student id set
+                    try {
+                        $data = array('gibbonPersonID' => $gibbonPersonID);
+                        $sql = 'SELECT studentID as studentIDCheck FROM gibbonPerson WHERE gibbonPersonID=:gibbonPersonID ';
+                        $result = $connection2->prepare($sql);
+                        $result->execute($data);
+                    } catch (PDOException $e) {
+                        $URL .= '&return=error13';
+                        header("Location: {$URL}");
+                        exit();
+                    }
+
+                    $studentIDCheckResults = $result->fetch();
+                    
+                    
+                    //Generate Student ID for students users if not set
+                    if($studentID == ''){
+                        $studentID = $studentIDCheckResults['studentIDCheck'];
+                        $needNewStudentID = $studentID == '' ? true:false;
+                        if($needNewStudentID){
+                            try{
+                                // Generate a new studentID
+                                $studentIDGenerator = new StudentIDGenerator();
+                                $studentID = $studentIDGenerator->generate($connection2);
+                            }catch (PDOException $e) {
+                                $URL .= '&return=error13';
+                                header("Location: {$URL}");
+                                exit();
+                            }
+                        }
+                    }
+
                     $imageFail = false;
                     if (!empty($_FILES['file1']['tmp_name']))
                     {
@@ -402,13 +435,12 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                         //Deal with change to privacy settings
                         if ($student && $container->get(SettingGateway::class)->getSettingByScope('User Admin', 'privacy') == 'Y') {
                             if ($privacy_old != $privacy && !(empty($privacy_old) && empty($privacy))) {
-
                                 //Notify tutor
+                                $dataDetail = array('gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'), 'gibbonPersonID' => $gibbonPersonID);
+                                $sqlDetail = 'SELECT gibbonPersonIDTutor, gibbonPersonIDTutor2, gibbonPersonIDTutor3, gibbonYearGroupID FROM gibbonFormGroup JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID) JOIN gibbonPerson ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonStudentEnrolment.gibbonPersonID=:gibbonPersonID';
+                                $resultDetail = $connection2->prepare($sqlDetail);
+                                $resultDetail->execute($dataDetail);
 
-                                    $dataDetail = array('gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'), 'gibbonPersonID' => $gibbonPersonID);
-                                    $sqlDetail = 'SELECT gibbonPersonIDTutor, gibbonPersonIDTutor2, gibbonPersonIDTutor3, gibbonYearGroupID FROM gibbonFormGroup JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID) JOIN gibbonPerson ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonStudentEnrolment.gibbonPersonID=:gibbonPersonID';
-                                    $resultDetail = $connection2->prepare($sqlDetail);
-                                    $resultDetail->execute($dataDetail);
                                 if ($resultDetail->rowCount() == 1) {
 
                                     $rowDetail = $resultDetail->fetch();
