@@ -241,17 +241,16 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $form->toggleVisibilityByClass('studentDetails')->onSelect('gibbonRoleIDPrimary')->when($studentRoles);
     $form->toggleVisibilityByClass('studentRecord')->onCheckbox('studentRecord')->when('Y');
 
+    $row = $form->addRow()->addClass('studentDetails');
+        $row->addLabel('studentID', __('Student ID'))
+            ->description(__("Defined by the system if not set"));
+        $row->addTextField('studentID')
+            ->maxLength(15);
+
     // $form->addRow()->addClass('studentDetails')->addHeading('Student', __('Student'))->addClass('studentDetails');
     $row = $form->addRow()->addClass('studentDetails');
         $row->addLabel('studentRecord', __('Add Student Enrolment Now?'));
         $row->addCheckbox('studentRecord')->setValue('Y');
-
-    // $row = $form->addRow()->addClass('studentDetails');
-    //     $row->addLabel('studentID', __('Student ID'))
-    //         ->description(__("Defined by the system"));
-    //     $row->addTextField('studentID')
-    //         ->maxLength(15)
-    //         ->readOnly();
 
     $row = $form->addRow()->addClass('studentRecord');
         $row->addLabel('yearName', __('School Year'))

@@ -117,8 +117,25 @@ class Trigger implements OutputableInterface
         }
 
         $this->elementValue = (is_array($value))? $value : array($value);
+
         return $this;
     }
+
+    public function whenMultiple($value)
+    {
+        if ($this->elementType == 'checkbox') {
+            $this->sourceValueSelector .= '[value="'.$value.'"]';
+        }
+
+        // Handle multiple values
+        $this->elementValue = (is_array($value))? $value : array($value);
+        
+        // Ensure the logic works with multiple selections
+        $this->elementValue = array_map('strval', $this->elementValue); // Normalize to strings
+
+        return $this;
+    }
+
 
     /**
      * Set the trigger to respond to all values except the specified one.
@@ -142,7 +159,14 @@ class Trigger implements OutputableInterface
         // Build a set of value comparisons for the source input
         $comparisons = array();
         foreach ($this->elementValue as $value) {
-            $comparisons[] = "$('{$this->sourceValueSelector}').val() == '{$value}'";
+            //$comparisons[] = "$('{$this->sourceValueSelector}').val() == '{$value}'";
+            // Use Array.prototype.includes for multi-selects
+            //$comparisons[] = "$.inArray('{$value}', $('{$this->sourceValueSelector}').val()) !== -1";
+            $comparisons[] = "
+        (Array.isArray($('{$this->sourceValueSelector}').val()) 
+            ? $.inArray('{$value}', $('{$this->sourceValueSelector}').val()) !== -1 
+            : $('{$this->sourceValueSelector}').val() == '{$value}')
+    ";
         }
 
         // Join into a string, and negate the comparison for use with whenNot()

@@ -27,6 +27,7 @@ use Gibbon\Domain\System\NotificationGateway;
 use Gibbon\Domain\User\UserStatusLogGateway;
 use Gibbon\Data\Validator;
 use Gibbon\Domain\User\RoleGateway;
+use Gibbon\Data\StudentIDGenerator;
 
 require_once '../../gibbon.php';
 
@@ -277,6 +278,38 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                     $URL .= '&return=error3';
                     header("Location: {$URL}");
                 } else {
+                    // check if user does not already have a student id set
+                    try {
+                        $data = array('gibbonPersonID' => $gibbonPersonID);
+                        $sql = 'SELECT studentID as studentIDCheck FROM gibbonPerson WHERE gibbonPersonID=:gibbonPersonID ';
+                        $result = $connection2->prepare($sql);
+                        $result->execute($data);
+                    } catch (PDOException $e) {
+                        $URL .= '&return=error13';
+                        header("Location: {$URL}");
+                        exit();
+                    }
+
+                    $studentIDCheckResults = $result->fetch();
+                    
+                    
+                    //Generate Student ID for students users if not set
+                    if($studentID == ''){
+                        $studentID = $studentIDCheckResults['studentIDCheck'];
+                        $needNewStudentID = $studentID == '' ? true:false;
+                        if($needNewStudentID){
+                            try{
+                                // Generate a new studentID
+                                $studentIDGenerator = new StudentIDGenerator();
+                                $studentID = $studentIDGenerator->generate($connection2);
+                            }catch (PDOException $e) {
+                                $URL .= '&return=error13';
+                                header("Location: {$URL}");
+                                exit();
+                            }
+                        }
+                    }
+
                     $imageFail = false;
                     if (!empty($_FILES['file1']['tmp_name']))
                     {
@@ -382,7 +415,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                     } else {
                         //Write to database
                         try {
-                            $data = array('title' => $title, 'surname' => $surname, 'firstName' => $firstName, 'preferredName' => $preferredName, 'officialName' => $officialName, 'nameInCharacters' => $nameInCharacters, 'gender' => $gender, 'username' => $username, 'status' => $status, 'canLogin' => $canLogin, 'passwordForceReset' => $passwordForceReset, 'gibbonRoleIDPrimary' => $gibbonRoleIDPrimary, 'gibbonRoleIDAll' => $gibbonRoleIDAll, 'dob' => $dob, 'email' => $email, 'emailAlternate' => $emailAlternate, 'address1' => $address1, 'address1Complement' => $address1Complement, 'address1ZipCode' => $address1ZipCode, 'address1City' => $address1City, 'address1Country' => $address1Country, 'address2' => $address2, 'address2Complement' => $$address2Complement, 'address2ZipCode' => $address2ZipCode,'address2City' => $address2City, 'address2Country' => $address2Country, 'phone1Type' => $phone1Type, 'phone1CountryCode' => $phone1CountryCode, 'phone1' => $phone1, 'phone2Type' => $phone2Type, 'phone2CountryCode' => $phone2CountryCode, 'phone2' => $phone2, 'languageFirst' => $languageFirst, 'languageSecond' => $languageSecond, 'languageThird' => $languageThird, 'cityOfBirth' => $cityOfBirth, 'countryOfBirth' => $countryOfBirth, 'emergency1Name' => $emergency1Name, 'emergency1Number1' => $emergency1Number1, 'emergency1Number2' => $emergency1Number2, 'emergency1Relationship' => $emergency1Relationship, 'emergency2Name' => $emergency2Name, 'emergency2Number1' => $emergency2Number1, 'emergency2Number2' => $emergency2Number2, 'emergency2Relationship' => $emergency2Relationship, 'profession' => $profession, 'employer' => $employer, 'jobTitle' => $jobTitle, 'attachment1' => $attachment1, 'studentID' => $studentID, 'dateStart' => $dateStart, 'dateEnd' => $dateEnd, 'gibbonSchoolYearIDClassOf' => $gibbonSchoolYearIDClassOf, 'lastSchool' => $lastSchool, 'nextSchool' => $nextSchool, 'departureReason' => $departureReason, 'transport' => $transport, 'transportNotes' => $transportNotes, 'lockerNumber' => $lockerNumber, 'privacy' => $privacy, 'agreements' => $agreements, 'dayType' => $dayType, 'fields' => $fields, 'gibbonPersonID' => $gibbonPersonID);
+                            $data = array('title' => $title, 'surname' => $surname, 'firstName' => $firstName, 'preferredName' => $preferredName, 'officialName' => $officialName, 'nameInCharacters' => $nameInCharacters, 'gender' => $gender, 'username' => $username, 'status' => $status, 'canLogin' => $canLogin, 'passwordForceReset' => $passwordForceReset, 'gibbonRoleIDPrimary' => $gibbonRoleIDPrimary, 'gibbonRoleIDAll' => $gibbonRoleIDAll, 'dob' => $dob, 'email' => $email, 'emailAlternate' => $emailAlternate, 'address1' => $address1, 'address1Complement' => $address1Complement, 'address1ZipCode' => $address1ZipCode, 'address1City' => $address1City, 'address1Country' => $address1Country, 'address2' => $address2, 'address2Complement' => $address2Complement, 'address2ZipCode' => $address2ZipCode,'address2City' => $address2City, 'address2Country' => $address2Country, 'phone1Type' => $phone1Type, 'phone1CountryCode' => $phone1CountryCode, 'phone1' => $phone1, 'phone2Type' => $phone2Type, 'phone2CountryCode' => $phone2CountryCode, 'phone2' => $phone2, 'languageFirst' => $languageFirst, 'languageSecond' => $languageSecond, 'languageThird' => $languageThird, 'cityOfBirth' => $cityOfBirth, 'countryOfBirth' => $countryOfBirth, 'emergency1Name' => $emergency1Name, 'emergency1Number1' => $emergency1Number1, 'emergency1Number2' => $emergency1Number2, 'emergency1Relationship' => $emergency1Relationship, 'emergency2Name' => $emergency2Name, 'emergency2Number1' => $emergency2Number1, 'emergency2Number2' => $emergency2Number2, 'emergency2Relationship' => $emergency2Relationship, 'profession' => $profession, 'employer' => $employer, 'jobTitle' => $jobTitle, 'attachment1' => $attachment1, 'studentID' => $studentID, 'dateStart' => $dateStart, 'dateEnd' => $dateEnd, 'gibbonSchoolYearIDClassOf' => $gibbonSchoolYearIDClassOf, 'lastSchool' => $lastSchool, 'nextSchool' => $nextSchool, 'departureReason' => $departureReason, 'transport' => $transport, 'transportNotes' => $transportNotes, 'lockerNumber' => $lockerNumber, 'privacy' => $privacy, 'agreements' => $agreements, 'dayType' => $dayType, 'fields' => $fields, 'gibbonPersonID' => $gibbonPersonID);
                             $sql = 'UPDATE gibbonPerson SET title=:title, surname=:surname, firstName=:firstName, preferredName=:preferredName, officialName=:officialName, nameInCharacters=:nameInCharacters, gender=:gender, username=:username, status=:status, canLogin=:canLogin, passwordForceReset=:passwordForceReset, gibbonRoleIDPrimary=:gibbonRoleIDPrimary, gibbonRoleIDAll=:gibbonRoleIDAll, dob=:dob, email=:email, emailAlternate=:emailAlternate, address1=:address1, address1Complement=:address1Complement, address1ZipCode=:address1ZipCode ,address1City=:address1City, address1Country=:address1Country, address2=:address2, address2Complement=:address2Complement, address2ZipCode=:address2ZipCode ,address2City=:address2City, address2Country=:address2Country, phone1Type=:phone1Type, phone1CountryCode=:phone1CountryCode, phone1=:phone1, phone2Type=:phone2Type, phone2CountryCode=:phone2CountryCode, phone2=:phone2, languageFirst=:languageFirst, languageSecond=:languageSecond, languageThird=:languageThird, cityOfBirth=:cityOfBirth, countryOfBirth=:countryOfBirth, emergency1Name=:emergency1Name, emergency1Number1=:emergency1Number1, emergency1Number2=:emergency1Number2, emergency1Relationship=:emergency1Relationship, emergency2Name=:emergency2Name, emergency2Number1=:emergency2Number1, emergency2Number2=:emergency2Number2, emergency2Relationship=:emergency2Relationship, profession=:profession, employer=:employer, jobTitle=:jobTitle, image_240=:attachment1, studentID=:studentID, dateStart=:dateStart, dateEnd=:dateEnd, gibbonSchoolYearIDClassOf=:gibbonSchoolYearIDClassOf, lastSchool=:lastSchool, nextSchool=:nextSchool, departureReason=:departureReason, transport=:transport, transportNotes=:transportNotes, lockerNumber=:lockerNumber, privacy=:privacy, studentAgreements=:agreements, dayType=:dayType, fields=:fields WHERE gibbonPersonID=:gibbonPersonID';
                             $result = $connection2->prepare($sql);
                             $result->execute($data);
@@ -402,13 +435,12 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                         //Deal with change to privacy settings
                         if ($student && $container->get(SettingGateway::class)->getSettingByScope('User Admin', 'privacy') == 'Y') {
                             if ($privacy_old != $privacy && !(empty($privacy_old) && empty($privacy))) {
-
                                 //Notify tutor
+                                $dataDetail = array('gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'), 'gibbonPersonID' => $gibbonPersonID);
+                                $sqlDetail = 'SELECT gibbonPersonIDTutor, gibbonPersonIDTutor2, gibbonPersonIDTutor3, gibbonYearGroupID FROM gibbonFormGroup JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID) JOIN gibbonPerson ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonStudentEnrolment.gibbonPersonID=:gibbonPersonID';
+                                $resultDetail = $connection2->prepare($sqlDetail);
+                                $resultDetail->execute($dataDetail);
 
-                                    $dataDetail = array('gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'), 'gibbonPersonID' => $gibbonPersonID);
-                                    $sqlDetail = 'SELECT gibbonPersonIDTutor, gibbonPersonIDTutor2, gibbonPersonIDTutor3, gibbonYearGroupID FROM gibbonFormGroup JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID) JOIN gibbonPerson ON (gibbonStudentEnrolment.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonStudentEnrolment.gibbonPersonID=:gibbonPersonID';
-                                    $resultDetail = $connection2->prepare($sqlDetail);
-                                    $resultDetail->execute($dataDetail);
                                 if ($resultDetail->rowCount() == 1) {
 
                                     $rowDetail = $resultDetail->fetch();

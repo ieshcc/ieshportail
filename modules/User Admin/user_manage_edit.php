@@ -108,16 +108,6 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                 ->required()
                 ->setValue($values['username'])
                 ->readOnly();
-
-            // -1.02
-            if ($student) {
-                $row = $form->addRow();
-                    $row->addLabel('studentID', __('Student ID'));
-                    $row->addTextField('studentID')
-                        ->maxLength(15)
-                        ->uniqueField('./modules/User Admin/user_manage_studentIDAjax.php', ['gibbonPersonID' => $gibbonPersonID])
-                        ->readOnly();
-            }
             
             // -1.03
             $row = $form->addRow();
@@ -444,7 +434,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             $restrictedRoles = array_intersect_key($allRoles, array_flip($restrictedRoles));
 
             $row = $form->addRow();
-                $row->addLabel('gibbonRoleIDAll', __('All Roles'))->description(__('Controls what a user can do and see.'));
+                $row->addLabel('gibbonRoleIDAll', __('All Roles'))->description(__('Controls what a user can do and see. The Primary role should be set here also.'));
                 $row->addSelect('gibbonRoleIDAll')->fromArray($availableRoles)->selectMultiple()->selected($selectableRoles);
 
             if (!empty($restrictedRoles)) {
@@ -454,6 +444,34 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                     $row->addLabel('gibbonRoleIDRestricted', __('Restricted Roles'));
                     $row->addTextField('gibbonRoleIDRestricted')->readOnly()->setValue($restrictedRolesList)->setClass('standardWidth');
             }
+
+            $studentRoles[] = "003";
+            $form->toggleVisibilityByClass('studentDetails')->onSelect('gibbonRoleIDAll[]')->whenMultiple($studentRoles);
+            $form->toggleVisibilityByClass('studentDetails1')->onSelect('gibbonRoleIDPrimary')->whenMultiple($studentRoles);
+            
+            
+            // $row = $form->addRow()->addClass('studentDetails');
+            // $row->addLabel('studentID', __('Student ID'))
+            //     ->description(__("Defined by the system if not set"));
+            // $row->addTextField('studentID')
+            //     ->maxLength(15);
+            
+            if($values['studentID'] != ''){
+                $row = $form->addRow()->addClass('studentDetails')->addClass('studentDetails1');
+                $row->addLabel('studentID', __('Student ID'));
+                $row->addTextField('studentID')
+                ->maxLength(15)
+                ->uniqueField('./modules/User Admin/user_manage_studentIDAjax.php', ['gibbonPersonID' => $gibbonPersonID])
+                ->readOnly();
+            }else{
+                $row = $form->addRow()->addClass('studentDetails')->addClass('studentDetails1');
+                $row->addLabel('studentID', __('Student ID'))
+                    ->description(__('Once added it cannot be modified'));
+                $row->addTextField('studentID')
+                ->maxLength(15)
+                ->uniqueField('./modules/User Admin/user_manage_studentIDAjax.php', ['gibbonPersonID' => $gibbonPersonID]);
+            }
+
             
             $row = $form->addRow();
                 $row->addLabel('status', __('Status on the system'))->description(__('This determines visibility within the system.'));
