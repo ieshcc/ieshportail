@@ -70,10 +70,6 @@ $formValues = array(
     'phone2'                    => '23456789',
     'phone2CountryCode'         => '1',
     'phone2Type'                => 'Mobile',
-    'phone3'                    => '34567890',
-    'phone3CountryCode'         => '1',
-    'phone3Type'                => 'Work',
-    'website'                   => 'http://gibbon.test',
     'dayType'                   => 'Day Type 1',
     'lastSchool'                => 'Testing',
     'dateStart'                 => '30/01/2001',
@@ -90,17 +86,16 @@ $formValues = array(
     'emergency2Relationship'    => 'Other',
     'emergency2Number1'         => '87654321',
     'emergency2Number2'         => '98765432',
-    'studentID'                 => 'testmctest',
     'transport'                 => 'ABC123',
     'transportNotes'            => 'Teleportation',
     'lockerNumber'              => '123',
-    'vehicleRegistration'       => '1234',
 );
 
 // Non-editable Values
 $I->fillField('username', 'testmctest');
 $I->fillField('passwordNew', 'ZY6pfPBb!');
 $I->fillField('passwordConfirm', 'ZY6pfPBb!');
+
 
 // Drop-downs
 $I->selectOption('gibbonRoleIDPrimary', 'Student');
@@ -154,10 +149,6 @@ $formValues = array(
     'phone2'                    => '98765432',
     'phone2CountryCode'         => '',
     'phone2Type'                => 'Other',
-    'phone3'                    => '09876543',
-    'phone3CountryCode'         => '',
-    'phone3Type'                => 'Fax',
-    'website'                   => 'http://testing.gibbon.test',
     'dayType'                   => 'Day Type 2',
     'lastSchool'                => 'Testing Also',
     'dateStart'                 => '10/10/2010',
@@ -173,11 +164,9 @@ $formValues = array(
     'emergency2Relationship'    => 'Spouse',
     'emergency2Number1'         => '12345678',
     'emergency2Number2'         => '23456789',
-    'studentID'                 => 'testmctesting',
     'transport'                 => 'ABC321',
     'transportNotes'            => 'Tardis',
     'lockerNumber'              => '321',
-    'vehicleRegistration'       => '4321',
 );
 
 $I->submitForm('#content form', $formValues, 'Submit');
