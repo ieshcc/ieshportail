@@ -829,7 +829,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('enrolmentStatusName', __('Enrolment Status'));
                         $sectionRegistrationInfo->getItem("enrolmentStatusName")
                             ->translatable();
-                        if($row["enrolmentStatusName"] === "Cancelled"){
+                        if(isset($row["enrolmentStatusName"]) && $row["enrolmentStatusName"] === "Cancelled"){
                             $sectionRegistrationInfo->addItem('departureReason', __('Departure Reason'));
                         }
                         $sectionRegistrationInfo

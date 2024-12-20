@@ -95,10 +95,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view.php'
                 ->fromPOST();
 
             $sortOptions = array(
+                'studentID' => __('Student ID'),
                 'surname,preferredName' => __('Surname'),
                 'preferredName' => __('Given Name'),
                 'formGroup' => __('Form Group'),
-                'yearGroup' => __('Year Group'),
             );
 
             $form = Form::create('filter', $session->get('absoluteURL').'/index.php', 'get');
@@ -153,6 +153,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view.php'
             }
     
             // COLUMNS
+            $table->addColumn('studentID', __('Student ID'))
+                ->sortable(['studentID']);
             $table->addColumn('student', __('Student'))
                 ->sortable(['surname', 'preferredName'])
                 ->format(function ($person) use ($canViewFullProfile) {
@@ -162,7 +164,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view.php'
                     }
                     return $output;
                 });
-            $table->addColumn('yearGroup', __('Year Group'));
+            // $table->addColumn('yearGroup', __('Year Group'));
             $table->addColumn('formGroup', __('Form Group'));
     
             $table->addActionColumn()

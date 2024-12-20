@@ -177,8 +177,6 @@ if ($gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
                             $result = $connection2->prepare($sql);
                             $result->execute($data);
                         }catch(PDOException $e){
-                            error_log($e->getMessage());
-                            error_log($_POST['gibbonSpaceID']);
                             $URL .= '&return=warning1&editID='.$AI;
                             header("Location: {$URL}");
                             exit;

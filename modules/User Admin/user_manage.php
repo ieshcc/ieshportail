@@ -125,6 +125,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage.php
         });
 
     $table->addColumn('username', __('Username'))->context('primary');
+    $table->addColumn('created', __('Created'))->sortable(['created']);
 
     // ACTIONS
     $table->addActionColumn()
