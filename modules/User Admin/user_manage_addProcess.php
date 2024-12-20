@@ -234,7 +234,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
 
 
                     //Generate Student ID for students users
-                    if($studentRecord == 'Y' && $studentID=''){
+                    if($gibbonRoleIDPrimary == '003' && $studentID==''){
                         try{
                             //Check is student does not have a studentID set
                             $sql = "SELECT studentID FROM gibbonPerson WHERE gibbonPersonID = :gibbonPersonID LIMIT 1";
@@ -302,6 +302,8 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
                             'rollOrder'             => isset($_POST['rollOrder']) ? $_POST['rollOrder'] : null
                         ];
                         $inserted = $container->get(StudentGateway::class)->insert($studentData);
+                        $enrolmentAI = str_pad($connection2->lastInsertID(), 10, '0', STR_PAD_LEFT);
+
                         if ($inserted) {
                             // Handle automatic course enrolment if enabled
                             $autoEnrolStudent = $_POST['autoEnrolStudent'] ?? 'N';
@@ -313,6 +315,22 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
                                     header("Location: {$URL}");
                                     exit;
                                 }
+                            }
+
+                            // Write registration details to database
+                            $enrolmentStatusID = isset($_POST['enrolmentStatusID']) && !empty($_POST['enrolmentStatusID']) ? $_POST['enrolmentStatusID'] : '1';
+                            $attendanceTypeID = isset($_POST['attendanceTypeID']) && !empty($_POST['attendanceTypeID']) ? $_POST['attendanceTypeID'] : '1';
+                            $dormitoryRoomID = isset($_POST['gibbonSpaceID']) && !empty($_POST['gibbonSpaceID']) ? $_POST['gibbonSpaceID'] : null;
+                            $comments = isset($_POST['comments']) && !empty($_POST['comments']) ? $_POST['comments'] : 'No comment';
+                            try{
+                                $data = array('gibbonStudentEnrolmentID' => $enrolmentAI, 'gibbonSchoolYearID' => $session->get('gibbonSchoolYearID') ?? '', 'enrolmentStatusID' => $enrolmentStatusID, 'attendanceTypeID' => $attendanceTypeID, 'gibbonSpaceID'  => $dormitoryRoomID, 'comments' => $comments);
+                                $sql = 'INSERT INTO iesh_studentEnrolmentDetails SET gibbonStudentEnrolmentID=:gibbonStudentEnrolmentID, gibbonSchoolYearID=:gibbonSchoolYearID, enrolmentStatusID=:enrolmentStatusID, attendanceTypeID=:attendanceTypeID, gibbonSpaceID=:gibbonSpaceID, comments=:comments';
+                                $result = $connection2->prepare($sql);
+                                $result->execute($data);
+                            }catch(PDOException $e){
+                                $URL .= '&return=warning12&editID='.$AI;
+                                header("Location: {$URL}");
+                                exit;
                             }
                         }
                     }

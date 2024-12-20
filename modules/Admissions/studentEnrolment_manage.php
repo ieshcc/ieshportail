@@ -92,6 +92,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
         ]);
 
         // COLUMNS
+        $table->addColumn('studentID', __('Student ID'))
+            ->sortable(['studentID']);
         $table->addColumn('student', __('Student'))
             ->sortable(['surname', 'preferredName'])
             ->format(function ($person) {
