@@ -781,7 +781,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('birthplace', __('Birthplace'))
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
                         
-                        if (!is_null($row['dob']) && !$row['dob'] === '') {
+                        if (!is_null($row['dob']) && !empty($row['dob'])) {
                             $sectionIdentity->getItem('dob')
                                 ->format(Format::using('date','dob'));
                             $sectionIdentity->getItem('age')
