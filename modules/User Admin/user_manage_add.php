@@ -127,12 +127,13 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
         $row->addTextArea('address1Complement')->maxLength(255)->setRows(2);
 
     $row = $form->addRow()->addClass('address');
+            $row->addLabel('address1ZipCode', __('Address 1 Zip Code'));
+            $row->addTextFieldDistrict('address1ZipCode');
+
+    $row = $form->addRow()->addClass('address');
         $row->addLabel('address1City', __('Address 1 City'));
         $row->addTextFieldDistrict('address1City');
     
-    $row = $form->addRow()->addClass('address');
-        $row->addLabel('address1ZipCode', __('Address 1 Zip Code'));
-        $row->addTextFieldDistrict('address1ZipCode');
 
     $row = $form->addRow()->addClass('address');
         $row->addLabel('address1Country', __('Address 1 Country'));
