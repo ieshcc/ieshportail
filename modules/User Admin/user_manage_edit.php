@@ -264,21 +264,19 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
            
 
             // EMPLOYMENT
-            if ($parent) {
-                $form->addRow()->addHeading('Employment', __('Employment'));
+            $form->addRow()->addHeading('Employment', __('Employment'));
 
-                $row = $form->addRow();
-                    $row->addLabel('profession', __('Profession'));
-                    $row->addTextField('profession')->maxLength(90);
+            $row = $form->addRow();
+                $row->addLabel('profession', __('Profession'));
+                $row->addTextField('profession')->maxLength(90);
 
-                $row = $form->addRow();
-                    $row->addLabel('employer', __('Employer'));
-                    $row->addTextField('employer')->maxLength(90);
+            $row = $form->addRow();
+                $row->addLabel('employer', __('Employer'));
+                $row->addTextField('employer')->maxLength(90);
 
-                $row = $form->addRow();
-                    $row->addLabel('jobTitle', __('Job Title'));
-                    $row->addTextField('jobTitle')->maxLength(90);
-            }
+            $row = $form->addRow();
+                $row->addLabel('jobTitle', __('Job Title'));
+                $row->addTextField('jobTitle')->maxLength(90);
 
             $row = $form->addRow();
                 $row->addLabel('gender', __('Gender'));
