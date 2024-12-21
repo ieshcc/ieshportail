@@ -126,7 +126,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             
             $row = $form->addRow();
                 $row->addLabel('preferredName', __('Displayed Name'))->description(__('Named that will be displayed in the system.'));
-                $row->addTextField('preferredName')->required()->maxLength(60)->readOnly();
+                $row->addTextField('preferredName')->required()->maxLength(60);
             
             $row = $form->addRow();
                 $row->addLabel('nameInCharacters', __('Name In Characters'))->description(__('Arabic or other character-based name.'));
