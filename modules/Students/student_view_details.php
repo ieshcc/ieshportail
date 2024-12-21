@@ -779,6 +779,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->addItem('dob', __('Date of Birth'))
                             ->addItem('age', __('Age'))
                             ->addItem('birthplace', __('Birthplace'))
+                            ->addItem('nationality', __('Nationality'))
                             ->addMetaData("classes", $leftPanelSectionHeaderClasses);
                         
                         if (!is_null($row['dob']) && !empty($row['dob'])) {
@@ -797,6 +798,9 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                             ->format(function($row) {
                                  return $row['cityOfBirth'].', '.$row['countryOfBirth'];
                             });
+
+                        $sectionIdentity->getItem("nationality")
+                            ->translatable();
 
                         $sectionHomeInfo = new Section('homeInfo', __('Home Details'));
                         $sectionHomeInfo

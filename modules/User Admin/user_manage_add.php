@@ -193,6 +193,10 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
         $row->addSelectCountry('countryOfBirth');
 
     $row = $form->addRow();
+        $row->addLabel('nationality', __('Nationality'));
+        $row->addSelectNationality('nationality');
+
+    $row = $form->addRow();
         $row->addLabel('languageFirst', __('First Language'));
         $row->addSelectLanguage('languageFirst');
 

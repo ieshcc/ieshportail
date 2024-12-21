@@ -378,6 +378,15 @@ class DatabaseFormFactory extends FormFactory
         return $this->createSelect($name)->fromArray($results)->placeholder();
     }
 
+    public function createSelectNationality($name)
+    {
+        $sql = "SELECT printable_name as value, printable_name as name FROM iesh_nationality ORDER BY printable_name";
+        $results = $this->pdo->select($sql)->fetchKeyPair();
+        $results = $this->localeFriendlySort($results);
+
+        return $this->createSelect($name)->fromArray($results)->placeholder();
+    }
+
     public function createSelectRole($name)
     {
         $sql = "SELECT gibbonRoleID as value, name FROM gibbonRole ORDER BY name";

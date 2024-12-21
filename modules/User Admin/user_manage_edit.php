@@ -101,7 +101,6 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
             // BASIC INFORMATION
             $form->addRow()->addHeading('Basic Information', __('Basic Information'));
 
-            // -1.01
             $row = $form->addRow();
                 $row->addLabel('username', __('Username'))->description(__('System login name.'));
                 $row->addUsername('username')
@@ -109,37 +108,30 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                 ->setValue($values['username'])
                 ->readOnly();
             
-            // -1.03
             $row = $form->addRow();
                 $row->addLabel('title', __('Title'));
                 $row->addSelectTitle('title');
             
-            // -1.04    
             $row = $form->addRow();
                 $row->addLabel('surname', __('Surname'))->description(__('Family name as shown in ID documents.'));
                 $row->addTextField('surname')->required()->maxLength(60);
     
-            // -1.05
             $row = $form->addRow();
                 $row->addLabel('firstName', __('First Name'))->description(__('First name as shown in ID documents.'));
                 $row->addTextField('firstName')->required()->maxLength(60);
             
-            // -1.06
             $row = $form->addRow();
                 $row->addLabel('officialName', __('Full Name'))->description(__('Full name as shown in ID documents.'));
                 $row->addTextField('officialName')->required()->maxLength(150)->readOnly();
             
-            // -1.07
             $row = $form->addRow();
                 $row->addLabel('preferredName', __('Displayed Name'))->description(__('Named that will be displayed in the system.'));
                 $row->addTextField('preferredName')->required()->maxLength(60)->readOnly();
             
-            // -1.08
             $row = $form->addRow();
                 $row->addLabel('nameInCharacters', __('Name In Characters'))->description(__('Arabic or other character-based name.'));
                 $row->addTextField('nameInCharacters')->maxLength(60);
 
-            // -1.09
             $row = $form->addRow();
                 $emailLabel = $row->addLabel('email', __('Email'));
                 $email = $row->addEmail('email')->required();
@@ -151,33 +143,28 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                 $email->uniqueField('./modules/User Admin/user_manage_emailAjax.php', array('gibbonPersonID' => $gibbonPersonID));
             }
 
-            // -1.10
             $row = $form->addRow();
                 $row->addLabel('emailAlternate', __('Alternate Email'));
                 $row->addEmail('emailAlternate');
         
-            // -1.11
             $row = $form->addRow();
                 $row->addLabel('phone1', __('Phone 1'))->description(__('Type, country code, number.'));
                 $row->addPhoneNumber('phone1');
 
             $phone2Set = ($values['phone2'] != '')? 'Yes' : '';
             
-            // -1.12
             $row = $form->addRow();
                 $row->addLabel('showSecondPhone', __('Enter Second Phone Number ?'));
                 $row->addCheckbox('showSecondPhone')->setValue('Yes')->checked($phone2Set);
             
             $form->toggleVisibilityByClass('phone2')->onCheckbox('showSecondPhone')->when('Yes');
 
-            // -1.13
             $row = $form->addRow()->addClass('phone2');
                 $row->addLabel('phone2', __('Phone 2'))->description(__('Type, country code, number.'));
                 $row->addPhoneNumber('phone2');
             
             $addressSet = ($values['address1'] != '' or $values['address1City'] != '' or $values['address1Country'] != '')? 'Yes' : '';
 
-            // -1.14
             // $row = $form->addRow();
             //     $row->addLabel('showAddresses', __('Enter Personal Address?'));
             //     $row->addCheckbox('showAddresses')->setValue('Yes')->checked($addressSet);
@@ -293,32 +280,30 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                     $row->addTextField('jobTitle')->maxLength(90);
             }
 
-            // -4.02
             $row = $form->addRow();
                 $row->addLabel('gender', __('Gender'));
                 $row->addSelectGender('gender')->required();
 
-            // -4.03
             $row = $form->addRow();
                 $row->addLabel('dob', __('Date of Birth'));
                 $row->addDate('dob')->required();
             
-            // -4.04
             $row = $form->addRow();
                 $row->addLabel('cityOfBirth', __('City of Birth'));
                 $row->addTextField('cityOfBirth')->maxLength(60);
             
-            // -4.05
             $row = $form->addRow();
                 $row->addLabel('countryOfBirth', __('Country of Birth'));
                 $row->addSelectCountry('countryOfBirth');
 
-            // -4.06
+            $row = $form->addRow();
+                $row->addLabel('nationality', __('Nationality'));
+                $row->addSelectNationality('nationality');
+
             $row = $form->addRow();
                 $row->addLabel('languageFirst', __('First Language'));
                 $row->addSelectLanguage('languageFirst');
 
-            // -4.07
             $row = $form->addRow();
                 $row->addLabel('languageSecond', __('Second Language'));
                 $row->addSelectLanguage('languageSecond');
