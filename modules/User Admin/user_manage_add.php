@@ -83,7 +83,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
 
     $row = $form->addRow();
         $row->addLabel('preferredName', __('Displayed Name'))->description(__('Named that will be displayed in the system.'));
-        $row->addTextField('preferredName')->required()->maxLength(60)->readOnly();
+        $row->addTextField('preferredName')->required()->maxLength(60);
 
     $row = $form->addRow();
         $row->addLabel('nameInCharacters', __('Name In Characters'))->description(__('Arabic or other character-based name.'));
@@ -127,12 +127,13 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
         $row->addTextArea('address1Complement')->maxLength(255)->setRows(2);
 
     $row = $form->addRow()->addClass('address');
+            $row->addLabel('address1ZipCode', __('Address 1 Zip Code'));
+            $row->addTextFieldDistrict('address1ZipCode');
+
+    $row = $form->addRow()->addClass('address');
         $row->addLabel('address1City', __('Address 1 City'));
         $row->addTextFieldDistrict('address1City');
     
-    $row = $form->addRow()->addClass('address');
-        $row->addLabel('address1ZipCode', __('Address 1 Zip Code'));
-        $row->addTextFieldDistrict('address1ZipCode');
 
     $row = $form->addRow()->addClass('address');
         $row->addLabel('address1Country', __('Address 1 Country'));
@@ -190,6 +191,10 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $row = $form->addRow();
         $row->addLabel('countryOfBirth', __('Country of Birth'));
         $row->addSelectCountry('countryOfBirth');
+
+    $row = $form->addRow();
+        $row->addLabel('nationality', __('Nationality'));
+        $row->addSelectNationality('nationality');
 
     $row = $form->addRow();
         $row->addLabel('languageFirst', __('First Language'));

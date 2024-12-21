@@ -41,7 +41,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Finance/invoicees_manage.p
         foreach ($missingInvoicees as $values) {
             $inserted = $invoiceeGateway->insert([
                 'gibbonPersonID' => $values['gibbonPersonID'],
-                'invoiceTo' => 'Family'
+                'invoiceTo' => 'Student'
             ]);
 
             if (!$inserted || !$pdo->getQuerySuccess()) {

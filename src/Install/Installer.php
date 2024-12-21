@@ -645,7 +645,8 @@ class Installer
             'dbcustomization/05_add_column_cityOfBirth.sql',
             'dbcustomization/06_update_document_enum.sql',
             'dbcustomization/07_update_invoiceTo_enum.sql',
-            'dbcustomization/08_add_column_created.sql'
+            'dbcustomization/08_add_column_created.sql',
+            'dbcustomization/09_add_column_nationality.sql'
         ];
         
         $combinedSql = '';

@@ -105,15 +105,17 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/report_students_b
     ]);
 
     $table->addColumn('formGroup', __('Form Group'))->width('5%');
+    $table->addColumn('title', __('Title'))
+                ->translatable();
+    $table->addColumn('studentID', __('Student ID'));
     $table->addColumn('student', __('Student'))
-        ->sortable(['surname', 'preferredName'])
+        ->sortable(['surname', 'firstname'])
         ->format(function ($person) {
-            return Format::name('', $person['preferredName'], $person['surname'], 'Student', true, true) . '<br/><small><i>'.Format::userStatusInfo($person).'</i></small>';
+            return Format::name('', $person['firstname'], $person['surname'], 'Student', true, true) . '<br/><small><i>'.Format::userStatusInfo($person).'</i></small>';
         });
 
     if ($criteria->hasFilter('view', 'extended')) {
-        $table->addColumn('gender', __('Gender'))
-                ->format(Format::using('genderName', 'gender'));
+        $table->addColumn('email', __('Email'));
         $table->addColumn('dob', __('Age'))
             ->description(__('DOB'))
             ->format(function ($values) {
@@ -121,10 +123,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/report_students_b
                     ? Format::age($values['dob'], true).'<br/>'.Format::small(Format::date($values['dob']))
                     : '';
             });
-        $table->addColumn('citizenship', __('Nationality'));
-        $table->addColumn('transport', __('Transport'));
-        $table->addColumn('house', __('House'));
-        $table->addColumn('lockerNumber', __('Locker'));
+        $table->addColumn('nationality', __('Nationality'));
         $table->addColumn('longTermMedication', __('Medical'))->format(function ($values) use ($medicalGateway) {
             $output = '';
 
