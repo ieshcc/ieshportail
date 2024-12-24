@@ -62,10 +62,23 @@ if (isActionAccessible($guid, $connection2, '/modules/Departments/department.php
                     ->add($row['name'], $session->has('username') ? 'departments.php' : '/modules/Departments/departments.php', $urlParams);
 
             //Print overview
-            if ($row['blurb'] != '' or $role == 'Coordinator' or $role == 'Assistant Coordinator' or $role == 'Teacher (Curriculum)' or $role == 'Director' or $role == 'Manager') {
+            $eligibleRoles = [
+                'Coordinator',
+                'Assistant Coordinator',
+                'Department Manager',
+                'Education Manager',
+                'Teacher (Curriculum)',
+                'Director',
+                'Manager',
+                'Administrator',
+                'Dean',
+                'Superintendent'
+            ];
+            
+            if ($row['blurb'] != '' or in_array($role, $eligibleRoles)) {
                 echo '<h2>';
                 echo __('Overview');
-                if ($role == 'Coordinator' or $role == 'Assistant Coordinator' or $role == 'Teacher (Curriculum)' or $role == 'Director' or $role == 'Manager') {
+                if (in_array($role, $eligibleRoles)) {
                     echo "<a href='".$session->get('absoluteURL').'/index.php?q=/modules/'.$session->get('module')."/department_edit.php&gibbonDepartmentID=$gibbonDepartmentID'><img style='margin-left: 5px' title='".__('Edit')."' src='./themes/".$session->get('gibbonThemeName')."/img/config.png'/></a> ";
                 }
                 echo '</h2>';
@@ -166,7 +179,19 @@ if (isActionAccessible($guid, $connection2, '/modules/Departments/department.php
 
             if ($resultCourse->rowCount() > 0) {
                 $sidebarExtra .= '<div class="column-no-break">';
-                if ($role == 'Coordinator' or $role == 'Assistant Coordinator' or $role == 'Teacher (Curriculum)') {
+                $eligibleRoles = [
+                    'Coordinator',
+                    'Assistant Coordinator',
+                    'Department Manager',
+                    'Education Manager',
+                    'Teacher (Curriculum)',
+                    'Director',
+                    'Manager',
+                    'Administrator',
+                    'Dean',
+                    'Superintendent'
+                ];
+                if (in_array($role, $eligibleRoles)) {
                     $sidebarExtra .= '<h4>';
                     $sidebarExtra .= __('Current Courses');
                     $sidebarExtra .= '</h4>';
@@ -185,7 +210,19 @@ if (isActionAccessible($guid, $connection2, '/modules/Departments/department.php
             }
 
             //Print other courses
-            if ($role == 'Coordinator' or $role == 'Assistant Coordinator' or $role == 'Teacher (Curriculum)' or $role == 'Teacher') {
+            $eligibleRoles = [
+                'Coordinator',
+                'Assistant Coordinator',
+                'Department Manager',
+                'Education Manager',
+                'Teacher (Curriculum)',
+                'Director',
+                'Manager',
+                'Administrator',
+                'Dean',
+                'Superintendent'
+            ];
+            if (in_array($role, $eligibleRoles)) {
                 $data = array('gibbonDepartmentID' => $gibbonDepartmentID, 'gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'));
                 $sql = "SELECT gibbonSchoolYear.name AS year, gibbonCourse.gibbonCourseID as value, gibbonCourse.name AS name
                         FROM gibbonCourse
@@ -230,11 +267,11 @@ if (isActionAccessible($guid, $connection2, '/modules/Departments/department.php
                 $resultReading = $connection2->prepare($sqlReading);
                 $resultReading->execute($dataReading);
 
-            if ($resultReading->rowCount() > 0 or $role == 'Coordinator' or $role == 'Assistant Coordinator' or $role == 'Teacher (Curriculum)' or $role == 'Director' or $role == 'Manager') {
+            if ($resultReading->rowCount() > 0 or in_array($role, $eligibleRoles)) {
                 $sidebarExtra .= '<div class="column-no-break">';
                 $sidebarExtra .= '<h4>';
                 $sidebarExtra .= __('Useful Reading');
-                if ($role == 'Coordinator' or $role == 'Assistant Coordinator' or $role == 'Teacher (Curriculum)' or $role == 'Director' or $role == 'Manager') {
+                if (in_array($role, $eligibleRoles)) {
                     $sidebarExtra .= "<a href='".$session->get('absoluteURL').'/index.php?q=/modules/'.$session->get('module')."/department_edit.php&gibbonDepartmentID=$gibbonDepartmentID'><img style='margin-left: 5px' title='".__('Edit')."' src='./themes/".$session->get('gibbonThemeName')."/img/config.png'/></a> ";
                 }
                 $sidebarExtra .= '</h4>';

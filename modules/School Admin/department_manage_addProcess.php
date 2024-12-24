@@ -95,6 +95,8 @@ if (isActionAccessible($guid, $connection2, '/modules/School Admin/department_ma
             $role = $_POST['roleLA'] ?? '';
         } elseif ($type == 'Administration') {
             $role = $_POST['roleAdmin'] ?? '';
+        } elseif ($type == 'Staff') {
+            $role = $_POST['roleST'] ?? '';
         }
         if ($role == '') {
             $role = 'Other';

@@ -122,7 +122,10 @@ table:
         name: "Country of Birth"
         desc: ""
         args: {filter: country }
-
+    nationality:
+        name: "Nationality"
+        desc: ""
+        args: {filter: string }
     languageFirst:
         name: "First Language"
         desc: ""
