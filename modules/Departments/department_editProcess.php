@@ -66,7 +66,20 @@ if (isActionAccessible($guid, $connection2, '/modules/Departments/department_edi
                 //Get role within learning area
                 $role = getRole($session->get('gibbonPersonID'), $gibbonDepartmentID, $connection2);
 
-                if ($role != 'Coordinator' and $role != 'Assistant Coordinator' and $role != 'Teacher (Curriculum)' and $role != 'Director' and $role != 'Manager') {
+                $eligibleRoles = [
+                    'Coordinator',
+                    'Assistant Coordinator',
+                    'Department Manager',
+                    'Education Manager',
+                    'Teacher (Curriculum)',
+                    'Director',
+                    'Manager',
+                    'Administrator',
+                    'Dean',
+                    'Superintendent'
+                ];
+
+                if (!in_array($role, $eligibleRoles)) {
                     $URL .= '&return=error0';
                     header("Location: {$URL}");
                 } else {

@@ -61,21 +61,39 @@ if (isActionAccessible($guid, $connection2, '/modules/School Admin/department_ma
             $types = array(
                 'Learning Area' => __('Learning Area'),
                 'Administration' => __('Administration'),
+                'Staff' => __('Staff'),
             );
 
             $typesLA = array(
                 'Coordinator'           => __('Coordinator'),
                 'Assistant Coordinator' => __('Assistant Coordinator'),
+                'Department Manager'    => __('Department Manager'),
+                'Education Manager'     => __('Education Manager'),
                 'Teacher (Curriculum)'  => __('Teacher (Curriculum)'),
                 'Teacher'               => __('Teacher'),
                 'Other'                 => __('Other'),
             );
+            
+            $typesST = array(
+                'Coordinator'           => __('Coordinator'),
+                'Assistant Coordinator' => __('Assistant Coordinator'),
+                'Worker'                => __('Worker'),
+                'Chef'                  => __('Chef'),
+                'Other'                 => __('Other'),
+            );
 
             $typesAdmin = array(
-                'Director'      => __('Director'),
-                'Manager'       => __('Manager'),
-                'Administrator' => __('Administrator'),
-                'Other'         => __('Other'),
+                'Director'              => __('Director'),
+                'Manager'               => __('Manager'),
+                'Administrator'         => __('Administrator'),
+                'Dean'                  => __('Dean'),
+                'Superintendent'        => __('Superintendent'),
+                'Education Manager'     => __('Education Manager'),
+                'Secretary'             => __('Secretary'),
+                'IT Manager'            => __('IT Manager'),
+                'Accountant'            => __('Accountant'),
+                'Accounting Assistant'  => __('Accounting Assistant'),
+                'Other'                 => __('Other'),
             );
 
             $row = $form->addRow()->addHeading('Basic Details', __('Basic Details'));
@@ -144,6 +162,10 @@ if (isActionAccessible($guid, $connection2, '/modules/School Admin/department_ma
                 $row = $form->addRow()->setClass('roleLARow');
                     $row->addLabel('role', __('Role'));
                     $row->addSelect('role')->fromArray($typesLA);
+            } else if ($values['type'] == 'Staff') {
+                $row = $form->addRow()->setClass('roleSTRow');
+                    $row->addLabel('role', __('Role'));
+                    $row->addSelect('role')->fromArray($typesST);
             } else {
                 $row = $form->addRow()->setClass('roleAdmin');
                     $row->addLabel('role', __('Role'));
