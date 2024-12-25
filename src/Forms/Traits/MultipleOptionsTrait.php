@@ -83,7 +83,8 @@ trait MultipleOptionsTrait
 
             foreach ($pieces as $piece) {
                 $piece = trim($piece ?? '');
-                $this->options[$piece] = __($piece);
+                $translatedName = __($piece);
+                $this->options[$piece] = !empty($translatedName) ? $translatedName : $piece;
             }
         }
 
@@ -196,14 +197,15 @@ trait MultipleOptionsTrait
             // Fetch all results
             $rows = $results->fetchAll();
 
-            // Translate the 'name' field in each row
             foreach ($rows as &$row) {
                 if (isset($row['name'])) {
-                    $row['name'] = __($row['name']); // Apply translation function
+                    // Apply translation function and fallback to the original name if the translation is empty
+                    $translatedName = __($row['name']);
+                    $row['name'] = !empty($translatedName) ? $translatedName : $row['name'];
                 }
             }
 
-            $this->setOptionsFromArray($results->fetchAll(), 'value', 'name', $groupBy);
+            $this->setOptionsFromArray($rows, 'value', 'name', $groupBy);
         }
 
         return $this;
