@@ -64,6 +64,33 @@ trait MultipleOptionsTrait
     }
 
     /**
+     * Build an internal options array translated from a provided CSV string.
+     * @param   string  $value
+     * @return  self
+     */
+    public function fromStringTranslated($value)
+    {
+        if (empty($values)) {
+            $values = '';
+        }
+
+        if (!is_string($value)) {
+            throw new \InvalidArgumentException(sprintf('Element %s: fromString expects value to be a string, %s given.', $this->getName(), gettype($value)));
+        }
+
+        if (!empty($value)) {
+            $pieces = str_getcsv($value);
+
+            foreach ($pieces as $piece) {
+                $piece = trim($piece ?? '');
+                $this->options[$piece] = __($piece);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Build an internal options array from a provided array of $key => $value pairs.
      * @param   array  $values
      * @return  self
@@ -147,6 +174,35 @@ trait MultipleOptionsTrait
         }
 
         if ($results && $results->rowCount() > 0) {
+            $this->setOptionsFromArray($results->fetchAll(), 'value', 'name', $groupBy);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Build an internal options array from the result set of a PDO query.
+     * @param   object  $results
+     *
+     * @return  self
+     */
+    public function fromResultsTranslated($results, $groupBy = false)
+    {
+        if (empty($results) || !is_object($results)) {
+            throw new \InvalidArgumentException(sprintf('Element %s: fromQuery expects value to be an Object, %s given.', $this->getName(), gettype($results)));
+        }
+
+        if ($results && $results->rowCount() > 0) {
+            // Fetch all results
+            $rows = $results->fetchAll();
+
+            // Translate the 'name' field in each row
+            foreach ($rows as &$row) {
+                if (isset($row['name'])) {
+                    $row['name'] = __($row['name']); // Apply translation function
+                }
+            }
+
             $this->setOptionsFromArray($results->fetchAll(), 'value', 'name', $groupBy);
         }
 

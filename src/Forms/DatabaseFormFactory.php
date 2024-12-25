@@ -112,9 +112,9 @@ class DatabaseFormFactory extends FormFactory
         $results = $this->pdo->select($sql);
 
         if (!$all)
-            return $this->createSelect($name)->fromResults($results)->placeholder();
+            return $this->createSelect($name)->fromResultsTranslated($results)->placeholder();
         else
-            return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResults($results)->placeholder();
+            return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResultsTranslated($results)->placeholder();
     }
 
     /*
