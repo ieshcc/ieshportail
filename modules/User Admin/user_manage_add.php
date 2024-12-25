@@ -40,7 +40,7 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
     $returns['error5'] = __('Your request failed because your passwords did not match.');
     $returns['error6'] = __('Your request failed due to an attachment error.');
     $returns['error7'] = __('Your request failed because your password does not meet the minimum requirements for strength.');
-    $returns['warning3'] = __('Your request was completed successfully, but one or more images were the wrong size and so were not saved.');
+    $returns['warning3'] = __('Your request was completed successfully, but one or more images were invalid or the wrong size and so were not saved.');
     $returns['warning12'] = __('Your request was completed successfully, but student registration Details could not be saved.');
     $editLink = '';
     if (isset($_GET['editID'])) {

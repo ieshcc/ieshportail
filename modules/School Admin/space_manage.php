@@ -79,7 +79,8 @@ if (isActionAccessible($guid, $connection2, '/modules/School Admin/space_manage.
     });
 
     $table->addColumn('name', __('Name'));
-    $table->addColumn('type', __('Type'));
+    $table->addColumn('type', __('Type'))
+        ->translatable();
     $table->addColumn('capacity', __('Capacity'));
     $table->addColumn('facilities', __('Facilities'))
         ->notSortable()

@@ -701,7 +701,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
 
                         $page->return->addReturns(['warning11' => __('Some elements of your request failed, but others were successful.'), 
                         'warning12' => __('Your request was completed successfully, but one or more requested emails could not be sent.'), 
-                        'warning13' => __('Your request was completed successfully, but one or more images were the wrong size and so were not saved.'),
+                        'warning13' => __('Your request was completed successfully, but one or more images were invalid or the wrong size and so were not saved.'),
                         'error3' => $error3]);
 
                         $currentPage = "/modules/Students/student_view_details.php&gibbonPersonID=".$gibbonPersonID."&sort=surname,preferredName&allStudents=";

@@ -328,68 +328,84 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                             if (empty($attachment1)) {
                                 $imageFail = true;
                             } else {
-                                //Check image sizes
-                                if (function_exists('getimagesize') && function_exists('imagecreatetruecolor')) {
-                                    $imageSize = getimagesize($path.'/'.$attachment1);
-                                    $width = $imageSize[0] ?? '';
-                                    $height = $imageSize[1] ?? '';
-                                    $aspect = $height / $width;
+                                $fullPath = $path.'/'.$attachment1;
 
-                                    if ($width > 360 || $height > 480 || $aspect < 1.2 || $aspect > 1.4) {
-                                        $src_x = $src_y = $dst_x = $dst_y = 0;
-                                        $src_y = 0;
-                                        $src_w = $width;
-                                        $src_h = $height;
-                                        $maxWidth = 360;
-                                        $maxHeight = 480;
+                                // Validate MIME type
+                                $fileMimeType = mime_content_type($fullPath);
+                                if (!in_array($fileMimeType, ['image/jpeg', 'image/jpg', 'image/png'])) {
+                                    $imageFail = true;
+                                    $attachment1 = '';
+                                    unlink($fullPath);
+                                } else {  
+                                    //Check image sizes
+                                    if (function_exists('getimagesize') && function_exists('imagecreatetruecolor')) {
+                                        $imageSize = getimagesize($path.'/'.$attachment1);
 
-                                        // New crop if needed
-                                        if ($aspect < 1.2) {
-                                            $src_w = $height / 1.2;
-                                            $src_x = ($width - $src_w) / 2;
-                                        }
-                                        else if ($aspect > 1.4) {
-                                            $src_h = $width * 1.4;
-                                            $src_y = ($height - $src_h) / 2;
-                                        }
+                                        if ($imageSize === false) {
+                                            $imageFail = true;
+                                            $attachment1 = '';
+                                        } else{
+                                            $width = $imageSize[0] ?? '';
+                                            $height = $imageSize[1] ?? '';
+                                            $aspect = $height / $width;
 
-                                        $dst_w = $src_w;
-                                        $dst_h = $src_h;
+                                            if ($width > 360 || $height > 480 || $aspect < 1.2 || $aspect > 1.4) {
+                                                $src_x = $src_y = $dst_x = $dst_y = 0;
+                                                $src_y = 0;
+                                                $src_w = $width;
+                                                $src_h = $height;
+                                                $maxWidth = 360;
+                                                $maxHeight = 480;
 
-                                        // New compressed image if needed
-                                        if ($src_w > $maxWidth) {
-                                            $new_ratio = $maxWidth / $src_w;
-                                            $dst_w = $maxWidth;
-                                            $dst_h = $src_h * $new_ratio;
-                                        }
-                                        if ($src_h > $maxHeight) {
-                                            $new_ratio = $maxHeight / $src_h;
-                                            $dst_h = $maxHeight;
-                                            $dst_w = $src_w * $new_ratio;
-                                        }
+                                                // New crop if needed
+                                                if ($aspect < 1.2) {
+                                                    $src_w = $height / 1.2;
+                                                    $src_x = ($width - $src_w) / 2;
+                                                }
+                                                else if ($aspect > 1.4) {
+                                                    $src_h = $width * 1.4;
+                                                    $src_y = ($height - $src_h) / 2;
+                                                }
 
-                                        $imagePath =  $path.'/'.$attachment1;
+                                                $dst_w = $src_w;
+                                                $dst_h = $src_h;
 
-                                        // Resampling the image
-                                        if (!empty($imageSize) && file_exists($imagePath)) {
-                                            $image_p = imagecreatetruecolor($dst_w, $dst_h);
-                                            $extension = mb_substr(mb_strrchr(strtolower($imagePath), '.'), 1);
+                                                // New compressed image if needed
+                                                if ($src_w > $maxWidth) {
+                                                    $new_ratio = $maxWidth / $src_w;
+                                                    $dst_w = $maxWidth;
+                                                    $dst_h = $src_h * $new_ratio;
+                                                }
+                                                if ($src_h > $maxHeight) {
+                                                    $new_ratio = $maxHeight / $src_h;
+                                                    $dst_h = $maxHeight;
+                                                    $dst_w = $src_w * $new_ratio;
+                                                }
 
-                                            switch ($extension) {
-                                                case 'png':     $image = imagecreatefrompng($imagePath); break;
-                                                case 'gif':     $image = imagecreatefromgif($imagePath); break;
-                                                case 'webp':    $image = imagecreatefromwebp($imagePath); break;
-                                                default:        $image = imagecreatefromjpeg($imagePath);
+                                                $imagePath =  $path.'/'.$attachment1;
+
+                                                // Resampling the image
+                                                if (!empty($imageSize) && file_exists($imagePath)) {
+                                                    $image_p = imagecreatetruecolor($dst_w, $dst_h);
+                                                    $extension = mb_substr(mb_strrchr(strtolower($imagePath), '.'), 1);
+
+                                                    switch ($extension) {
+                                                        case 'png':     $image = imagecreatefrompng($imagePath); break;
+                                                        case 'gif':     $image = imagecreatefromgif($imagePath); break;
+                                                        case 'webp':    $image = imagecreatefromwebp($imagePath); break;
+                                                        default:        $image = imagecreatefromjpeg($imagePath);
+                                                    }
+
+                                                    imagecopyresampled($image_p, $image,
+                                                                    $dst_x, $dst_y,
+                                                                    $src_x, $src_y,
+                                                                    $dst_w, $dst_h,
+                                                                    $src_w, $src_h);
+
+                                                    imagedestroy($image);
+                                                    imagejpeg($image_p, $imagePath, 100);
+                                                }
                                             }
-
-                                            imagecopyresampled($image_p, $image,
-                                                            $dst_x, $dst_y,
-                                                            $src_x, $src_y,
-                                                            $dst_w, $dst_h,
-                                                            $src_w, $src_h);
-
-                                            imagedestroy($image);
-                                            imagejpeg($image_p, $imagePath, 100);
                                         }
                                     }
                                 }
