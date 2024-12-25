@@ -105,6 +105,7 @@ INSERT INTO `iesh_nationality` (`printable_name`) VALUES
 ('Guamanian'),
 ('Guatemalan'),
 ('Guinean'),
+('French Guianese'),
 ('Guyanese'),
 ('Haitian'),
 ('Honduran'),
