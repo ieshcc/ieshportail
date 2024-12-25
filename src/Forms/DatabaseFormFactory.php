@@ -112,9 +112,9 @@ class DatabaseFormFactory extends FormFactory
         $results = $this->pdo->select($sql);
 
         if (!$all)
-            return $this->createSelect($name)->fromResultsTranslated($results)->placeholder();
+            return $this->createSelect($name)->fromResults($results)->placeholder();
         else
-            return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResultsTranslated($results)->placeholder();
+            return $this->createSelect($name)->fromArray(array("*" => "All"))->fromResults($results)->placeholder();
     }
 
     /*
@@ -155,7 +155,7 @@ class DatabaseFormFactory extends FormFactory
 
         $results = $this->pdo->select($sql);
 
-        return $this->createSelect($name)->fromResults($results)->placeholder();
+        return $this->createSelect($name)->fromResultsTranslated($results)->placeholder();
     }
 
     public function createSelectAvailableDormitoryRooms($name, $gibbonSchoolYearID, $all = false)
@@ -169,7 +169,7 @@ class DatabaseFormFactory extends FormFactory
                 AND iesh_studentEnrolmentDetails.gibbonSpaceID = gibbonSpace.gibbonSpaceID)";
 
         $results = $this->pdo->select($sql, $data);
-        return $this->createSelect($name)->fromResults($results)->placeholder();
+        return $this->createSelect($name)->fromResultsTranslated($results)->placeholder();
       
     }
 
