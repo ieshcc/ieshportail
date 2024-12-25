@@ -151,7 +151,7 @@ class DatabaseFormFactory extends FormFactory
 
     public function createSelectDormitoryRooms($name)
     {
-        $sql = "SELECT gibbonSpaceID as value, name FROM gibbonSpace WHERE type IN ('chambre', 'studio')";
+        $sql = "SELECT gibbonSpaceID as value, name FROM gibbonSpace WHERE type IN ('Dormitory', 'Studio Apartment')";
 
         $results = $this->pdo->select($sql);
 
@@ -161,7 +161,7 @@ class DatabaseFormFactory extends FormFactory
     public function createSelectAvailableDormitoryRooms($name, $gibbonSchoolYearID, $all = false)
     {
         $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID);
-        $sql = "SELECT gibbonSpaceID as value, name FROM gibbonSpace WHERE type IN ('chambre', 'studio')
+        $sql = "SELECT gibbonSpaceID as value, name FROM gibbonSpace WHERE type IN ('Dormitory', 'Studio Apartment')
          AND NOT EXISTS (
                 SELECT gibbonSpaceID 
                 FROM iesh_studentEnrolmentDetails 
