@@ -202,14 +202,29 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_add
                             if (empty($attachment1)) {
                                 $imageFail = true;
                             } else {
-                                //Check image sizes
-                                $size1 = getimagesize($path.'/'.$attachment1);
-                                $width1 = $size1[0];
-                                $height1 = $size1[1];
-                                $aspect1 = $height1 / $width1;
-                                if ($width1 > 360 or $height1 > 480 or $aspect1 < 1.2 or $aspect1 > 1.4) {
-                                    $attachment1 = '';
+                                $fullPath = $path.'/'.$attachment1;
+
+                                // Validate MIME type
+                                $fileMimeType = mime_content_type($fullPath);
+                                if (!in_array($fileMimeType, ['image/jpeg', 'image/jpg', 'image/png'])) {
                                     $imageFail = true;
+                                    $attachment1 = '';
+                                    unlink($fullPath);
+                                } else {  
+                                    //Check image sizes
+                                    $size1 = getimagesize($path.'/'.$attachment1);
+                                    if ($size1 === false) {
+                                        $imageFail = true;
+                                        $attachment1 = '';
+                                    } else {
+                                        $width1 = $size1[0];
+                                        $height1 = $size1[1];
+                                        $aspect1 = $height1 / $width1;
+                                        if ($width1 > 360 or $height1 > 480 or $aspect1 < 1.2 or $aspect1 > 1.4) {
+                                            $attachment1 = '';
+                                            $imageFail = true;
+                                        }
+                                    }
                                 }
                             }
                         }
