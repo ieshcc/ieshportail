@@ -56,6 +56,10 @@
 !/User Admin
 !/User Admin/**
 
+# whitelist all custom modules
+!/Data Admin
+!/Data Admin/**
+
 # black list some files and folders
 # in the module folders
 **/.DS_Store

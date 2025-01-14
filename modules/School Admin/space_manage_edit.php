@@ -60,7 +60,7 @@ if (isActionAccessible($guid, $connection2, '/modules/School Admin/space_manage_
 
             $row = $form->addRow();
                 $row->addLabel('type', __('Type'));
-                $row->addSelect('type')->fromString($types)->required()->placeholder();
+                $row->addSelect('type')->fromStringTranslated($types)->required()->placeholder();
 
             $row = $form->addRow();
                 $row->addLabel('active', __('Active'));
