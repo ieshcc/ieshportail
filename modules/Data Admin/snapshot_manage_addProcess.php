@@ -75,7 +75,7 @@ if (isActionAccessible($guid, $connection2, "/modules/Data Admin/snapshot_manage
                 if (mb_stripos($_ENV["_"], 'MAMP') !== false) {
                     $command = "/Applications/MAMP/Library/bin/mysqldump --opt --user=$databaseUsername --password='$databasePassword' --host=$databaseServer $databaseName > $filepath";
                 } else {
-                    $command = "mysqldump --opt --user=$databaseUsername --password='$databasePassword' --host=172.22.0.1 --port=8013 $databaseName > $filepath";
+                    $command = "mysqldump --opt --user=$databaseUsername --password='$databasePassword' --host=172.18.0.1 --port=8013 $databaseName > $filepath";
                 }
 
                 exec($command, $output, $return);
