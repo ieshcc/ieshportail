@@ -91,6 +91,19 @@ if (isActionAccessible($guid, $connection2, '/modules/User Admin/user_manage_edi
                 echo Format::alert(__("This user's personal data was cleared on {date} as part of a data retention action. The following database tables were cleared: {tables}", ['date' => Format::date($scrubbed['timestamp']), 'tables' => Format::list(json_decode($scrubbed['tables']), 'ul', 'text-xs mb-0')] ), 'warning');
             }
             
+            // Correct translation issues on drop downs
+            if (isset($values['address1Country'])) {
+                $values['address1Country'] = __($values['address1Country']);
+            }
+
+            if (isset($values['countryOfBirth'])) {
+                $values['countryOfBirth'] = __($values['countryOfBirth']);
+            }
+
+            if (isset($values['nationality'])) {
+                $values['nationality'] = __($values['nationality']);
+            }
+
             echo Format::alert(__('Note that certain fields are hidden or revealed depending on the role categories (Staff, Student, Parent) that a user is assigned to. For example, parents do not get Emergency Contact fields, and students/staff do not get Employment fields.'), 'message');
             
             $form = Form::create('addUser', $session->get('absoluteURL').'/modules/'.$session->get('module').'/user_manage_editProcess.php?gibbonPersonID='.$gibbonPersonID.'&search='.$search);
