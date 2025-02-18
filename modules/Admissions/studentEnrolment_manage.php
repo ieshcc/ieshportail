@@ -80,6 +80,13 @@ if (isActionAccessible($guid, $connection2, '/modules/Admissions/studentEnrolmen
             ->addParam('gibbonSchoolYearID', $gibbonSchoolYearID)
             ->addParam('search', $criteria->getSearchText(true))
             ->displayLabel();
+        
+        $table->addHeaderAction('addBulk', __('Bulk Add'))
+            ->setURL('/modules/Admissions/studentEnrolment_manage_bulkAdd.php')
+            ->setIcon('page_new')
+            ->addParam('gibbonSchoolYearID', $gibbonSchoolYearID)
+            ->addParam('search', $criteria->getSearchText(true))
+            ->displayLabel();
     
         $table->modifyRows($studentGateway->getSharedUserRowHighlighter());
 
