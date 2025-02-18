@@ -142,6 +142,24 @@ class UserGateway extends QueryableGateway implements ScrubbableGateway
     }
 
     /**
+     * Returns basic user details, including name 
+     * @param array $gibbonPersonIDs
+     * @return array
+     */
+    public function getUsers($gibbonPersonIDs)
+    {
+        // Convert the array of IDs into a comma-separated string for the SQL query
+        $gibbonPersonIDList = implode(',', array_map('intval', $gibbonPersonIDs));
+
+        $sql = "SELECT firstname, surname, studentID
+            FROM gibbonPerson
+            WHERE gibbonPerson.gibbonPersonID IN ($gibbonPersonIDList)";
+
+        return $this->db()->select($sql);
+    }
+
+
+    /**
      * Returns user home address
      *
      * @param string $gibbonPersonID
