@@ -51,7 +51,7 @@ if (isActionAccessible($guid, $connection2, '/modules/School Admin/messengerSett
 
     $row = $form->addRow()->addHeading('Signature', __('Signature'));
 
-    $templateVariables = ['preferredName', 'firstName', 'surname', 'jobTitle', 'email', 'organisationName'];
+    $templateVariables = ['preferredName', 'firstName', 'surname', 'jobTitle', 'email', 'phone1CountryCode', 'phone1', 'organisationName','organisationNameShort', 'webLink', 'organisationLogo'];
     $templateVariables = array_map(function ($item) {
         return '{{'.$item.'}}';
     }, $templateVariables);

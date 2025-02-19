@@ -61,7 +61,7 @@ class Signature
         $signature = '';
 
         $data = ['gibbonPersonID' => $gibbonPersonID];
-        $sql = 'SELECT gibbonStaff.*, surname, firstName, preferredName, email FROM gibbonStaff JOIN gibbonPerson ON (gibbonStaff.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonPerson.gibbonPersonID=:gibbonPersonID';
+        $sql = 'SELECT gibbonStaff.*, surname, firstName, preferredName, email, phone1CountryCode, phone1 FROM gibbonStaff JOIN gibbonPerson ON (gibbonStaff.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonPerson.gibbonPersonID=:gibbonPersonID';
         $result = $this->db->select($sql, $data);
 
         if ($result->rowCount() == 1) {
@@ -69,6 +69,10 @@ class Signature
 
             $signatureData = $values + [
                 'organisationName' => $this->session->get('organisationName'),
+                'organisationNameShort' => $this->session->get('organisationNameShort'),
+                'webLink' => $this->settingGateway->getSettingByScope('System', 'webLink'),
+                'organisationLogo' => $this->settingGateway->getSettingByScope('System', 'absoluteURL')."/".$this->settingGateway->getSettingByScope('System', 'organisationLogo'),
+                
             ];
             $signature = '<p></p>'.$this->sandbox->render($this->signatureTemplate, $signatureData);
         }

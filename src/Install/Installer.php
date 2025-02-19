@@ -646,7 +646,10 @@ class Installer
             'dbcustomization/06_update_document_enum.sql',
             'dbcustomization/07_update_invoiceTo_enum.sql',
             'dbcustomization/08_add_column_created.sql',
-            'dbcustomization/09_add_column_nationality.sql'
+            'dbcustomization/09_add_column_nationality.sql',
+            'dbcustomization/10_update_departmentType_enum.sql',
+            'dbcustomization/11_update_departmentStaffRole_enum.sql',
+            'dbcustomization/12_update_gibbonAction_bulkAdd.sql',
         ];
         
         $combinedSql = '';
