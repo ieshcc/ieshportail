@@ -179,7 +179,7 @@ class MessageForm extends Form
         if (isActionAccessible($guid, $connection2, '/modules/Messenger/messenger_post.php', 'New Message_confidential')) {
             $row = $form->addRow();
                 $row->addLabel('confidential', __('Confidential'))->description(__('Other users will not be able to see this message in Manage Messages.'));
-                $row->addYesNoRadio('confidential')->checked($values['confidential'] ?? 'N')->required();
+                $row->addYesNoRadio('confidential')->checked($values['confidential'] ?? 'Y')->required();
         }
 
         // MESSAGE DETAILS
