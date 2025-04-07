@@ -23,3 +23,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     font-family: -apple-system, Helvetica, Arial, sans-serif;
     font-size: 13px;
 }
+
+input[type=submit] {
+    background-color: orange;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+input[type=submit]:hover, input[type=submit]:active {
+    background-color: darkorange;
+}
+
+
+
+

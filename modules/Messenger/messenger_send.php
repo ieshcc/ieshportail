@@ -136,25 +136,31 @@ if (isActionAccessible($guid, $connection2, '/modules/Messenger/messenger_send.p
         // If the message is not sent, let users manually select the recipients and click send
         $table->addCheckboxColumn('gibbonMessengerReceiptID')->checked(true);
 
-        $form->addRow()->addHeading('Send', __('Send'));
+        $form->addRow()->addHeading('Send', __('Message Summary'));
 
         if ($values['email'] == 'Y') {
-            $details = Format::listDetails([
-                __('Email From') => $values['emailFrom'] ?? '',
-                __('Reply To') => !empty($values['emailReplyTo']) ? $values['emailReplyTo'] : ($values['emailFrom'] ?? ''),
-                __('Subject') => $values['subject'],
-            ], 'ul', 'w-full text-left m-0');
-
+            $emailFrom = "<h3 class=\"font-bold\">" . __('Email From') . " : </h3>" . $values['emailFrom'] ?? '';
             $row = $form->addRow();
-            $row->addLabel('detailsLabel', __('Message Details'));
-            $row->addContent($details);
+            $row->addContent($emailFrom);
+
+            $emailReplyTo = "<h3 class=\"font-bold\">" . __('Reply To') . " : </h3>" . (!empty($values['emailReplyTo']) ? $values['emailReplyTo'] : ($values['emailFrom'] ?? ''));
+            $row = $form->addRow();
+            $row->addContent($emailReplyTo);
+
+            $emailSubject = "<h3 class=\"font-bold\">" . __('Subject') . " : </h3>" . $values['subject'];
+            $row = $form->addRow();
+            $row->addContent($emailSubject);
+
+            $emailMessage = "<h3 class=\"font-bold\">" . __('Message') . " : </h3>" . $values['body'];
+            $row = $form->addRow();
+            $row->addContent($emailMessage);
         }
 
         $editURL = Url::fromModuleRoute('Messenger', 'messenger_manage_edit')->withQueryParams(['gibbonMessengerID' => $gibbonMessengerID, 'sidebar' => true]);
 
         $row = $form->addRow('stickySubmit');
             $col = $row->addColumn()->addClass('items-center');
-            $col->addButton(__('Edit Draft'))->onClick('window.location="'.$editURL.'"')->addClass('email rounded-sm w-24 mr-2');
+            $col->addButton(__('Edit Draft'))->onClick('window.location="'.$editURL.'"')->addClass('email rounded-sm w-48 mr-2');
             $row->addSubmit(__('Send'));
     } else {
         // If the message is sent, display the message status
