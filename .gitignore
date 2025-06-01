@@ -44,3 +44,5 @@ node_modules
 logs/*
 !logs/.keep
 
+# Ignore scan_debug.php
+scan_debug.php

@@ -29,6 +29,7 @@ $_POST = $container->get(Validator::class)->sanitize($_POST);
 $gibbonCourseClassID = $_POST['gibbonCourseClassID'] ?? '';
 $gibbonCourseID = $_POST['gibbonCourseID'] ?? '';
 $gibbonSchoolYearID = $_POST['gibbonSchoolYearID'] ?? '';
+$weighting = $_POST['weighting'] ?? 1;
 
 if ($gibbonCourseID == '' or $gibbonSchoolYearID == '') { echo 'Fatal error loading this page!';
 } else {
@@ -66,6 +67,7 @@ if ($gibbonCourseID == '' or $gibbonSchoolYearID == '') { echo 'Fatal error load
                 $attendance = $_POST['attendance'] ?? 'N';
                 $enrolmentMin = (!empty($_POST['enrolmentMin']) && is_numeric($_POST['enrolmentMin'])) ? $_POST['enrolmentMin'] : null;
                 $enrolmentMax = (!empty($_POST['enrolmentMax']) && is_numeric($_POST['enrolmentMax'])) ? $_POST['enrolmentMax'] : null;
+                $weighting = (!empty($_POST['weighting']) && is_numeric($_POST['weighting']) && $_POST['weighting'] >= 1 && $_POST['weighting'] <= 100) ? $_POST['weighting'] : 1;
 
                 $customRequireFail = false;
                 $fields = $container->get(CustomFieldHandler::class)->getFieldDataFromPOST('Class', [], $customRequireFail);
@@ -104,6 +106,18 @@ if ($gibbonCourseID == '' or $gibbonSchoolYearID == '') { echo 'Fatal error load
                             $result->execute($data);
                         } catch (PDOException $e) {
                             $URL .= '&return=error2';
+                            header("Location: {$URL}");
+                            exit();
+                        }
+
+                        // update weighting
+                        try {
+                            $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'weighting' => $weighting);
+                            $sql = 'UPDATE iesh_courseWeighting SET weighting=:weighting WHERE gibbonCourseClassID=:gibbonCourseClassID';
+                            $result = $connection2->prepare($sql);
+                            $result->execute($data);
+                        } catch (PDOException $e) {
+                            $URL .= '&return=error21';
                             header("Location: {$URL}");
                             exit();
                         }

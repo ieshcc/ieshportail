@@ -32,6 +32,7 @@ $gibbonSchoolYearID = $_POST['gibbonSchoolYearID'] ?? '';
 $gibbonCourseID = $_POST['gibbonCourseID'] ?? '';
 $reportable = $_POST['reportable'] ?? '';
 $attendance = $_POST['attendance'] ?? 'N';
+$weighting = $_POST['weighting'] ?? 1;
 $enrolmentMin = (!empty($_POST['enrolmentMin']) && is_numeric($_POST['enrolmentMin'])) ? $_POST['enrolmentMin'] : null;
 $enrolmentMax = (!empty($_POST['enrolmentMax']) && is_numeric($_POST['enrolmentMax'])) ? $_POST['enrolmentMax'] : null;
 
@@ -43,7 +44,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/course_man
 } else {
     //Proceed!
     //Validate Inputs
-    if ($gibbonSchoolYearID == '' or $gibbonCourseID == '' or $name == '' or $nameShort == '') {
+    if ($gibbonSchoolYearID == '' or $gibbonCourseID == '' or $name == '' or $nameShort == '' or ($weighting == '' or $weighting < 1 or $weighting > 100)) {
         $URL .= '&return=error1';
         header("Location: {$URL}");
     } else {
@@ -86,6 +87,18 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/course_man
 
             //Last insert ID
             $AI = str_pad($connection2->lastInsertID(), 8, '0', STR_PAD_LEFT);
+
+            // insert weighting
+            try {
+                $data = array('gibbonCourseClassID' => $AI, 'weighting' => $weighting);
+                $sql = 'INSERT INTO iesh_courseWeighting SET gibbonCourseClassID=:gibbonCourseClassID, weighting=:weighting';
+                $result = $connection2->prepare($sql);
+                $result->execute($data);
+            } catch (PDOException $e) {
+                $URL .= '&return=error21';
+                header("Location: {$URL}");
+                exit();
+            }
 
             $URL .= "&return=success0&editID=$AI";
             header("Location: {$URL}");

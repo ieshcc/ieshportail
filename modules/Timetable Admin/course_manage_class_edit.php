@@ -39,6 +39,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/course_man
         ->add(__('Edit Course & Classes'), 'course_manage_edit.php', $urlParams + ['gibbonCourseID' => $gibbonCourseID])
         ->add(__('Edit Class'));
 
+    $page->return->addReturns(['error21' => 'Could not update class weighting.']);
+
     if (!empty($search)) {
         $page->navigator->addSearchResultsAction(Url::fromModuleRoute('Timetable Admin', 'course_manage.php')->withQueryParams($urlParams));
     }
@@ -49,7 +51,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/course_man
     } else {
 
             $data = array('gibbonCourseID' => $gibbonCourseID, 'gibbonCourseClassID' => $gibbonCourseClassID);
-            $sql = 'SELECT gibbonCourseClassID, gibbonCourseClass.name, gibbonCourseClass.nameShort, gibbonCourse.gibbonCourseID, gibbonCourse.name AS courseName, gibbonCourse.nameShort as courseNameShort, gibbonCourse.description AS courseDescription, gibbonCourse.gibbonSchoolYearID, gibbonSchoolYear.name as yearName, reportable, attendance, enrolmentMin, enrolmentMax, gibbonCourseClass.fields FROM gibbonCourseClass, gibbonCourse, gibbonSchoolYear WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourse.gibbonSchoolYearID=gibbonSchoolYear.gibbonSchoolYearID AND gibbonCourse.gibbonCourseID=:gibbonCourseID AND gibbonCourseClassID=:gibbonCourseClassID';
+            $sql = 'SELECT gibbonCourseClass.gibbonCourseClassID, gibbonCourseClass.name, gibbonCourseClass.nameShort, gibbonCourse.gibbonCourseID, gibbonCourse.name AS courseName, gibbonCourse.nameShort as courseNameShort, gibbonCourse.description AS courseDescription, gibbonCourse.gibbonSchoolYearID, gibbonSchoolYear.name as yearName, reportable, attendance, enrolmentMin, enrolmentMax, gibbonCourseClass.fields, iesh_courseWeighting.weighting FROM gibbonCourseClass, gibbonCourse, gibbonSchoolYear, iesh_courseWeighting WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourse.gibbonSchoolYearID=gibbonSchoolYear.gibbonSchoolYearID AND gibbonCourse.gibbonCourseID=:gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID AND iesh_courseWeighting.gibbonCourseClassID=:gibbonCourseClassID';
             $result = $connection2->prepare($sql);
             $result->execute($data);
 
@@ -93,6 +95,12 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/course_man
 				$row->addLabel('attendance', __('Track Attendance?'))->description(__('Should this class allow attendance to be taken?'));
 				$row->addYesNo('attendance');
 			}
+
+            $row = $form->addRow()->addHeading('Grading', __('Grading Options'));
+
+            $row = $form->addRow();
+				$row->addLabel('weighting', __('Weighting'))->description(__('Weighting of the class in the final grade'));
+				$row->addNumber('weighting')->onlyInteger(true)->minimum(1)->maximum(100)->maxLength(3);
 
             $row = $form->addRow()->addHeading('Advanced Options', __('Advanced Options'));
 

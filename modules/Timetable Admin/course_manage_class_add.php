@@ -39,6 +39,8 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/course_man
         ->add(__('Edit Course & Classes'), 'course_manage_edit.php', $urlParams + ['gibbonCourseID' => $gibbonCourseID])
         ->add(__('Add Class'));
 
+    $page->return->addReturns(['error21' => 'Could not insert class weighting.']);
+
     if (!empty($search)) {
         $page->navigator->addSearchResultsAction(Url::fromModuleRoute('Timetable Admin', 'course_manage.php')->withQueryParams($urlParams));
     }
@@ -98,6 +100,12 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/course_man
 				$row->addLabel('attendance', __('Track Attendance?'))->description(__('Should this class allow attendance to be taken?'));
 				$row->addYesNo('attendance');
 			}
+
+            $row = $form->addRow()->addHeading('Grading', __('Grading Options'));
+
+            $row = $form->addRow();
+                $row->addLabel('weighting', __('Weighting'))->description(__('Weighting of the class in the final grade'));
+                $row->addNumber('weighting')->onlyInteger(true)->minimum(1)->maximum(100)->maxLength(3)->setValue(1);
 
             $row = $form->addRow()->addHeading('Advanced Options', __('Advanced Options'));
 

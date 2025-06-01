@@ -172,6 +172,20 @@ if (isActionAccessible($guid, $connection2, '/modules/Timetable Admin/course_man
                 });
 
             $table->addColumn('reportable', __('Reportable'))->format(Format::using('yesNo', 'reportable'));
+            $table->addColumn('weighting', __('Weighting'))
+                ->format(function($class) use ($pdo, $session){
+                    // Get Weighting
+                    $dataWeighting = array('gibbonCourseClassID' => $class['gibbonCourseClassID']);
+                    $sqlWeighting = "SELECT iesh_courseWeighting.weighting FROM iesh_courseWeighting WHERE gibbonCourseClassID=:gibbonCourseClassID";
+
+                    $resultWeighting = $pdo->executeQuery($dataWeighting, $sqlWeighting);
+
+                    if ($resultWeighting->rowCount() == 0) {
+                        return 1;
+                    } else {
+                        return $resultWeighting->fetch()['weighting'];
+                    }
+                });
 
             // ACTIONS
             $table->addActionColumn()

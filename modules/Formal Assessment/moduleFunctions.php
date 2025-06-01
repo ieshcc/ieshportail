@@ -248,7 +248,7 @@ function getInternalAssessmentRecordV2($guid, $connection2, $gibbonPersonID, $ro
             try {
                 $dataInternalAssessment = array('gibbonPersonID1' => $gibbonPersonID, 'gibbonPersonID2' => $gibbonPersonID, 'gibbonSchoolYearID' => $rowYears['gibbonSchoolYearID']);
                 if ($role == 'teacher') {
-                    $sqlInternalAssessment = "SELECT gibbonInternalAssessmentColumn.*, gibbonInternalAssessmentEntry.*, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourse.name AS courseFull, iesh_internalAssessmentSummary.finalGrade, iesh_internalAssessmentSummary.catchupGrade, iesh_courseWeighting.weight FROM gibbonCourse JOIN gibbonCourseClass ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentColumn ON (gibbonInternalAssessmentColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentEntry ON (gibbonInternalAssessmentEntry.gibbonInternalAssessmentColumnID=gibbonInternalAssessmentColumn.gibbonInternalAssessmentColumnID) JOIN iesh_internalAssessmentSummary ON (iesh_internalAssessmentSummary.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN iesh_courseWeighting ON (iesh_courseWeighting.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) WHERE gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID1 AND gibbonInternalAssessmentEntry.gibbonPersonIDStudent=:gibbonPersonID2 AND gibbonSchoolYearID=:gibbonSchoolYearID AND completeDate<='".date('Y-m-d')."' ORDER BY completeDate DESC, gibbonCourse.nameShort, gibbonCourseClass.nameShort";
+                    $sqlInternalAssessment = "SELECT gibbonInternalAssessmentColumn.*, gibbonInternalAssessmentEntry.*, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourse.name AS courseFull, iesh_internalAssessmentSummary.finalGrade, iesh_internalAssessmentSummary.catchupGrade, iesh_courseWeighting.weighting FROM gibbonCourse JOIN gibbonCourseClass ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentColumn ON (gibbonInternalAssessmentColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentEntry ON (gibbonInternalAssessmentEntry.gibbonInternalAssessmentColumnID=gibbonInternalAssessmentColumn.gibbonInternalAssessmentColumnID) JOIN iesh_internalAssessmentSummary ON (iesh_internalAssessmentSummary.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN iesh_courseWeighting ON (iesh_courseWeighting.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) WHERE gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID1 AND gibbonInternalAssessmentEntry.gibbonPersonIDStudent=:gibbonPersonID2 AND gibbonSchoolYearID=:gibbonSchoolYearID AND completeDate<='".date('Y-m-d')."' ORDER BY completeDate DESC, gibbonCourse.nameShort, gibbonCourseClass.nameShort";
                 } elseif ($role == 'student') {
                     $sqlInternalAssessment = "SELECT gibbonInternalAssessmentColumn.*, gibbonInternalAssessmentEntry.*, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourse.name AS courseFull FROM gibbonCourse JOIN gibbonCourseClass ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentColumn ON (gibbonInternalAssessmentColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentEntry ON (gibbonInternalAssessmentEntry.gibbonInternalAssessmentColumnID=gibbonInternalAssessmentColumn.gibbonInternalAssessmentColumnID) WHERE gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID1 AND gibbonInternalAssessmentEntry.gibbonPersonIDStudent=:gibbonPersonID2 AND gibbonSchoolYearID=:gibbonSchoolYearID AND completeDate<='".date('Y-m-d')."' AND viewableStudents='Y' ORDER BY completeDate DESC, gibbonCourse.nameShort, gibbonCourseClass.nameShort";
                 } elseif ($role == 'parent') {
@@ -265,10 +265,6 @@ function getInternalAssessmentRecordV2($guid, $connection2, $gibbonPersonID, $ro
                 // Fetch all rows at once
                 $rows = $resultInternalAssessment->fetchAll();
 
-                /* 
-                gibbon.INFO: Array (  [gibbonInternalAssessmentColumnID] => 0000000001 [gibbonCourseClassID] => 00000439
-                [groupingID] => 00000001 [name] => Partiel  [description] => Partiel     [type] => Expected Grade     [attachment] =>      [attainment] => Y     [gibbonScaleIDAttainment] => 00016     [effort] => N     [gibbonScaleIDEffort] =>      [comment] =>      [uploadedResponse] => N     [complete] => Y     [completeDate] => 2025-05-26     [viewableStudents] => Y     [viewableParents] => N     [gibbonPersonIDCreator] => 0000000001     [gibbonPersonIDLastEdit] => 0000000001     [gibbonInternalAssessmentEntryID] => 000000000004     [gibbonPersonIDStudent] => 0000008699     [attainmentValue] => 85     [attainmentDescriptor] => 85     [effortValue] =>      [effortDescriptor] =>      [response] =>      [course] => CAD     [class] => JZRY     [courseFull] => Coran à Distance     [finalGrade] => 67.48     [catchupGrade] =>      [weight] => 3 )  [] []
-                */
 
                 // Grouup assessments by course
                 $groupedCourses = [];
@@ -276,7 +272,7 @@ function getInternalAssessmentRecordV2($guid, $connection2, $gibbonPersonID, $ro
                     $course = $row['courseFull'];
                     $assessmentName = $row['name'];
                     $groupedCourses[$course]['grades'][$assessmentName] = $row['attainmentValue'];
-                    $groupedCourses[$course]['weight'] = $row['weight'];
+                    $groupedCourses[$course]['weighting'] = $row['weighting'];
                     $groupedCourses[$course]['finalGrade'] = $row['finalGrade'];
                     $groupedCourses[$course]['catchupGrade'] = $row['catchupGrade'];
                     $groupedCourses[$course]['comment'] = $row['comment'];
@@ -349,7 +345,7 @@ function getInternalAssessmentRecordV2($guid, $connection2, $gibbonPersonID, $ro
                     //     $output .= '</td>';
                     // }
                     // Weighting
-                    $output .= "<td>{$data['weight']}</td>";
+                    $output .= "<td>{$data['weighting']}</td>";
                     $output .= "<td>{$data['finalGrade']}</td>";
                     $output .= "<td>{$data['catchupGrade']}</td>";
                     $output .= "<td>{$data['comment']}</td>";
