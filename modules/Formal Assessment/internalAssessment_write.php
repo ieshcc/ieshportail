@@ -25,6 +25,7 @@ use Gibbon\Services\Format;
 
 //Module includes
 require_once __DIR__ . '/moduleFunctions.php';
+require_once __DIR__ . '/../../logger.php';
 
 //Get alternative header names
 $settingGateway = $container->get(SettingGateway::class);
@@ -97,10 +98,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                 //Get teacher list
                 $teaching = false;
 
-                    $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                    $sql = "SELECT gibbonPerson.gibbonPersonID, title, surname, preferredName, gibbonCourseClassPerson.reportable FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE role='Teacher' AND gibbonCourseClassID=:gibbonCourseClassID ORDER BY surname, preferredName";
-                    $result = $connection2->prepare($sql);
-                    $result->execute($data);
+                $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
+                $sql = "SELECT gibbonPerson.gibbonPersonID, title, surname, preferredName, gibbonCourseClassPerson.reportable FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE role='Teacher' AND gibbonCourseClassID=:gibbonCourseClassID ORDER BY surname, preferredName";
+                $result = $connection2->prepare($sql);
+                $result->execute($data);
 
                 if ($result->rowCount() > 0) {
                     echo "<h3 style='margin-top: 0px'>";
@@ -123,13 +124,15 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                 echo __('Marks');
                 echo '</h3>';
 
-                //Count number of columns
-
-                    $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                    $sql = 'SELECT * FROM gibbonInternalAssessmentColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY complete, completeDate DESC';
-                    $result = $connection2->prepare($sql);
-                    $result->execute($data);
+                //Count number of columns per course class
+                $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
+                $sql = 'SELECT * FROM gibbonInternalAssessmentColumn 
+                WHERE gibbonInternalAssessmentColumn.gibbonCourseClassID=:gibbonCourseClassID ORDER BY complete, completeDate DESC';
+                $result = $connection2->prepare($sql);
+                $result->execute($data);
                 $columns = $result->rowCount();
+                $logger = getLogger('gibbon');
+                $logger->info('columns: ' . $columns);
                 if ($columns < 1) {
                     echo "<div class='warning'>";
                     echo __('There are no records to display.');
@@ -159,10 +162,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
 
                         $limit = intval($x * $columnsPerPage);
 
-                            $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                            $sql = 'SELECT * FROM gibbonInternalAssessmentColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY complete, completeDate DESC LIMIT '.$limit.', '.$columnsPerPage;
-                            $result = $connection2->prepare($sql);
-                            $result->execute($data);
+                        $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
+                        $sql = 'SELECT * FROM gibbonInternalAssessmentColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY complete, completeDate DESC LIMIT '.$limit.', '.$columnsPerPage;
+                        $result = $connection2->prepare($sql);
+                        $result->execute($data);
 
                         //Work out details for external assessment display
                         $externalAssessment = false;
@@ -272,10 +275,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                                 $columnID[$i] = $row['gibbonInternalAssessmentColumnID'];
                                 $attainmentOn[$i] = $row['attainment'];
                                 $attainmentID[$i] = $row['gibbonScaleIDAttainment'];
-                                $effortOn[$i] = $row['effort'];
-                                $effortID[$i] = $row['gibbonScaleIDEffort'];
-                                $comment[$i] = $row['comment'];
-                                $uploadedResponse[$i] = $row['uploadedResponse'];
+                                //$effortOn[$i] = $row['effort'];
+                                //$effortID[$i] = $row['gibbonScaleIDEffort'];
+                                //$comment[$i] = $row['comment'];
+                                //$uploadedResponse[$i] = $row['uploadedResponse'];
                                 $submission[$i] = false;
                             }
 
@@ -285,15 +288,15 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                             if ($attainmentOn[$i] == 'Y' and $attainmentID[$i] != '') {
                                 ++$span;
                             }
-                            if ($effortOn[$i] == 'Y' and $effortID[$i] != '') {
-                                ++$span;
-                            }
-                            if ($comment[$i] == 'Y') {
-                                ++$span;
-                            }
-                            if ($uploadedResponse[$i] == 'Y') {
-                                ++$span;
-                            }
+                            // if ($effortOn[$i] == 'Y' and $effortID[$i] != '') {
+                            //     ++$span;
+                            // }
+                            // if ($comment[$i] == 'Y') {
+                            //     ++$span;
+                            // }
+                            // if ($uploadedResponse[$i] == 'Y') {
+                            //     ++$span;
+                            // }
                             if ($span == 0) {
                                 $contents = false;
                             }
@@ -306,7 +309,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                             } else {
                                 echo __('Unmarked').'<br/>';
                             }
-                            echo $row['type'];
+                            // echo $row['type'];
                             if ($row['attachment'] != '' and file_exists($session->get('absolutePath').'/'.$row['attachment'])) {
                                 echo " | <a 'title='".__('Download more information')."' href='".$session->get('absoluteURL').'/'.$row['attachment']."'>More info</a>";
                             }
@@ -316,6 +319,13 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                             }
                             echo '</th>';
                         }
+                        // add weighting and final grade header columns
+                        echo "<th style='text-align: center; width: 40px'>";
+                        echo __('Weighting');
+                        echo '</th>';
+                        echo "<th style='text-align: center; width: 40px'>";
+                        echo __('Final Grade');
+                        echo '</th>';
                         echo '</tr>';
 
                         echo "<tr class='head'>";
@@ -350,66 +360,68 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                                     echo '</th>';
                                 }
 
-                                if ($effortOn[$i] == 'Y' and $effortID[$i] != '') {
-                                    $leftBorderStyle = '';
-                                    if ($leftBorder == false) {
-                                        $leftBorder = true;
-                                        $leftBorderStyle = 'border-left: 2px solid #666;';
-                                    }
-                                    echo "<th style='$leftBorderStyle text-align: center; width: 40px'>";
+                                // if ($effortOn[$i] == 'Y' and $effortID[$i] != '') {
+                                //     $leftBorderStyle = '';
+                                //     if ($leftBorder == false) {
+                                //         $leftBorder = true;
+                                //         $leftBorderStyle = 'border-left: 2px solid #666;';
+                                //     }
+                                //     echo "<th style='$leftBorderStyle text-align: center; width: 40px'>";
 
-                                        $dataScale = array('gibbonScaleID' => $effortID[$i]);
-                                        $sqlScale = 'SELECT * FROM gibbonScale WHERE gibbonScaleID=:gibbonScaleID';
-                                        $resultScale = $connection2->prepare($sqlScale);
-                                        $resultScale->execute($dataScale);
-                                    $scale = '';
-                                    if ($resultScale->rowCount() == 1) {
-                                        $rowScale = $resultScale->fetch();
-                                        $scale = ' - '.$rowScale['name'];
-                                        if ($rowScale['usage'] != '') {
-                                            $scale = $scale.': '.$rowScale['usage'];
-                                        }
-                                    }
-                                    if ($effortAlternativeName != '' and $effortAlternativeNameAbrev != '') {
-                                        echo "<span title='".$effortAlternativeName.htmlPrep($scale)."'>".$effortAlternativeNameAbrev.'</span>';
-                                    } else {
-                                        echo "<span title='".__('Effort').htmlPrep($scale)."'>".__('Eff').'</span>';
-                                    }
-                                    echo '</th>';
-                                }
+                                //         $dataScale = array('gibbonScaleID' => $effortID[$i]);
+                                //         $sqlScale = 'SELECT * FROM gibbonScale WHERE gibbonScaleID=:gibbonScaleID';
+                                //         $resultScale = $connection2->prepare($sqlScale);
+                                //         $resultScale->execute($dataScale);
+                                //     $scale = '';
+                                //     if ($resultScale->rowCount() == 1) {
+                                //         $rowScale = $resultScale->fetch();
+                                //         $scale = ' - '.$rowScale['name'];
+                                //         if ($rowScale['usage'] != '') {
+                                //             $scale = $scale.': '.$rowScale['usage'];
+                                //         }
+                                //     }
+                                //     if ($effortAlternativeName != '' and $effortAlternativeNameAbrev != '') {
+                                //         echo "<span title='".$effortAlternativeName.htmlPrep($scale)."'>".$effortAlternativeNameAbrev.'</span>';
+                                //     } else {
+                                //         echo "<span title='".__('Effort').htmlPrep($scale)."'>".__('Eff').'</span>';
+                                //     }
+                                //     echo '</th>';
+                                // }
 
-                                if ($comment[$i] == 'Y') {
-                                    $leftBorderStyle = '';
-                                    if ($leftBorder == false) {
-                                        $leftBorder = true;
-                                        $leftBorderStyle = 'border-left: 2px solid #666;';
-                                    }
-                                    echo "<th style='$leftBorderStyle text-align: center; width: 80px'>";
-                                    echo "<span title='".__('Comment')."'>".__('Com').'</span>';
-                                    echo '</th>';
-                                }
-                                if ($uploadedResponse[$i] == 'Y') {
-                                    $leftBorderStyle = '';
-                                    if ($leftBorder == false) {
-                                        $leftBorder = true;
-                                        $leftBorderStyle = 'border-left: 2px solid #666;';
-                                    }
-                                    echo "<th style='$leftBorderStyle text-align: center; width: 30px'>";
-                                    echo "<span title='".__('Uploaded Response')."'>".__('Upl').'</span>';
-                                    echo '</th>';
-                                }
+                                // if ($comment[$i] == 'Y') {
+                                //     $leftBorderStyle = '';
+                                //     if ($leftBorder == false) {
+                                //         $leftBorder = true;
+                                //         $leftBorderStyle = 'border-left: 2px solid #666;';
+                                //     }
+                                //     echo "<th style='$leftBorderStyle text-align: center; width: 80px'>";
+                                //     echo "<span title='".__('Comment')."'>".__('Com').'</span>';
+                                //     echo '</th>';
+                                // }
+                                // if ($uploadedResponse[$i] == 'Y') {
+                                //     $leftBorderStyle = '';
+                                //     if ($leftBorder == false) {
+                                //         $leftBorder = true;
+                                //         $leftBorderStyle = 'border-left: 2px solid #666;';
+                                //     }
+                                //     echo "<th style='$leftBorderStyle text-align: center; width: 30px'>";
+                                //     echo "<span title='".__('Uploaded Response')."'>".__('Upl').'</span>';
+                                //     echo '</th>';
+                                // }
                             }
                         }
-                        echo '</tr>';
+                        // empty columns for weighting and final grade
+                        echo "<th style='text-align: center; width: 40px' colspan='2'>";
+                        echo '</th>';
 
                         $count = 0;
                         $rowNum = 'odd';
 
 
-                            $dataStudents = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                            $sqlStudents = "SELECT title, surname, preferredName, gibbonPerson.gibbonPersonID, dateStart FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE role='Student' AND gibbonCourseClassID=:gibbonCourseClassID AND status='Full' AND (dateStart IS NULL OR dateStart<='".date('Y-m-d')."') AND (dateEnd IS NULL  OR dateEnd>='".date('Y-m-d')."') AND gibbonCourseClassPerson.reportable='Y' ORDER BY surname, preferredName";
-                            $resultStudents = $connection2->prepare($sqlStudents);
-                            $resultStudents->execute($dataStudents);
+                        $dataStudents = array('gibbonCourseClassID' => $gibbonCourseClassID);
+                        $sqlStudents = "SELECT title, surname, preferredName, gibbonPerson.gibbonPersonID, dateStart FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE role='Student' AND gibbonCourseClassID=:gibbonCourseClassID AND status='Full' AND (dateStart IS NULL OR dateStart<='".date('Y-m-d')."') AND (dateEnd IS NULL  OR dateEnd>='".date('Y-m-d')."') AND gibbonCourseClassPerson.reportable='Y' ORDER BY surname, preferredName";
+                        $resultStudents = $connection2->prepare($sqlStudents);
+                        $resultStudents->execute($dataStudents);
                         if ($resultStudents->rowCount() < 1) {
                             echo '<tr>';
                             echo '<td colspan='.($columns + 1).'>';
@@ -455,10 +467,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                                 for ($i = 0; $i < $columnsThisPage; ++$i) {
                                     $row = $result->fetch();
 
-                                        $dataEntry = array('gibbonInternalAssessmentColumnID' => $columnID[($i)], 'gibbonPersonIDStudent' => $rowStudents['gibbonPersonID']);
-                                        $sqlEntry = 'SELECT * FROM gibbonInternalAssessmentEntry WHERE gibbonInternalAssessmentColumnID=:gibbonInternalAssessmentColumnID AND gibbonPersonIDStudent=:gibbonPersonIDStudent';
-                                        $resultEntry = $connection2->prepare($sqlEntry);
-                                        $resultEntry->execute($dataEntry);
+                                    $dataEntry = array('gibbonInternalAssessmentColumnID' => $columnID[($i)], 'gibbonPersonIDStudent' => $rowStudents['gibbonPersonID']);
+                                    $sqlEntry = 'SELECT * FROM gibbonInternalAssessmentEntry WHERE gibbonInternalAssessmentColumnID=:gibbonInternalAssessmentColumnID AND gibbonPersonIDStudent=:gibbonPersonIDStudent';
+                                    $resultEntry = $connection2->prepare($sqlEntry);
+                                    $resultEntry->execute($dataEntry);
                                     if ($resultEntry->rowCount() == 1) {
                                         $rowEntry = $resultEntry->fetch();
                                         $leftBorder = false;
@@ -484,75 +496,75 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                                             }
                                             echo '</td>';
                                         }
-                                        if ($effortOn[$i] == 'Y' and $effortID[$i] != '') {
-                                            $leftBorderStyle = '';
-                                            if ($leftBorder == false) {
-                                                $leftBorder = true;
-                                                $leftBorderStyle = 'border-left: 2px solid #666;';
-                                            }
-                                            echo "<td style='$leftBorderStyle text-align: center;'>";
-                                            if ($effortID[$i] != '') {
-                                                $styleEffort = '';
-                                                $effort = '';
-                                                if ($rowEntry['effortValue'] != '') {
-                                                    $effort = __($rowEntry['effortValue']);
-                                                }
-                                                if ($rowEntry['effortValue'] == 'Complete') {
-                                                    $effort = __('Com');
-                                                } elseif ($rowEntry['effortValue'] == 'Incomplete') {
-                                                    $effort = __('Inc');
-                                                }
-                                                echo "<div $styleEffort title='".htmlPrep($rowEntry['effortDescriptor'])."'>$effort";
-                                            }
-                                            if ($effortID[$i] != '') {
-                                                echo '</div>';
-                                            }
-                                            echo '</td>';
-                                        }
+                                        // if ($effortOn[$i] == 'Y' and $effortID[$i] != '') {
+                                        //     $leftBorderStyle = '';
+                                        //     if ($leftBorder == false) {
+                                        //         $leftBorder = true;
+                                        //         $leftBorderStyle = 'border-left: 2px solid #666;';
+                                        //     }
+                                        //     echo "<td style='$leftBorderStyle text-align: center;'>";
+                                        //     if ($effortID[$i] != '') {
+                                        //         $styleEffort = '';
+                                        //         $effort = '';
+                                        //         if ($rowEntry['effortValue'] != '') {
+                                        //             $effort = __($rowEntry['effortValue']);
+                                        //         }
+                                        //         if ($rowEntry['effortValue'] == 'Complete') {
+                                        //             $effort = __('Com');
+                                        //         } elseif ($rowEntry['effortValue'] == 'Incomplete') {
+                                        //             $effort = __('Inc');
+                                        //         }
+                                        //         echo "<div $styleEffort title='".htmlPrep($rowEntry['effortDescriptor'])."'>$effort";
+                                        //     }
+                                        //     if ($effortID[$i] != '') {
+                                        //         echo '</div>';
+                                        //     }
+                                        //     echo '</td>';
+                                        // }
 
-                                        if ($comment[$i] == 'Y') {
-                                            $leftBorderStyle = '';
-                                            if ($leftBorder == false) {
-                                                $leftBorder = true;
-                                                $leftBorderStyle = 'border-left: 2px solid #666;';
-                                            }
-                                            echo "<td style='$leftBorderStyle text-align: center;'>";
-                                            $style = '';
-                                            if ($rowEntry['comment'] != '') {
-                                                if (strlen($rowEntry['comment']) < 11) {
-                                                    echo htmlPrep($rowEntry['comment']);
-                                                } else {
-                                                    echo "<span $style title='".htmlPrep($rowEntry['comment'])."'>".substr($rowEntry['comment'], 0, 10).'...</span>';
-                                                }
-                                            }
-                                            echo '</td>';
-                                        }
-                                        if ($uploadedResponse[$i] == 'Y') {
-                                            $leftBorderStyle = '';
-                                            if ($leftBorder == false) {
-                                                $leftBorder = true;
-                                                $leftBorderStyle = 'border-left: 2px solid #666;';
-                                            }
-                                            echo "<td style='$leftBorderStyle text-align: center;'>";
-                                            if ($rowEntry['response'] != '') {
-                                                echo "<a title='".__('Uploaded Response')."' href='".$session->get('absoluteURL').'/'.$rowEntry['response']."'>Up</a><br/>";
-                                            }
-                                        }
+                                        // if ($comment[$i] == 'Y') {
+                                        //     $leftBorderStyle = '';
+                                        //     if ($leftBorder == false) {
+                                        //         $leftBorder = true;
+                                        //         $leftBorderStyle = 'border-left: 2px solid #666;';
+                                        //     }
+                                        //     echo "<td style='$leftBorderStyle text-align: center;'>";
+                                        //     $style = '';
+                                        //     if ($rowEntry['comment'] != '') {
+                                        //         if (strlen($rowEntry['comment']) < 11) {
+                                        //             echo htmlPrep($rowEntry['comment']);
+                                        //         } else {
+                                        //             echo "<span $style title='".htmlPrep($rowEntry['comment'])."'>".substr($rowEntry['comment'], 0, 10).'...</span>';
+                                        //         }
+                                        //     }
+                                        //     echo '</td>';
+                                        // }
+                                        // if ($uploadedResponse[$i] == 'Y') {
+                                        //     $leftBorderStyle = '';
+                                        //     if ($leftBorder == false) {
+                                        //         $leftBorder = true;
+                                        //         $leftBorderStyle = 'border-left: 2px solid #666;';
+                                        //     }
+                                        //     echo "<td style='$leftBorderStyle text-align: center;'>";
+                                        //     if ($rowEntry['response'] != '') {
+                                        //         echo "<a title='".__('Uploaded Response')."' href='".$session->get('absoluteURL').'/'.$rowEntry['response']."'>Up</a><br/>";
+                                        //     }
+                                        // }
                                         echo '</td>';
                                     } else {
                                         $emptySpan = 0;
                                         if ($attainmentOn[$i] == 'Y' and $attainmentID[$i] != '') {
                                             ++$emptySpan;
                                         }
-                                        if ($effortOn[$i] == 'Y' and $effortID[$i] != '') {
-                                            ++$emptySpan;
-                                        }
-                                        if ($comment[$i] == 'Y') {
-                                            ++$emptySpan;
-                                        }
-                                        if ($uploadedResponse[$i] == 'Y') {
-                                            ++$emptySpan;
-                                        }
+                                        // if ($effortOn[$i] == 'Y' and $effortID[$i] != '') {
+                                        //     ++$emptySpan;
+                                        // }
+                                        // if ($comment[$i] == 'Y') {
+                                        //     ++$emptySpan;
+                                        // }
+                                        // if ($uploadedResponse[$i] == 'Y') {
+                                        //     ++$emptySpan;
+                                        // }
                                         if ($emptySpan > 0) {
                                             echo "<td style='border-left: 2px solid #666; text-align: center' colspan=$emptySpan></td>";
                                         }
@@ -615,10 +627,35 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                                             echo '</td>';
                                         }
                                     }
+
                                 }
+
+                                // get weighting per course class
+                                $dataEntry = array('gibbonCourseClassID' => $gibbonCourseClassID);
+                                $sqlEntry = 'SELECT * FROM iesh_courseweighting WHERE gibbonCourseClassID=:gibbonCourseClassID';
+                                $resultEntry = $connection2->prepare($sqlEntry);
+                                $resultEntry->execute($dataEntry);
+                                $rowEntry = $resultEntry->fetch();
+                                $weighting = $rowEntry['weighting'];
+                                // add weighting and final grade
+                                echo "<td>";
+                                echo $weighting;
+                                echo '</td>';
+
+                                // get final grade per person and course class
+                                $dataEntry = array('gibbonPersonID' => $rowStudents['gibbonPersonID'], 'gibbonCourseClassID' => $gibbonCourseClassID);
+                                $sqlEntry = 'SELECT * FROM iesh_internalassessmentsummary WHERE gibbonPersonID=:gibbonPersonID AND gibbonCourseClassID=:gibbonCourseClassID';
+                                $resultEntry = $connection2->prepare($sqlEntry);
+                                $resultEntry->execute($dataEntry);
+                                $rowEntry = $resultEntry->fetch();
+                                $finalGrade = $rowEntry && isset($rowEntry['finalGrade']) ? $rowEntry['finalGrade'] : '—';
+                                echo "<td>";
+                                echo $finalGrade;
+                                echo '</td>';
                                 echo '</tr>';
                             }
                         }
+                       
                         echo '</table>';
                     }
                 }
