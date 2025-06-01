@@ -78,7 +78,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
 				if ($resultCheck->rowCount() != 1) {
 					$page->addError(__('The selected record does not exist, or you do not have access to it.'));
 				} else {
-					echo getInternalAssessmentRecord($guid, $connection2, $gibbonPersonID);
+					echo getInternalAssessmentRecordV2($guid, $connection2, $gibbonPersonID);
 				}
 			}
 		} elseif ($highestAction == 'View Internal Assessments_myChildrens') { //MY CHILDREN
@@ -148,7 +148,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                     	$page->addError(__('The selected record does not exist, or you do not have access to it.'));
                     } else {
                         $rowChild = $resultChild->fetch();
-                        echo getInternalAssessmentRecord($guid, $connection2, $gibbonPersonID, 'parent');
+                        echo getInternalAssessmentRecordV2($guid, $connection2, $gibbonPersonID, 'parent');
                     }
                 }
             }
@@ -159,7 +159,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
             echo __('Internal Assessments');
             echo '</h3>';
 
-            echo getInternalAssessmentRecord($guid, $connection2, $session->get('gibbonPersonID'), 'student');
+            echo getInternalAssessmentRecordV2($guid, $connection2, $session->get('gibbonPersonID'), 'student');
         }
     }
 }

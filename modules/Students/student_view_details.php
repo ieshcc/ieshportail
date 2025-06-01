@@ -2684,7 +2684,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Students/student_view_deta
                                 include './modules/Formal Assessment/moduleFunctions.php';
 
                                 if ($highestAction2 == 'View Internal Assessments_all') {
-                                    echo getInternalAssessmentRecord($guid, $connection2, $gibbonPersonID);
+                                    echo getInternalAssessmentRecordV2($guid, $connection2, $gibbonPersonID);
                                 } elseif ($highestAction2 == 'View Internal Assessments_myChildrens') {
                                     echo getInternalAssessmentRecord($guid, $connection2, $gibbonPersonID, 'parent');
                                 } elseif ($highestAction2 == 'View Internal Assessments_mine') {

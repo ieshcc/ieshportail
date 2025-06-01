@@ -650,6 +650,8 @@ class Installer
             'dbcustomization/10_update_departmentType_enum.sql',
             'dbcustomization/11_update_departmentStaffRole_enum.sql',
             'dbcustomization/12_update_gibbonAction_bulkAdd.sql',
+            'dbcustomization/13_add_tables_courseWeighting.sql',
+            'dbcustomization/14_add_tables_internalAssesmentSummary.sql',
         ];
         
         $combinedSql = '';

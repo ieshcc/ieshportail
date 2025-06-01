@@ -23,6 +23,8 @@ use Gibbon\Domain\System\SettingGateway;
 use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
 
+require_once __DIR__ . '/../../logger.php';
+
 //$role can be teacher, student or parent. If no role is specified, the default is teacher.
 function getInternalAssessmentRecord($guid, $connection2, $gibbonPersonID, $role = 'teacher')
 {
@@ -196,6 +198,188 @@ function getInternalAssessmentRecord($guid, $connection2, $gibbonPersonID, $role
                         }
                         $output .= '</td>';
                     }
+                    
+                    $output .= '</tr>';
+                }
+
+                $output .= '</table>';
+            }
+        }
+        if ($results == false) {
+            $output .= "<div class='error'>";
+            $output .= __('There are no records to display.');
+            $output .= '</div>';
+        }
+    }
+
+    return $output;
+}
+
+//$role can be teacher, student or parent. If no role is specified, the default is teacher.
+// V2 : change the way the data table is displayed
+function getInternalAssessmentRecordV2($guid, $connection2, $gibbonPersonID, $role = 'teacher')
+{
+    global $session, $container;
+
+    $output = '';
+
+    $settingGateway = $container->get(SettingGateway::class);
+    //Get alternative header names
+    $attainmentAlternativeName = $settingGateway->getSettingByScope('Markbook', 'attainmentAlternativeName');
+    $effortAlternativeName = $settingGateway->getSettingByScope('Markbook', 'effortAlternativeName');
+
+    //Get school years in reverse order
+    try {
+        $dataYears = array('gibbonPersonID' => $gibbonPersonID);
+        $sqlYears = "SELECT * FROM gibbonSchoolYear JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonSchoolYearID=gibbonSchoolYear.gibbonSchoolYearID) WHERE (status='Current' OR status='Past') AND gibbonPersonID=:gibbonPersonID ORDER BY sequenceNumber DESC";
+        $resultYears = $connection2->prepare($sqlYears);
+        $resultYears->execute($dataYears);
+    } catch (PDOException $e) {
+    }
+
+    if ($resultYears->rowCount() < 1) {
+        $output .= "<div class='error'>";
+        $output .= __('There are no records to display.');
+        $output .= '</div>';
+    } else {
+        $results = false;
+        while ($rowYears = $resultYears->fetch()) {
+            //Get and output Internal Assessments
+            try {
+                $dataInternalAssessment = array('gibbonPersonID1' => $gibbonPersonID, 'gibbonPersonID2' => $gibbonPersonID, 'gibbonSchoolYearID' => $rowYears['gibbonSchoolYearID']);
+                if ($role == 'teacher') {
+                    $sqlInternalAssessment = "SELECT gibbonInternalAssessmentColumn.*, gibbonInternalAssessmentEntry.*, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourse.name AS courseFull, iesh_internalAssessmentSummary.finalGrade, iesh_internalAssessmentSummary.catchupGrade, iesh_courseWeighting.weight FROM gibbonCourse JOIN gibbonCourseClass ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentColumn ON (gibbonInternalAssessmentColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentEntry ON (gibbonInternalAssessmentEntry.gibbonInternalAssessmentColumnID=gibbonInternalAssessmentColumn.gibbonInternalAssessmentColumnID) JOIN iesh_internalAssessmentSummary ON (iesh_internalAssessmentSummary.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN iesh_courseWeighting ON (iesh_courseWeighting.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) WHERE gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID1 AND gibbonInternalAssessmentEntry.gibbonPersonIDStudent=:gibbonPersonID2 AND gibbonSchoolYearID=:gibbonSchoolYearID AND completeDate<='".date('Y-m-d')."' ORDER BY completeDate DESC, gibbonCourse.nameShort, gibbonCourseClass.nameShort";
+                } elseif ($role == 'student') {
+                    $sqlInternalAssessment = "SELECT gibbonInternalAssessmentColumn.*, gibbonInternalAssessmentEntry.*, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourse.name AS courseFull FROM gibbonCourse JOIN gibbonCourseClass ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentColumn ON (gibbonInternalAssessmentColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentEntry ON (gibbonInternalAssessmentEntry.gibbonInternalAssessmentColumnID=gibbonInternalAssessmentColumn.gibbonInternalAssessmentColumnID) WHERE gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID1 AND gibbonInternalAssessmentEntry.gibbonPersonIDStudent=:gibbonPersonID2 AND gibbonSchoolYearID=:gibbonSchoolYearID AND completeDate<='".date('Y-m-d')."' AND viewableStudents='Y' ORDER BY completeDate DESC, gibbonCourse.nameShort, gibbonCourseClass.nameShort";
+                } elseif ($role == 'parent') {
+                    $sqlInternalAssessment = "SELECT gibbonInternalAssessmentColumn.*, gibbonInternalAssessmentEntry.*, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourse.name AS courseFull FROM gibbonCourse JOIN gibbonCourseClass ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentColumn ON (gibbonInternalAssessmentColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonInternalAssessmentEntry ON (gibbonInternalAssessmentEntry.gibbonInternalAssessmentColumnID=gibbonInternalAssessmentColumn.gibbonInternalAssessmentColumnID) WHERE gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID1 AND gibbonInternalAssessmentEntry.gibbonPersonIDStudent=:gibbonPersonID2 AND gibbonSchoolYearID=:gibbonSchoolYearID AND completeDate<='".date('Y-m-d')."' AND viewableParents='Y'  ORDER BY completeDate DESC, gibbonCourse.nameShort, gibbonCourseClass.nameShort";
+                }
+                $resultInternalAssessment = $connection2->prepare($sqlInternalAssessment);
+                $resultInternalAssessment->execute($dataInternalAssessment);
+            } catch (PDOException $e) {
+            }
+
+            if ($resultInternalAssessment->rowCount() > 0) {
+                
+                // get courses
+                // Fetch all rows at once
+                $rows = $resultInternalAssessment->fetchAll();
+
+                /* 
+                gibbon.INFO: Array (  [gibbonInternalAssessmentColumnID] => 0000000001 [gibbonCourseClassID] => 00000439
+                [groupingID] => 00000001 [name] => Partiel  [description] => Partiel     [type] => Expected Grade     [attachment] =>      [attainment] => Y     [gibbonScaleIDAttainment] => 00016     [effort] => N     [gibbonScaleIDEffort] =>      [comment] =>      [uploadedResponse] => N     [complete] => Y     [completeDate] => 2025-05-26     [viewableStudents] => Y     [viewableParents] => N     [gibbonPersonIDCreator] => 0000000001     [gibbonPersonIDLastEdit] => 0000000001     [gibbonInternalAssessmentEntryID] => 000000000004     [gibbonPersonIDStudent] => 0000008699     [attainmentValue] => 85     [attainmentDescriptor] => 85     [effortValue] =>      [effortDescriptor] =>      [response] =>      [course] => CAD     [class] => JZRY     [courseFull] => Coran à Distance     [finalGrade] => 67.48     [catchupGrade] =>      [weight] => 3 )  [] []
+                */
+
+                // Grouup assessments by course
+                $groupedCourses = [];
+                foreach ($rows as $row) {
+                    $course = $row['courseFull'];
+                    $assessmentName = $row['name'];
+                    $groupedCourses[$course]['grades'][$assessmentName] = $row['attainmentValue'];
+                    $groupedCourses[$course]['weight'] = $row['weight'];
+                    $groupedCourses[$course]['finalGrade'] = $row['finalGrade'];
+                    $groupedCourses[$course]['catchupGrade'] = $row['catchupGrade'];
+                    $groupedCourses[$course]['comment'] = $row['comment'];
+                }
+                // Extract available assessments
+                $allAssessmentNames = array_unique(array_column($rows, 'name'));
+
+                $logger = getLogger("gibbon");
+                $logger->info(print_r($allAssessmentNames, true));
+                $logger->info(print_r($groupedCourses, true));
+                $results = true;
+                $output .= '<h4>';
+                $output .= $rowYears['name'];
+                $output .= '</h4>';
+
+                $output .= "<table cellspacing='0' style='width: 100%'>";
+                $output .= "<tr class='head'>";
+                $output .= "<th style='width: 160px'>".__('Module')."</th>";
+                foreach ($allAssessmentNames as $assessmentName) {
+                    $output .= "<th style='width: 180px'>".$assessmentName."</th>";
+                }
+                $output .= "<th>".__('Weighting')."</th>
+                            <th>".__('Average')."</th>
+                            <th>".__('Catchup')."</th>
+                            <th>".__('Comment')."</th>";
+                $output .= "</tr>";
+
+               
+                $count = 0;
+                foreach ($groupedCourses as $courseName => $data) {
+                    if ($count % 2 == 0) {
+                        $rowNum = 'even';
+                    } else {
+                        $rowNum = 'odd';
+                    }
+                    ++$count;
+
+                    $output .= "<tr class=$rowNum>";
+                    // Module
+                    $output .= "<td>".$courseName."</td>";
+                    foreach ($allAssessmentNames as $name) {
+                        $grade = isset($data['grades'][$name]) ? $data['grades'][$name] : '-';
+                        $output .= "<td style='text-align: center'>$grade</td>";
+                    }
+                    // // Grades per Assessment
+                    // if ($rowInternalAssessment['attainment'] == 'N' or $rowInternalAssessment['gibbonScaleIDAttainment'] == '') {
+                    //     $output .= "<td class='dull' style='color: #bbb; text-align: center'>";
+                    //     $output .= __('N/A');
+                    //     $output .= '</td>';
+                    // } else {
+                    //     $output .= "<td style='text-align: center'>";
+                    //     $attainmentExtra = '';
+                    //     try {
+                    //         $dataAttainment = array('gibbonScaleID' => $rowInternalAssessment['gibbonScaleIDAttainment']);
+                    //         $sqlAttainment = 'SELECT * FROM gibbonScale WHERE gibbonScaleID=:gibbonScaleID';
+                    //         $resultAttainment = $connection2->prepare($sqlAttainment);
+                    //         $resultAttainment->execute($dataAttainment);
+                    //     } catch (PDOException $e) {
+                    //     }
+                    //     if ($resultAttainment->rowCount() == 1) {
+                    //         $rowAttainment = $resultAttainment->fetch();
+                    //         $attainmentExtra = __($rowAttainment['usage']);
+                    //     }
+                    //     $styleAttainment = "style='font-weight: bold'";
+                    //     $title = ($rowInternalAssessment['attainmentValue']!=$rowInternalAssessment['attainmentDescriptor']) ? $title="title='".$rowInternalAssessment['attainmentDescriptor']."'" : '';
+                    //     $output .= "<div $styleAttainment".$title.">".$rowInternalAssessment['attainmentValue'].'</div>';
+                    //     if ($rowInternalAssessment['attainmentValue'] != '') {
+                    //         $output .= "<div class='detailItem' style='font-size: 75%; font-style: italic; margin-top: 2px'>".__($attainmentExtra).'</div>';
+                    //     }
+                    //     $output .= '</td>';
+                    // }
+                    // Weighting
+                    $output .= "<td>{$data['weight']}</td>";
+                    $output .= "<td>{$data['finalGrade']}</td>";
+                    $output .= "<td>{$data['catchupGrade']}</td>";
+                    $output .= "<td>{$data['comment']}</td>";
+                    // $output .= "<span style='font-size: 90%; font-style: italic; font-weight: normal'>";
+                    // if ($rowInternalAssessment['completeDate'] != '') {
+                    //     $output .= __('Marked on').' '.Format::date($rowInternalAssessment['completeDate']).'<br/>';
+                    // } else {
+                    //     $output .= __('Unmarked').'<br/>';
+                    // }
+                    // if ($rowInternalAssessment['attachment'] != '' and file_exists($session->get('absolutePath').'/'.$rowInternalAssessment['attachment'])) {
+                    //     $output .= " | <a target='_blank' title='".__('Download more information')."' href='".$session->get('absoluteURL').'/'.$rowInternalAssessment['attachment']."'>".__('More info')."</a>";
+                    // }
+                    // $output .= '</span>';
+                    // $output .= '</td>';
+                    
+                    // if ($rowInternalAssessment['comment'] == 'N' and $rowInternalAssessment['uploadedResponse'] == 'N') {
+                    //     echo "<td class='dull' style='color: #bbb; text-align: left'>";
+                    //     echo __('N/A');
+                    //     echo '</td>';
+                    // } else {
+                    //     $output .= '<td>';
+                    //     if ($rowInternalAssessment['comment'] != '') {
+                    //         $output .= $rowInternalAssessment['comment'].'<br/>';
+                    //     }
+                    //     if ($rowInternalAssessment['response'] != '') {
+                    //         $output .= "<a target='_blank' title='".__('Uploaded Response')."' href='".$session->get('absoluteURL').'/'.$rowInternalAssessment['response']."'>".__('Uploaded Response').'</a><br/>';
+                    //     }
+                    //     $output .= '</td>';
+                    // }
+                    
                     $output .= '</tr>';
                 }
 
