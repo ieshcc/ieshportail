@@ -23,12 +23,14 @@ use Gibbon\Services\Format;
 use Gibbon\Data\Validator;
 
 require_once '../../gibbon.php';
+require_once __DIR__ . '/customFunctions.php';
 
 $_POST = $container->get(Validator::class)->sanitize($_POST);
 
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
 $gibbonInternalAssessmentColumnID = $_GET['gibbonInternalAssessmentColumnID'] ?? '';
 $URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_GET['address'])."/internalAssessment_write_data.php&gibbonInternalAssessmentColumnID=$gibbonInternalAssessmentColumnID&gibbonCourseClassID=$gibbonCourseClassID";
+$gibbonSchoolYearID = $session->get('gibbonSchoolYearID');
 
 if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internalAssessment_write_data.php') == false) {
     $URL .= '&return=error0';
@@ -243,6 +245,74 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                     $result->execute($data);
                 } catch (PDOException $e) {
                     $partialFail = true;
+                }
+
+                // update final grade
+                // First get the weighting for this course class
+                $dataEntry = array('gibbonCourseClassID' => $gibbonCourseClassID);
+                $sqlWeighting = 'SELECT * FROM iesh_courseweighting WHERE gibbonCourseClassID=:gibbonCourseClassID';
+                $resultWeighting = $connection2->prepare($sqlWeighting);
+                $resultWeighting->execute($dataEntry);
+                $rowWeighting = $resultWeighting->fetch();
+                $weighting = $rowWeighting['weighting'];
+                //failsafe
+                if ($weighting == '' || $weighting == null || $weighting < 1 || $weighting > 100) {
+                    $weighting = 1;
+                }
+
+                // Second get all the grades for each student for this course class
+                $dataEntry = array('gibbonCourseClassID' => $gibbonCourseClassID);
+                $sqlGrades = 'SELECT attainmentValue, gibbonPersonIDStudent, gibbonInternalAssessmentColumn.gibbonInternalAssessmentColumnID
+                            FROM gibbonInternalAssessmentEntry 
+                            JOIN gibbonInternalAssessmentColumn ON (gibbonInternalAssessmentEntry.gibbonInternalAssessmentColumnID=gibbonInternalAssessmentColumn.gibbonInternalAssessmentColumnID)
+                            JOIN gibbonCourseClass ON (gibbonInternalAssessmentColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID)
+                            WHERE gibbonInternalAssessmentColumn.gibbonCourseClassID=:gibbonCourseClassID';
+                $resultGrades = $connection2->prepare($sqlGrades);
+                $resultGrades->execute($dataEntry);
+                $rowGrades = $resultGrades->fetchAll();
+                
+                $gradesByStudent = [];
+                foreach ($rowGrades as $rowGrade) {
+                    $studentId = $rowGrade['gibbonPersonIDStudent'];
+                    $attainmentValue = $rowGrade['attainmentValue'];
+
+                    // Initialize the student's array if it doesn't exist
+                    if (!isset($gradesByStudent[$studentId])) {
+                        $gradesByStudent[$studentId] = [
+                            'gradesSum' => 0,
+                            'countGrades' => 0,
+                            'grades' => []
+                        ];
+                    }
+
+                    // Add the grade to the student's array
+                    $gradesByStudent[$studentId]['grades'][] = $attainmentValue;
+                    $gradesByStudent[$studentId]['gradesSum'] += $attainmentValue;
+                    $gradesByStudent[$studentId]['countGrades']++;
+                }
+                $finalGrades = calculateFinalGrade($gradesByStudent);
+
+                $catchupGrade = 0; // TODO: get catchup grade
+
+                // INSERT OR UPDATE final grade
+                foreach ($finalGrades as $studentId => $studentData) {
+                    $data = [
+                        'gibbonPersonID' => $studentId,
+                        'gibbonCourseClassID' => $gibbonCourseClassID,
+                        'gibbonSchoolYearID' => $gibbonSchoolYearID,
+                        'finalGrade' => $studentData['finalGrade'],
+                        'finalGradeUpdate' => $studentData['finalGrade'],
+                        'catchupGrade' => $catchupGrade,
+                        'catchupGradeUpdate' => $catchupGrade,
+                    ];
+
+                    $sql = "INSERT INTO iesh_internalAssessmentSummary (gibbonPersonID, gibbonCourseClassID, gibbonSchoolYearID, finalGrade, catchupGrade) VALUES (:gibbonPersonID, :gibbonCourseClassID, :gibbonSchoolYearID, :finalGrade, :catchupGrade) ON DUPLICATE KEY UPDATE finalGrade = :finalGradeUpdate, catchupGrade = :catchupGradeUpdate";
+                    try{
+                        $result = $connection2->prepare($sql);
+                        $result->execute($data);
+                    } catch (PDOException $e) {
+                        $partialFail = true;
+                    }
                 }
 
                 //Return!

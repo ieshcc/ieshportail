@@ -6,8 +6,8 @@ DROP TABLE IF EXISTS `iesh_internalAssessmentSummary`;
 CREATE TABLE `iesh_internalAssessmentSummary` (
   `gibbonPersonID` int(10) UNSIGNED ZEROFILL NOT NULL,
   `gibbonCourseClassID` int(10) UNSIGNED ZEROFILL NOT NULL,
-  `gibbonSchoolYear` int(3) UNSIGNED ZEROFILL NOT NULL,
+  `gibbonSchoolYearID` int(3) UNSIGNED ZEROFILL NOT NULL,
   `finalGrade` float NOT NULL,
   `catchupGrade` float NOT NULL,
-  PRIMARY KEY (`gibbonPersonID`, `gibbonCourseClassID`, `gibbonSchoolYear`)
+  PRIMARY KEY (`gibbonPersonID`, `gibbonCourseClassID`, `gibbonSchoolYearID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

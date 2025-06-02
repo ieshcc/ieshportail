@@ -23,7 +23,6 @@ use Gibbon\Domain\System\SettingGateway;
 use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
 
-require_once __DIR__ . '/../../logger.php';
 
 //$role can be teacher, student or parent. If no role is specified, the default is teacher.
 function getInternalAssessmentRecord($guid, $connection2, $gibbonPersonID, $role = 'teacher')
@@ -280,9 +279,6 @@ function getInternalAssessmentRecordV2($guid, $connection2, $gibbonPersonID, $ro
                 // Extract available assessments
                 $allAssessmentNames = array_unique(array_column($rows, 'name'));
 
-                $logger = getLogger("gibbon");
-                $logger->info(print_r($allAssessmentNames, true));
-                $logger->info(print_r($groupedCourses, true));
                 $results = true;
                 $output .= '<h4>';
                 $output .= $rowYears['name'];

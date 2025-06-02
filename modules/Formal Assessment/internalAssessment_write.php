@@ -25,7 +25,6 @@ use Gibbon\Services\Format;
 
 //Module includes
 require_once __DIR__ . '/moduleFunctions.php';
-require_once __DIR__ . '/../../logger.php';
 
 //Get alternative header names
 $settingGateway = $container->get(SettingGateway::class);
@@ -131,8 +130,6 @@ if (isActionAccessible($guid, $connection2, '/modules/Formal Assessment/internal
                 $result = $connection2->prepare($sql);
                 $result->execute($data);
                 $columns = $result->rowCount();
-                $logger = getLogger('gibbon');
-                $logger->info('columns: ' . $columns);
                 if ($columns < 1) {
                     echo "<div class='warning'>";
                     echo __('There are no records to display.');
